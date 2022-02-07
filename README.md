@@ -1,3 +1,3 @@
 # blog.symfony
 
-It's a webapp (early blog.local but on a symphony framework) 
+It's a webapp (early blog.local but now it's on a symphony framework) 
