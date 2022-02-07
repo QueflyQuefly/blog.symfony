@@ -1,0 +1,6 @@
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
+app_show_posts:
+    path: /
+    controller: App\Controller\PostController::showPosts
