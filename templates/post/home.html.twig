@@ -1,0 +1,30 @@
+{% extends 'blog_base.html.twig' %}
+        
+{% block description %}
+    <h1>Наилучший источник информации по теме "Путешествия"</h1>
+{% endblock %}
+
+{% block content %}
+    {% dump(posts) %}
+
+    {% for post in posts %}
+        {% dump(post) %}
+
+        <div class='{{ class }}'>
+            <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
+                <div class='posttext'>
+                    <p class='posttitle'>{{ post.title }}</p>
+                    <p class='postcontent'>{{ post.content }}</p>
+                    <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.userId }}</p>
+                    <p class='postrating'>{# post.rating #}</p>
+                </div>
+                <div class='postimage'>
+                    <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
+                </div>
+            </a>
+            <div class='submitunder'>
+                {#<?= $linkToDelete ?>#}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}

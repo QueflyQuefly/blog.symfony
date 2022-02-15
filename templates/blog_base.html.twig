@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>
+            {% block title %} Главная - Просто Блог {% endblock %}
+        </title>
+
+        {% block css %}
+        <link rel='stylesheet' href='{{ asset('css/style.css') }}'>
+        {% endblock %}
+
+        <link rel="shortcut icon" href="{{ asset('images/logo.jpg') }}" type="image/x-icon">
+    </head>
+    <body>
+        <div class='content'>
+
+        {% block menu %}
+        <nav>
+            <div id="logo">
+                <a class="logo" title="На главную" href='{{ path('post_main') }}'>
+                    <img id='imglogo' src='{{ asset('images/logo.jpg') }}' alt='Лого'>
+                    <div id='namelogo'>Просто Блог</div>
+                </a>
+            </div>
+            <div id="menu">
+                <ul class='menuList'>
+                {% if (sessionUserId) %} {# app.user.user_id ?? 'Anonymous user' #}
+                    <li>
+                        <input type='submit' form='exit' value='Выйти' class='menuLink'>
+                        <form id='exit' action='' method='post'>
+                            <input type='hidden' value='' name='exit'>
+                        </form>
+                    </li>
+                    {% if (isSuperuser) %} {# app.user.is_superuser ?? 'Anonymous user' #}
+                    <li><a class='menuLink' href='/admin'>Админка</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a class='menuLink' href='/user/login'>Войти</a></li>
+                {% endif %}
+                    <li><a class='menuLink' href='/user/cabinet'>Профиль</a></li>
+                    <li><a class='menuLink' href='/search'>Поиск</a></li>
+                    <li><a class='menuLink' href='/public/post/add'>Добавить пост</a></li>
+                </ul>
+            </div>
+        </nav>
+        {% endblock %}
+
+        {% block description %}
+        {% endblock %}
+
+        {% block content %}
+            <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
+        {% endblock %}
+    </div>
+    {% block footer %}
+    <footer>
+        <p>Сайт Вячеслава Бельского &copy; 2021-{{ date()|date('Y') }}</p>
+    </footer>
+    {% endblock %}
+</body>
+</html>
