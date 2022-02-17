@@ -2,7 +2,9 @@
 namespace App\Controller;
 
 use App\Entity\Posts;
+use App\Controller\UserController;
 use App\Repository\PostsRepository;
+use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,30 +39,45 @@ class PostController extends AbstractController
     /**
      * @Route("/{post_id}", name="show", methods={"GET"}, requirements={"post_id"="\b[0-9]+"})
      */
-    public function showPost(int $post_id, PostsRepository $postsRepository, SessionInterface $sessionInterface): Response
+    public function showPost(
+            int $post_id, 
+            PostsRepository $postsRepository, 
+            SessionInterface $sessionInterface,
+            CommentsRepository $commentsRepository
+        ): Response
     {
-        $post = $postsRepository->find($post_id);
-
-        if (!$post) {
-            $pageDescription = 'No post found for id '.$post_id;
-        } else {
-            $pageDescription = 'Check out this great product: '.$post->getTitle();
-        }
         $sessionUserId = $sessionInterface->get('user_id');
         $isSuperuser = $sessionInterface->get('is_superuser');
+
+        $post = $postsRepository->find($post_id);
+        $comments = $commentsRepository->findByPostId($post_id);
+        
+        if (!$post) {
+            return $this->render('blog_message.html.twig', [
+                'session_user_id' => $sessionUserId,
+                'is_superuser' => $isSuperuser,
+                'description' => "Пост с id=$post_id не найден"
+            ]);
+        }
+
         return $this->render('post/view.html.twig', [
             'session_user_id' => $sessionUserId,
             'is_superuser' => $isSuperuser,
             'post' => $post,
-            'description' => $pageDescription
+            'comments' => $comments
         ]);
     }
 
     /**
      * @Route("/add", name="show_add", methods={"GET"})
      */
-    public function showAdd(SessionInterface $sessionInterface): Response
+    public function showAdd(SessionInterface $sessionInterface, UserController $userController): Response
     {
+        if (!$sessionInterface->get('user_id', false))
+        {
+            return $userController->showLogin($sessionInterface);
+        }
+
         $maxSizeOfUploadImage = 4 * 1024 * 1024; // 4 megabytes
         $sessionUserId = $sessionInterface->get('user_id');
         $isSuperuser = $sessionInterface->get('is_superuser');
@@ -98,8 +115,7 @@ class PostController extends AbstractController
         return $this->render('blog_message.html.twig', [
             'session_user_id' => $sessionUserId,
             'is_superuser' => $isSuperuser,
-            'description' => 'Пост создан',
-            'referrer' => 'post_show_add'
+            'description' => 'Пост создан'
         ]);
     }
 }

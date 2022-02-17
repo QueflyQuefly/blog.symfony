@@ -52,5 +52,8 @@
                 </div>
             </div>
         {% endfor %}
+        {% if posts|length > 10 %}
+            <p class='center'><a class='formsubmit' href='/posts'>Посмотреть посты за всё время</a></p>
+        {% endif %}
     {% endif %}
 {% endblock %}

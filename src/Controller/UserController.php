@@ -20,6 +20,10 @@ class UserController extends AbstractController
      */
     public function showCabinet(Request $request, SessionInterface $sessionInterface): Response
     {
+        if (!$sessionInterface->get('user_id', false))
+        {
+            return $this->showLogin($sessionInterface);
+        }
         $pageDescription = 'Кабинет - Просто Блог';
         if (!empty($request->query->get('user'))) {
             $sessionUserId = (int) $request->query->get('user');
@@ -30,8 +34,7 @@ class UserController extends AbstractController
         return $this->render('blog_message.html.twig', [
             'session_user_id' => $sessionUserId,
             'is_superuser' => $isSuperuser,
-            'description' => $pageDescription,
-            'referrer' => 'post_main'
+            'description' => $pageDescription
         ]);
     }
 
@@ -86,8 +89,7 @@ class UserController extends AbstractController
         return $this->render('blog_message.html.twig', [
             'session_user_id' => $sessionUserId,
             'is_superuser' => $isSuperuser,
-            'description' => $description,
-            'referrer' => 'user_show_login'
+            'description' => $description
         ]);
     }
     
@@ -165,8 +167,7 @@ class UserController extends AbstractController
         return $this->render('blog_message.html.twig', [
             'session_user_id' => $sessionUserId,
             'is_superuser' => $isSuperuser,
-            'description' => $description,
-            'referrer' => 'user_show_reg'
+            'description' => $description
         ]);
     }
     /* private function isUser(Request $request)
@@ -187,8 +188,7 @@ class UserController extends AbstractController
         return $this->render('blog_message.html.twig', [
             'session_user_id' => false,
             'is_superuser' => false,
-            'description' => 'Вы успешно вышли из аккаунта',
-            'referrer' => 'user_show_login'
+            'description' => 'Вы успешно вышли из аккаунта'
         ]);
     }
 }

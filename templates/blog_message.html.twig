@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block content %}
-    <a class='link' href='{{ path(referrer) }}'>Вернуться назад</a>
+    <a class='link' href="#" onclick="history.back();">Вернуться назад</a>
     <br>
     <br>
-    <a class='link' href='{{ path('post_main') }}'>Вернуться на главную</a>
+    <a class='link' href='{{ path('post_main') }}'>Перейти на главную страницу</a>
 {% endblock %}
