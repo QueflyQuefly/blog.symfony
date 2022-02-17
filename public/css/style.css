@@ -5,18 +5,19 @@
 }
 html,
 body{
-    padding-top: 8vmin;
-    margin: 0;
-    flex:1;
+    margin: 8vmin 0 0 0;
+    flex: 1;
     background-color: rgb(250, 250, 250);
 }
 nav{
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:8vmin;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 8vmin;
+    max-height: 12vmin;
     background-color: rgb(250, 250, 250);
+    border-radius: 0;
     border-bottom: 0.3vmin solid rgba(223, 223, 223, 0.212);
     display: inline-flex;
 }
@@ -35,8 +36,8 @@ nav #imglogo{
 nav #namelogo{
     float:left;
     width: 45%;
-    padding: 5%;
-    font-size: 13pt;
+    padding: 4.5%;
+    font-size: 15pt;
     text-decoration: none;
     color: black;
     font-family: Georgia, 'Times New Roman', Times, serif;
@@ -58,7 +59,7 @@ nav .menuList li{
     color: black;
     text-decoration: none;
     background-color: transparent;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
     font-size: 12pt;
     display: inline;
     margin: auto 1vmin;
@@ -149,9 +150,9 @@ h1{
 .viewpost{
     display: inline-block;
     padding:2vmin 2vmin;
-    margin:0 15%;
+    margin:0 12.5%;
     margin-top:2vmin;
-    min-width: 50vmin;
+    width: 75%;
     transition:0ms;
     color:black;
 }
@@ -271,7 +272,7 @@ h1{
     margin:0 auto;
     text-overflow: ellipsis;
     overflow: hidden;
-    width: 130vmin;
+    width: 80%;
     height: 100%;
     text-align: left;
     padding: 1% 5%;
@@ -281,7 +282,7 @@ h1{
 /* addcomments */
 .addcomments{
     padding: 2vmin;
-    width: 130vmin;
+    width: 80%;
     margin: 1% auto;
 }
 .addcomments:hover{
@@ -292,7 +293,6 @@ h1{
     padding-left: 5%;
 }
 #textcomment{
-    margin-top: -2%;
     margin-bottom: 2%;
     height:15vmin;
     width: 80%;
@@ -307,7 +307,7 @@ h1{
 .viewcomment{
     text-overflow: ellipsis;
     margin: 1% auto;
-    width: 130vmin;
+    width: 80%;
     padding:1vmin;
     padding-left: 2vmin;
     color:black;
@@ -446,9 +446,8 @@ hr{
 }
 .formentry{
     border: 1px solid lightgray;
-    height: 100%;
     width:55%;
-    padding-bottom: 5%;
+    padding-bottom: 10vmin;
     margin: 1% auto;
     text-align: center;
 }
@@ -459,13 +458,11 @@ hr{
     text-align:center;
 }
 #left{
-    position: relative;
     float:left;
     margin-left: 15%;
     margin-top: 1vmin;
 }
 #right{
-    position: relative;
     float:right;
     margin-right: 20%;
 }
@@ -486,7 +483,7 @@ hr{
     border: 0.3vmin solid lightgray;
     width: 50%;
     height: 35px;
-    margin: 2px 25% 5px 25%;
+    margin: 2px 25% 1.5vmin 25%;
     padding-left: 1vmin;
     transition: 0ms;
 }    
@@ -631,7 +628,7 @@ hr{
 }
 #addposttextarea{
     height:33vmin;
-    width: 150vmin;
+    width: 100%;
     padding:1%;
     font-size: 12pt;
     margin: 1% 1.5%;

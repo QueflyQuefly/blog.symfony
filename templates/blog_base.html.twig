@@ -26,22 +26,22 @@
             </div>
             <div id="menu">
                 <ul class='menuList'>
-                {% if (sessionUserId) %} {# app.user.user_id ?? 'Anonymous user' #}
+                {% if session_user_id %} {# app.user.user_id ?? 'Anonymous user' #}
                     <li>
                         <input type='submit' form='exit' value='Выйти' class='menuLink'>
-                        <form id='exit' action='' method='post'>
+                        <form id='exit' action='{{ path('user_exit') }}' method='post'>
                             <input type='hidden' value='' name='exit'>
                         </form>
                     </li>
-                    {% if (isSuperuser) %} {# app.user.is_superuser ?? 'Anonymous user' #}
+                    {% if is_superuser %} {# app.user.is_superuser ?? 'Anonymous user' #}
                     <li><a class='menuLink' href='/admin'>Админка</a></li>
                     {% endif %}
                 {% else %}
-                    <li><a class='menuLink' href='/user/login'>Войти</a></li>
+                    <li><a class='menuLink' href='{{ path('user_show_login') }}'>Войти</a></li>
                 {% endif %}
-                    <li><a class='menuLink' href='/user/cabinet'>Профиль</a></li>
+                    <li><a class='menuLink' href='{{ path('user_show_cabinet') }}'>Профиль</a></li>
                     <li><a class='menuLink' href='/search'>Поиск</a></li>
-                    <li><a class='menuLink' href='/public/post/add'>Добавить пост</a></li>
+                    <li><a class='menuLink' href='{{ path('post_show_add') }}'>Добавить пост</a></li>
                 </ul>
             </div>
         </nav>

@@ -5,26 +5,52 @@
 {% endblock %}
 
 {% block content %}
-    {% dump(posts) %}
+    {% if posts %}
+        {% dump(posts) %}
 
-    {% for post in posts %}
-        {% dump(post) %}
-
-        <div class='{{ class }}'>
-            <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
-                <div class='posttext'>
-                    <p class='posttitle'>{{ post.title }}</p>
-                    <p class='postcontent'>{{ post.content }}</p>
-                    <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.userId }}</p>
-                    <p class='postrating'>{# post.rating #}</p>
+        {% for post in posts %}
+            <div class='{{ post.class }}'>
+                <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
+                    <div class='posttext'>
+                        <p class='posttitle'>{{ post.title }}</p>
+                        <p class='postcontent'>{{ post.content|striptags }}</p>
+                        <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.userId }}</p>
+                        <p class='postrating'>{# post.rating #}</p>
+                    </div>
+                    <div class='postimage'>
+                        <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
+                    </div>
+                </a>
+                <div class='submitunder'>
+                    {# linkToDelete #}
                 </div>
-                <div class='postimage'>
-                    <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
-                </div>
-            </a>
-            <div class='submitunder'>
-                {#<?= $linkToDelete ?>#}
             </div>
-        </div>
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
+    {% endif %}
+
+
+    {% if moreTalkedPosts %}
+        {% dump(moreTalkedPosts) %}
+        <p style='text-align:center; font-size:16pt; margin-top:5%'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
+        {% for post in moreTalkedPosts %}
+            <div class='viewpost'>
+                <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
+                    <div class='posttext'>
+                        <p class='posttitle'>{{ post.title }}</p>
+                        <p class='postcontent'>{{ post.content|striptags }}</p>
+                        <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.userId }}</p>
+                        <p class='postrating'>{# post.rating #}</p>
+                    </div>
+                    <div class='postimage'>
+                        <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
+                    </div>
+                </a>
+                <div class='submitunder'>
+                    {# linkToDelete #}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

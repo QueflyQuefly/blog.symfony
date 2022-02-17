@@ -22,16 +22,31 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getLastPostsByNumber($numberOfPosts)
+    public function getLastPosts($amountOfPosts)
     {
         return $this->createQueryBuilder('p')
             ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($amountOfPosts)
             ->getQuery()
             ->getResult()
         ;
     }
    
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function getMoreTalkedPosts($amountOfPosts)
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.id <= :val')
+            ->setParameter('val', 6)
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($amountOfPosts)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+       
     // /**
     //  * @return Posts[] Returns an array of Posts objects
     //  */
