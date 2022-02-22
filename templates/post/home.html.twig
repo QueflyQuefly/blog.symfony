@@ -22,14 +22,14 @@
                         <p class='postrating'>{# post.rating #}</p>
                     </div>
                     <div class='postimage'>
-                        <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
+                        <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
                     </div>
                 </a>
 
                 {% if is_superuser %}
                 <div class='submitunder'>
                     <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
-                    <form id='deletePostById{{ post.id }}' action='' method='post'>
+                    <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
                         <input type='hidden' value='{{ post.id }}' name='deletePostById'>
                     </form>
                 </div>
@@ -41,7 +41,7 @@
     {% endif %}
 
     {% if posts|length > 9 %}
-        <div class='contentsinglepost'><a class='formsubmit' href='/posts'>Посмотреть посты за всё время</a></div>
+        <div class='contentsinglepost'><a class='formsubmit' href='{{ path('post_show_all') }}'>Посмотреть посты за всё время</a></div>
     {% endif %}
 
     {% if moreTalkedPosts %}
@@ -63,7 +63,7 @@
                 {% if is_superuser %}
                 <div class='submitunder'>
                     <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
-                    <form id='deletePostById{{ post.id }}' action='' method='post'>
+                    <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
                         <input type='hidden' value='{{ post.id }}' name='deletePostById'>
                     </form>
                 </div>

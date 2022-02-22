@@ -47,6 +47,23 @@ class PostsRepository extends ServiceEntityRepository
         ;
     }
        
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function getPosts($numberOfPosts, $page)
+    {
+        $moreThanMinId = $page * $numberOfPosts - $numberOfPosts;
+
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.id >= :val')
+            ->setParameter('val', $moreThanMinId)
+            ->orderBy('p.id', 'ASC')
+            ->setMaxResults($numberOfPosts)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    
     // /**
     //  * @return Posts[] Returns an array of Posts objects
     //  */

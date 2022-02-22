@@ -13,13 +13,13 @@
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
-        <img src='images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
+        <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
     </div>
     <div class='singleposttext'>
         <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
 
         {% if is_superuser %}
-        <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {post_id: post.id}) }}' method='post'>
+        <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
             <input type='submit' value='Удалить этот пост' class='link' style='font-size: 12pt'>
         </form>
         {% endif %}

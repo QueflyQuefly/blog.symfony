@@ -25,12 +25,12 @@ class CommentController extends AbstractController
     #[Route('/add/{post_id}', name: 'add', methods: ['POST'])]
     public function add(int $post_id, Request $request, ManagerRegistry $doctrine): Response
     {
+        if (false == $this->sessionUserId)
+        {
+            return $this->redirectToRoute('user_show_login');
+        }
         $content = $request->request->get('content');
         $content = trim(strip_tags($content));
-        if (false != $this->sessionUserId)
-        {
-            $this->redirectToRoute('user_show_login');
-        }
         if ('' != $content)
         {
             $entityManager = $doctrine->getManager();
@@ -54,14 +54,12 @@ class CommentController extends AbstractController
     }
     
     #[Route('/delete/{post_id}/{comment_id}', name: 'delete', methods: ['POST'])]
-    public function delete(int $post_id, int $comment_id, ManagerRegistry $doctrine): Response
+    public function delete(int $post_id, Comments $comments, ManagerRegistry $doctrine): Response
     {
         if ($this->isSuperuser)
         {
             $entityManager = $doctrine->getManager();
-            $commentsRepository = new CommentsRepository($doctrine);
-            $comment = $commentsRepository->findOneBy(['id' => $comment_id]);
-            $entityManager->remove($comment);
+            $entityManager->remove($comments);
             $entityManager->flush();
             $this->addFlash(
                 'success',

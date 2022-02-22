@@ -38,6 +38,22 @@ class PostController extends AbstractController
         ]);
     }
 
+    #[Route('/all', name: 'show_all', methods: ['GET'])]
+    public function showAll(Request $request, PostsRepository $postsRepository): Response
+    {
+        $numberOfPosts = $request->query->get('number', 10);
+        $page = $request->query->get('page', 1);
+        $posts = $postsRepository->getPosts($numberOfPosts, $page);
+        return $this->render('post/allposts.html.twig', [
+            'session_user_id' => $this->sessionUserId,
+            'is_superuser' => $this->isSuperuser,
+            'nameOfPath' => 'post_show_all',
+            'numberOfPosts' => $numberOfPosts,
+            'page' => $page,
+            'posts' => $posts
+        ]);
+    }
+
     #[Route('/{post_id}', name: 'show', methods: ['GET'], requirements: ['post_id' => '\b[0-9]+'])]
     public function showPost(
             int $post_id, 
@@ -109,7 +125,7 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_show_add');
     }
     
-    #[Route('/delete/{post_id}', name: 'delete', methods: ['POST'])]
+    #[Route('/delete/{id}', name: 'delete', methods: ['POST'])]
     public function delete(Posts $posts, ManagerRegistry $doctrine): Response
     {
         if ($this->isSuperuser)
