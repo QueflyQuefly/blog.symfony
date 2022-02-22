@@ -10,118 +10,104 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/user", name="user_", methods={"GET"})
- */
+
+#[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/cabinet", name="show_cabinet", methods={"GET"})
-     */
-    public function showCabinet(Request $request, SessionInterface $sessionInterface): Response
+    private $sessionUserId, $isSuperuser;
+
+    public function __construct(SessionInterface $sessionInterface)
     {
-        if (!$sessionInterface->get('user_id', false))
+        $this->sessionUserId = $sessionInterface->get('user_id', false);
+        $this->isSuperuser = $sessionInterface->get('is_superuser', false);
+    }
+
+    #[Route('/cabinet', name: 'show_cabinet', methods: ['GET'])]
+    public function showCabinet(Request $request): Response
+    {
+        if (!$this->sessionUserId)
         {
-            return $this->showLogin($sessionInterface);
+            return $this->redirectToRoute('user_show_login');
         }
         $pageDescription = 'Кабинет - Просто Блог';
         if (!empty($request->query->get('user'))) {
             $sessionUserId = (int) $request->query->get('user');
-        } else {
-            $sessionUserId = (int) $sessionInterface->get('user_id');
         }
-        $isSuperuser = true;
+
         return $this->render('blog_message.html.twig', [
-            'session_user_id' => $sessionUserId,
-            'is_superuser' => $isSuperuser,
+            'session_user_id' => $this->sessionUserId,
+            'is_superuser' => $this->isSuperuser,
             'description' => $pageDescription
         ]);
     }
 
-    /**
-     * @Route("/login", name="show_login", methods={"GET"})
-     */
-    public function showLogin(SessionInterface $sessionInterface): Response
+    #[Route('/login', name: 'show_login', methods: ['GET'])]
+    public function showLogin(): Response
     {
-        $sessionUserId = $sessionInterface->get('user_id');
-        $isSuperuser = $sessionInterface->get('is_superuser');
-        $intMin = random_int(100, 900);
-        $intMax =  $intMin + 2;
-        $sessionInterface->set('variable_of_captcha', $intMin + 1);
-
         return $this->render('user/login.html.twig', [
-            'session_user_id' => $sessionUserId,
-            'is_superuser' => $isSuperuser,
-            'int_min' => $intMin,
-            'int_max' => $intMax
+            'session_user_id' => $this->sessionUserId,
+            'is_superuser' => $this->isSuperuser
         ]);
     }
     
-    /**
-     * @Route("/login", name="login", methods={"POST"})
-     */
+    #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(Request $request, UsersRepository $usersRepository, SessionInterface $sessionInterface): Response
     {
-        $email = $request->get('email');
+        $email = $request->request->get('email');
         $email = trim(strip_tags($email));
-        $password = $request->get('password');
-        $sessionUserId = false;
-        $isSuperuser = false;
-        $description = "Неверно введено кодовое число";
+        $password = $request->request->get('password');
+        $this->sessionUserId = false;
+        $this->isSuperuser = false;
 
-        if ($request->get('variable_of_captcha') == $sessionInterface->get('variable_of_captcha'))
+        if ($request->get('variable_of_captcha') == $_SESSION['variable_of_captcha'])
         {
-            $description = "Неверный логин или пароль";
             $sessionUser = $usersRepository->findOneByEmail($email);
             if ($sessionUser && password_verify($password, $sessionUser->getPassword()))
             {
-                $fio = $sessionUser->getFio();
-                $sessionUserId = $sessionUser->getId();
+                $this->sessionUserId = $sessionUser->getId();
                 if ($sessionUser->getRights() === 'superuser')
                 {
-                    $isSuperuser = true;
+                    $this->isSuperuser = true;
                 }
-                $sessionInterface->set('user_id', $sessionUserId);
-                $sessionInterface->set('is_superuser', $isSuperuser);
-                $description = "Вы вошли как $fio";
+                $sessionInterface->set('user_id', $this->sessionUserId);
+                $sessionInterface->set('is_superuser', $this->isSuperuser);
+                $this->addFlash(
+                    'success',
+                    'Вы вошли в аккаунт'
+                );
+                return $this->redirectToRoute('post_main');
+            } else {
+                $this->addFlash(
+                    'error',
+                    'Неверный логин или пароль'
+                );
             }
+        } else {
+            $this->addFlash(
+                'error',
+                'Неверно введено кодовое число'
+            );
         }
-        return $this->render('blog_message.html.twig', [
-            'session_user_id' => $sessionUserId,
-            'is_superuser' => $isSuperuser,
-            'description' => $description
-        ]);
+        return $this->redirectToRoute('user_show_login');
     }
     
-    /**
-     * @Route("/reg", name="show_reg", methods={"GET"})
-     */
-    public function showReg(SessionInterface $sessionInterface): Response
+    #[Route('/reg', name: 'show_reg', methods: ['GET'])]
+    public function showReg(): Response
     {
-        $sessionUserId = $sessionInterface->get('user_id');
-        $isSuperuser = $sessionInterface->get('is_superuser');
-        $intMin = random_int(100, 900);
-        $intMax = $intMin + 2;
-        $sessionInterface->set('variable_of_captcha', $intMin + 1);
-
         return $this->render('user/reg.html.twig', [
-            'session_user_id' => $sessionUserId,
-            'is_superuser' => $isSuperuser,
-            'int_min' => $intMin,
-            'int_max' => $intMax
+            'session_user_id' => $this->sessionUserId,
+            'is_superuser' => $this->isSuperuser
         ]);
     }
 
-    /**
-     * @Route("/reg", name="reg", methods={"POST"})
-     */
+    #[Route('/reg', name: 'reg', methods: ['POST'])]
     public function reg(Request $request, ManagerRegistry $doctrine, UsersRepository $usersRepository, SessionInterface $sessionInterface): Response
     {
-        $email = $request->get('regemail');
+        $email = $request->request->get('regemail');
         $email = trim(strip_tags($email));
-        $fio = $request->get('regfio');
+        $fio = $request->request->get('regfio');
         $fio = trim(strip_tags($fio));
-        $password = $request->get('regpassword');
+        $password = $request->request->get('regpassword');
         $password = password_hash($password, PASSWORD_BCRYPT);
         $rights = 'user';
 
@@ -129,12 +115,9 @@ class UserController extends AbstractController
         {
             $rights = 'superuser';
         }
-        $description = 'Неверно введено кодовое число';
 
-        if ($request->get('variable_of_captcha') == $sessionInterface->get('variable_of_captcha'))
+        if ($request->get('variable_of_captcha') == $_SESSION['variable_of_captcha'])
         {
-            $description = 'Пользователь с таким email уже зарегистрирован';
-
             if (!$usersRepository->findOneByEmail($email))
             {
                 $entityManager = $doctrine->getManager();
@@ -158,17 +141,24 @@ class UserController extends AbstractController
                 }
                 $sessionInterface->set('user_id', $sessionUserId);
                 $sessionInterface->set('is_superuser', $isSuperuser);
-                $description = 'Пользователь создан';
+                $this->addFlash(
+                    'success',
+                    'Выполнен вход в аккаунт'
+                );
+                return $this->redirectToRoute('post_main');
+            } else {
+                $this->addFlash(
+                    'error',
+                    'Пользователь с таким email уже зарегистрирован'
+                );
             }
+        } else {
+            $this->addFlash(
+                'error',
+                'Неверно введено кодовое число'
+            );
         }
-
-        $sessionUserId = $sessionInterface->get('user_id');
-        $isSuperuser = $sessionInterface->get('is_superuser');
-        return $this->render('blog_message.html.twig', [
-            'session_user_id' => $sessionUserId,
-            'is_superuser' => $isSuperuser,
-            'description' => $description
-        ]);
+        return $this->redirectToRoute('user_show_reg');
     }
     /* private function isUser(Request $request)
     {
@@ -179,16 +169,14 @@ class UserController extends AbstractController
         return false;
     } */
 
-    /**
-     * @Route("/exit", name="exit", methods={"POST"})
-     */
+    #[Route('/exit', name: 'exit', methods: ['POST'])]
     public function exitUser(SessionInterface $sessionInterface) {
         $sessionInterface->set('user_id', 0);
         $sessionInterface->set('is_superuser', 0);
-        return $this->render('blog_message.html.twig', [
-            'session_user_id' => false,
-            'is_superuser' => false,
-            'description' => 'Вы успешно вышли из аккаунта'
-        ]);
+        $this->addFlash(
+            'success',
+            'Вы вышли из аккаунта'
+        );
+        return $this->redirectToRoute('post_main');
     }
 }

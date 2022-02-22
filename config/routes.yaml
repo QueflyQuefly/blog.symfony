@@ -1,3 +1,16 @@
 #index:
 #    path: /
 #    controller: App\Controller\DefaultController::index
+post_shortcut:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        route: 'post_main'
+        # redirections are temporary by default (code 302) but you can make them permanent (code 301)
+        permanent: true
+        # add this to keep the original query string parameters when redirecting
+        keepQueryParams: true
+        # add this to keep the HTTP method when redirecting. The redirect status changes
+        # * for temporary redirects, it uses the 307 status code instead of 302
+        # * for permanent redirects, it uses the 308 status code instead of 301
+        keepRequestMethod: true

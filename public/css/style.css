@@ -1,7 +1,6 @@
 *{
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    border-radius: 1vmin;
 }
 html,
 body{
@@ -79,6 +78,9 @@ nav .menuList li{
     width: 100%;
     min-height: 100vmin;
     padding: 2vmin 10%;
+}
+.content * {
+    border-radius: 1vmin;
 }
 h1{
     text-align: left; 
@@ -453,9 +455,8 @@ hr{
 }
 .formmsg{
     height:10%;
-    width:50%;
-    margin: 0 auto 5% auto;
-    text-align:center;
+    margin-bottom: 5%;
+    text-align: center;
 }
 #left{
     float:left;
@@ -642,17 +643,32 @@ hr{
     font-size: 10pt;
     color:crimson;
     margin: 0;
-    padding:0;
+    padding: 0;
     height: 1vmin;
+    animation-name: slidein;
+    animation-duration: 5s;
+    animation-iteration-count: 1;
 }
-.ok{
+.success{
     text-align:center;
     font-size: 10pt;
     color:rgb(7, 128, 71);
     margin: 0;
-    padding:0;
+    padding: 0;
     height: 1vmin;
+    animation-name: slidein;
+    animation-duration: 5s;
+    animation-iteration-count: 1;
 }
+@keyframes slidein {
+    from {
+        margin-left: 50vmin;
+    }
+    to {
+        margin-left: 0;
+    }
+}
+
 .submitunder{
     margin-right: 100vmin;
 }
@@ -678,7 +694,7 @@ hr{
     font-size: 13pt;
 }
 .nodisplay{
-    display:none;
+    display: none;
 }
 footer{
     border-radius: 0;

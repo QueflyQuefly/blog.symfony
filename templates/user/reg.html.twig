@@ -17,15 +17,18 @@
             <label class='formlabel'>Придумайте пароль: 
                 <input type='regpassword' name='regpassword' required minlength="1" maxlength='20' autocomplete="off" placeholder='Введите пароль' class='formtext'>
             </label>
-            <label class='formlabel'>Введите число, стоящее между {{ int_min }} и {{ int_max }}: 
-                <input type='text' name='variable_of_captcha' required minlength="1" maxlength='20' autocomplete="off" placeholder='Введите кодовое число' class='formtext'>
+            <img class='captcha' src="{{ asset('images/captcha.php') }}"><br>
+            <label class='formlabel'>Введите код с картинки выше: 
+                <input type='login' name='variable_of_captcha' required minlength="1" maxlength='20' autocomplete="off" placeholder='Код с captcha' class='formtext'>
             </label>
             {% if is_superuser %}
                 <label><input type='checkbox' name='add_admin'>Зарегистрировать как админа</label><br><br>
             {% endif %}
-            {# <div class='formmsg'>
-                <p class='error'><?= $msg ?></p>
-            </div> #}
+            {% for message in app.flashes('error') %}
+                <div class='formmsg'>
+                    <p class='error'>{{ message }}</p>
+                </div>
+            {% endfor %}
             <div id='right'>
                 <input type='submit' value='Создать аккаунт' class='formsubmit'>
             </div>

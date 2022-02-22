@@ -3,7 +3,6 @@
 {% block title %} Пост {{ post.id }} - Просто Блог {% endblock %}
 
 {% block content %}
-   {% dump(post) %}
     <div id='singleposttitle'>
         <p class='singleposttitle'>{{ post.title }}</p>
     </div>
@@ -18,25 +17,34 @@
     </div>
     <div class='singleposttext'>
         <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
-    </div> 
-    {# linkToDelete #}
 
+        {% if is_superuser %}
+        <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {post_id: post.id}) }}' method='post'>
+            <input type='submit' value='Удалить этот пост' class='link' style='font-size: 12pt'>
+        </form>
+        {% endif %}
+    </div>
 
     <div class='addcomments' id='comment'>
         <p class='center'>Добавьте комментарий:</p>
         <div class='addcomment'>
-            <form action='{{ path('post_show', {post_id: post.id}) }}{{ post.id }}#comment' method='post'>
-                <input type='hidden' name='post_id' value="{{ post.id }}" >
-                <textarea name='addCommentContent' required  minlength="1" maxlength='500' wrap='hard' 
+            <form action='{{ path('comment_add', {post_id: post.id}) }}' method='post'>
+                <textarea name='content' required  minlength="1" maxlength='500' wrap='hard' 
                     placeholder="Опишите ваши эмоции :-) (до 500 символов)" id='textcomment'></textarea>
                 <br>
+                {% for message in app.flashes('error') %}
+                <div class='formmsg'>
+                    <p class='error'>{{ message }}</p>
+                </div>
+                {% endfor %}
                 <input type='submit' value='Добавить комментарий' class='formsubmit'>
             </form>
         </div>
+
+
     </div>
 
     {% if comments %}
-        {% dump(comments) %} 
         {% for comment in comments %}
             <div class='viewcomment' id='comment{{ comment.id }}'>
                 <p class='commentauthor'>
@@ -45,14 +53,21 @@
                 </p>
                 <div class='commentcontent'>
                     <p class='commentcontent'>{{ comment.content }}</p> 
-                    <p class='commentcontent'>{# <?= $linkToDelete ?> #}</p> 
+                    <p class='commentcontent'>
+                        {% if is_superuser %}
+                        <input type='submit' form='deleteComment{{ comment.id }}' value='Удалить комментарий' class='link'>
+                        <form id='deleteComment{{ comment.id }}' class='hide' action='{{ path('comment_delete', {post_id: comment.postId, comment_id: comment.id}) }}' method='post'>
+                            <input type='hidden' value='{{ comment.id }}' name='deleteCommentById'>
+                        </form>
+                        {% endif %}
+                    </p> 
                 </div>
                 <div class='like'>
                     <form action='{{ path('post_show', {post_id: post.id}) }}#comment{{ comment.id }}' method='post'>
                         <input type='hidden' name='post_id' value="{{ comment.postId }}" >
                         <label id='heartlike' title="Нравится" for='like{{ comment.id }}'>
                             <span class='like'>&#9825; </span>
-                            {# <?= $comment['rating'] ?> #}
+                            {{ comment.rating }}
                         </label>
                         <input type="submit" class='nodisplay' id="like{{ comment.id }}" name="comment_id_like" value="{{ comment.id }}">
                     </form>

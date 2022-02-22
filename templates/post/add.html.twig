@@ -3,6 +3,11 @@
 {% block title %} Добавление поста - Просто Блог {% endblock %}
 
 {% block content %}
+    {% for message in app.flashes('error') %}
+        <div class='formmsg'>
+            <p class='error'>{{ message }}</p>
+        </div>
+    {% endfor %}
     <div class='addpostcontainer'>
         <p class='addpostlabel'>Форма добавления поста:</p>
         <div class='addpostform'>

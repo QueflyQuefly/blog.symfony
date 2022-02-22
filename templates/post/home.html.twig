@@ -1,13 +1,17 @@
 {% extends 'blog_base.html.twig' %}
         
 {% block description %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <p class='{{ label }}' style='position:absolute; margin-top: -5vmin; padding-left:30%;'>{{ message }}</p>
+        {% endfor %}
+    {% endfor %}
+
     <h1>Наилучший источник информации по теме "Путешествия"</h1>
 {% endblock %}
 
 {% block content %}
     {% if posts %}
-        {% dump(posts) %}
-
         {% for post in posts %}
             <div class='{{ post.class }}'>
                 <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
@@ -21,18 +25,26 @@
                         <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
                     </div>
                 </a>
+
+                {% if is_superuser %}
                 <div class='submitunder'>
-                    {# linkToDelete #}
+                    <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
+                    <form id='deletePostById{{ post.id }}' action='' method='post'>
+                        <input type='hidden' value='{{ post.id }}' name='deletePostById'>
+                    </form>
                 </div>
+                {% endif %}
             </div>
         {% endfor %}
     {% else %}
         <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
     {% endif %}
 
+    {% if posts|length > 9 %}
+        <div class='contentsinglepost'><a class='formsubmit' href='/posts'>Посмотреть посты за всё время</a></div>
+    {% endif %}
 
     {% if moreTalkedPosts %}
-        {% dump(moreTalkedPosts) %}
         <p style='text-align:center; font-size:16pt; margin-top:5%'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
         {% for post in moreTalkedPosts %}
             <div class='viewpost'>
@@ -47,13 +59,16 @@
                         <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
                     </div>
                 </a>
+                
+                {% if is_superuser %}
                 <div class='submitunder'>
-                    {# linkToDelete #}
+                    <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
+                    <form id='deletePostById{{ post.id }}' action='' method='post'>
+                        <input type='hidden' value='{{ post.id }}' name='deletePostById'>
+                    </form>
                 </div>
+                {% endif %}
             </div>
         {% endfor %}
-        {% if posts|length > 10 %}
-            <p class='center'><a class='formsubmit' href='/posts'>Посмотреть посты за всё время</a></p>
-        {% endif %}
     {% endif %}
 {% endblock %}
