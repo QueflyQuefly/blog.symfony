@@ -4,8 +4,8 @@
 
 {% block content %}
     {% for message in app.flashes('error') %}
-        <div class='formmsg'>
-            <p class='error'>{{ message }}</p>
+        <div style='margin-left:30%;'>
+            <p class='error' style='position:absolute; margin-top: -6vmin;'>{{ message }}</p>
         </div>
     {% endfor %}
     <div class='addpostcontainer'>

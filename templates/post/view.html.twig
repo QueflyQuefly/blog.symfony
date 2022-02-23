@@ -32,12 +32,12 @@
                 <textarea name='content' required  minlength="1" maxlength='500' wrap='hard' 
                     placeholder="Опишите ваши эмоции :-) (до 500 символов)" id='textcomment'></textarea>
                 <br>
-                {% for message in app.flashes('error') %}
-                <div class='formmsg'>
-                    <p class='error'>{{ message }}</p>
-                </div>
-                {% endfor %}
                 <input type='submit' value='Добавить комментарий' class='formsubmit'>
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                            <p class='{{ label }}'>{{ message }}</p>
+                    {% endfor %}
+                {% endfor %}
             </form>
         </div>
 
@@ -63,13 +63,12 @@
                     </p> 
                 </div>
                 <div class='like'>
-                    <form action='{{ path('post_show', {post_id: post.id}) }}#comment{{ comment.id }}' method='post'>
+                    <form action='{{ path('comment_like', {post_id: post.id, comment_id: comment.id}) }}' method='post'>
                         <input type='hidden' name='post_id' value="{{ comment.postId }}" >
-                        <label id='heartlike' title="Нравится" for='like{{ comment.id }}'>
-                            <span class='like'>&#9825; </span>
-                            {{ comment.rating }}
+                        <label id='heartlike' title="Нравится">
+                            <span class='like'>&#9825; </span> {{ comment.rating }}
+                            <input type="submit" class='nodisplay' name="comment_id_like" value="{{ comment.id }}">
                         </label>
-                        <input type="submit" class='nodisplay' id="like{{ comment.id }}" name="comment_id_like" value="{{ comment.id }}">
                     </form>
                 </div>
                 <hr>

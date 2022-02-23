@@ -3,7 +3,9 @@
 {% block description %}
     {% for label, messages in app.flashes %}
         {% for message in messages %}
-            <p class='{{ label }}' style='position:absolute; margin-top: -5vmin; padding-left:30%;'>{{ message }}</p>
+        <div style='margin-left:30%;'>
+            <p class='{{ label }}' style='position:absolute; margin-top: -6vmin;'>{{ message }}</p>
+        </div>
         {% endfor %}
     {% endfor %}
 

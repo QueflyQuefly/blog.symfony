@@ -53,6 +53,7 @@ nav .menuList li{
     text-decoration: none;
     list-style: none;
     padding: 0% 1%;
+    text-align: center;
 }
 .menuLink{
     color: black;
@@ -190,7 +191,7 @@ h1{
     color: black;
 }
 .postimage{
-    float:right;
+    float: right;
     width: 30%;
     height: 100%;
 }
@@ -301,9 +302,10 @@ h1{
     padding:1%;
     font-size: 12pt;
     resize:none;
+    border: 0.3vmin solid lightgray;
 }
 #textcomment:hover {
-    border:1px solid rgb(1, 90, 255);
+    border: 0.3vmin solid gray;
 }
 /* viewcomments */
 .viewcomment{
@@ -568,32 +570,12 @@ hr{
     padding: 1.5vmin;
     padding-left: 2%;
     margin: 5px auto;
-    transition: 400ms;
+    transition: 1s;
 }    
 .addpostname:hover {
     border:0.3vmin solid gray;
 }
 .addpostname:focus {
-    border:0.3vmin solid rgb(1, 90, 255);
-}
-.addpostauthor{
-    background-color:white;
-    color: black;
-    font-family: 'Open Sans', sans-serif;
-    text-align: left;
-    font-size: 12pt;
-    outline: none;
-    border: 0.3vmin solid lightgray;
-    width: 50%;
-    padding: 1.5vmin;
-    margin: 5px auto;
-    margin-right: 40vmin;
-    transition: 400ms;
-}    
-.addpostauthor:hover {
-    border:0.3vmin solid gray;
-}
-.addpostauthor:focus {
     border:0.3vmin solid rgb(1, 90, 255);
 }
 .addpostimg{
@@ -607,7 +589,6 @@ hr{
     width: 80%;
     padding: 1%;
     margin: 5px auto;
-    transition: 400ms;
 }    
 .addpostimg:hover {
     border:0.3vmin solid gray;
@@ -634,6 +615,11 @@ hr{
     font-size: 12pt;
     margin: 1% 1.5%;
     resize: none;
+    border: 0.3vmin solid lightgray;
+    transition: 1s;
+}
+#addposttextarea:hover{
+    border:0.3vmin solid gray;
 }
 /* addpost */
 
@@ -642,8 +628,6 @@ hr{
     text-align:center;
     font-size: 10pt;
     color:crimson;
-    margin: 0;
-    padding: 0;
     height: 1vmin;
     animation-name: slidein;
     animation-duration: 5s;
@@ -653,8 +637,6 @@ hr{
     text-align:center;
     font-size: 10pt;
     color:rgb(7, 128, 71);
-    margin: 0;
-    padding: 0;
     height: 1vmin;
     animation-name: slidein;
     animation-duration: 5s;
@@ -670,7 +652,6 @@ hr{
 }
 
 .submitunder{
-    position: block;
     bottom: 0;
     left: 0;
 }
@@ -708,15 +689,37 @@ footer{
 img[alt="www.000webhost.com"] {
     display:none;
 }
-/* @media (min-width: 300px) and (max-width: 1200.98px) {
-    * {
-        font-size: 1.2em;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 0;
+ @media (min-width: 300px) and (max-width: 500.98px) {
+    .content {
+        padding: 2vmin 0;
     }
     nav{
-        font-size: 0.5em;
-        display:table;
+        max-height: 30vmin;
     }
-} */
+    #logo {
+        width:10%;
+        padding: 0;
+    }
+    #namelogo {
+        width:0;
+        display:none;
+    }
+    #menu {
+        width:90%;
+    }
+    nav .menuList {
+        justify-content: flex-end;
+    }
+    .generalpost {
+        width: 95%;
+        height: 100%;
+        margin: 0 2.5%;
+    }
+    .viewpost {
+        width: 90%;
+        margin: 0 5%;
+    }
+    footer {
+        height:20vmin;
+    }
+}

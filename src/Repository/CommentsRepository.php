@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Comments;
+use App\Entity\RatingComments;
+use App\Repository\RatingCommentsRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -22,11 +24,11 @@ class CommentsRepository extends ServiceEntityRepository
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function findByUserId($value)
+    public function findByUserId(int $userId)
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.user_id = :val')
-            ->setParameter('val', $value)
+            ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults(30)
             ->getQuery()
@@ -37,16 +39,47 @@ class CommentsRepository extends ServiceEntityRepository
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function findByPostId($value)
+    public function findByPostId(int $postId)
     {
         return $this->createQueryBuilder('c')
             ->andWhere('c.post_id = :val')
-            ->setParameter('val', $value)
+            ->setParameter('val', $postId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults(30)
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    /**
+     * @return bool
+     */
+    public function like(int $commentId, int $userId, ManagerRegistry $doctrine)
+    {
+        $ratingRepository = new RatingCommentsRepository($doctrine);
+
+        $ratingComment = $ratingRepository->findOneBy(['user_id' => $userId, 'comment_id' => $commentId]);
+        $entityManager = $doctrine->getManager();
+        $comment = $entityManager->getRepository(Comments::class)->find($commentId);
+
+        if ($ratingComment)
+        {
+            $entityManager->remove($ratingComment);
+            $entityManager->flush();
+
+            $comment->setRating($comment->getRating() - 1);
+            $entityManager->flush();
+        } else {
+            $ratingComment = new RatingComments();
+            $ratingComment->setUserId($userId);
+            $ratingComment->setCommentId($commentId);
+            $entityManager->persist($ratingComment);
+            $entityManager->flush();
+
+            $comment->setRating($comment->getRating() + 1);
+            $entityManager->flush();
+        }
+        return true;
     }
 
     // /**

@@ -42,7 +42,10 @@ class CommentController extends AbstractController
             $comment->setRating(0);
             $entityManager->persist($comment);
             $entityManager->flush();
-
+            $this->addFlash(
+                'success',
+                'Комментарий добавлен'
+            );
             return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
         } else {
             $this->addFlash(
@@ -51,6 +54,17 @@ class CommentController extends AbstractController
             );
         }
         return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
+    }
+
+    #[Route('/like/{post_id}/{comment_id}', name: 'like', methods: ['POST'])]
+    public function like(int $post_id, int $comment_id, CommentsRepository $commentsRepository, ManagerRegistry $doctrine): Response
+    {
+        if ($this->sessionUserId)
+        {
+            $commentsRepository->like($comment_id, $this->sessionUserId, $doctrine);
+            return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
+        }
+        return $this->redirectToRoute('user_show_login');
     }
     
     #[Route('/delete/{post_id}/{comment_id}', name: 'delete', methods: ['POST'])]

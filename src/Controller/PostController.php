@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Posts;
+use App\Entity\AdditionalInfoPosts;
 use App\Repository\PostsRepository;
 use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -111,6 +112,15 @@ class PostController extends AbstractController
             $post->setDateTime(time());
             $entityManager->persist($post);
             $entityManager->flush();
+
+            $postInfo = new AdditionalInfoPosts();
+            $postInfo->setRating('0.0');
+            $postInfo->setPostId($post->getId());
+            $postInfo->setCountComments(0);
+            $postInfo->setCountRatings(0);
+            $entityManager->persist($postInfo);
+            $entityManager->flush();
+
             $this->addFlash(
                 'success',
                 'Пост добавлен'
