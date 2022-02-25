@@ -24,12 +24,20 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getLastPosts($amountOfPosts)
     {
-        return $this->createQueryBuilder('p')
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($amountOfPosts)
-            ->getQuery()
-            ->getResult()
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
+                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.post_id
+                JOIN App\Entity\User u
+                WITH p.user_id = u.id
+                ORDER BY p.id DESC'
         ;
+        $query = $entityManager->createQuery($dql)
+            ->setMaxResults($amountOfPosts);
+
+        return $query->getResult();
     }
    
     /**
@@ -37,14 +45,21 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getMoreTalkedPosts($amountOfPosts)
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.id <= :val')
-            ->setParameter('val', 6)
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($amountOfPosts)
-            ->getQuery()
-            ->getResult()
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
+                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.post_id
+                JOIN App\Entity\User u
+                WITH p.user_id = u.id
+                WHERE a.count_comments > 0
+                ORDER BY a.count_comments DESC'
         ;
+        $query = $entityManager->createQuery($dql)
+            ->setMaxResults($amountOfPosts);
+
+        return $query->getResult();
     }
        
     /**
@@ -53,17 +68,44 @@ class PostsRepository extends ServiceEntityRepository
     public function getPosts($numberOfPosts, $page)
     {
         $moreThanMinId = $page * $numberOfPosts - $numberOfPosts;
-
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.id >= :val')
-            ->setParameter('val', $moreThanMinId)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults($numberOfPosts)
-            ->getQuery()
-            ->getResult()
+        
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
+                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.post_id
+                JOIN App\Entity\User u
+                WITH p.user_id = u.id
+                WHERE p.id >= :val
+                ORDER BY p.id ASC'
         ;
+        $query = $entityManager->createQuery($dql)
+            ->setParameter('val', $moreThanMinId)
+            ->setMaxResults($numberOfPosts);
+
+        return $query->getResult();
     }
     
+    public function getPostById($postId)
+    {
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
+                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.post_id
+                JOIN App\Entity\User u
+                WITH p.user_id = u.id
+                WHERE p.id = :val
+                ORDER BY p.id ASC'
+        ;
+        $query = $entityManager->createQuery($dql)
+            ->setParameter('val', $postId);
+
+        return $query->getOneOrNullResult();
+    }
+
     // /**
     //  * @return Posts[] Returns an array of Posts objects
     //  */

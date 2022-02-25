@@ -19,6 +19,25 @@ class RatingPostsRepository extends ServiceEntityRepository
         parent::__construct($registry, RatingPosts::class);
     }
 
+    /**
+     * @return float Returns an float number - rating of post
+     */
+    public function countRating($id)
+    {
+        $rating = 0.0;
+        $i = 0;
+        $allRatingsPost = $this->findBy(['post_id' => $id]);
+        foreach ($allRatingsPost as $ratingPost)
+        {
+            $i++;
+            $rating += $ratingPost->getRating();
+        }
+        $rating = round($rating / $i, 1);
+        return $rating;
+    }
+   
+    
+    
     // /**
     //  * @return RatingPosts[] Returns an array of RatingPosts objects
     //  */

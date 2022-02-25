@@ -19,9 +19,35 @@ class AdditionalInfoPostsRepository extends ServiceEntityRepository
         parent::__construct($registry, AdditionalInfoPosts::class);
     }
 
+    /**
+     * @return AdditionalInfoPosts Returns an  AdditionalInfoPosts object
+     */
+    public function findOneByPostId($postId): ?AdditionalInfoPosts
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.post_id = :val')
+            ->setParameter('val', $postId)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+   
+
     // /**
     //  * @return AdditionalInfoPosts[] Returns an array of AdditionalInfoPosts objects
     //  */
+    /*
+    public function findOneBySomeField($value): ?AdditionalInfoPosts
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.exampleField = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+    */
+
     /*
     public function findByExampleField($value)
     {
@@ -32,18 +58,6 @@ class AdditionalInfoPostsRepository extends ServiceEntityRepository
             ->setMaxResults(10)
             ->getQuery()
             ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?AdditionalInfoPosts
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
         ;
     }
     */

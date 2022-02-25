@@ -5,59 +5,65 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>
             {% block title %} Главная - Просто Блог {% endblock %}
-        </title>
 
+        </title>
         {% block css %}
         <link rel='stylesheet' href='{{ asset('css/style.css') }}'>
         {% endblock %}
-
         <link rel="shortcut icon" href="{{ asset('images/logo.jpg') }}" type="image/x-icon">
     </head>
     <body>
+        <nav>
+            {% block menu %}
+
+                <div id="logo">
+                    <a class="logo" title="На главную" href='{{ path('post_main') }}'>
+                        <img id='imglogo' src='{{ asset('images/logo.jpg') }}' alt='Лого'>
+                        <div id='namelogo'>Просто Блог</div>
+                    </a>
+                </div>
+                <div id="menu">
+                    <ul class='menuList'>
+
+                    {% if session_user_id %} {# app.user.user_id ?? 'Anonymous user' #}
+                        <li>
+                            <input type='submit' form='exit' value='Выйти' class='menuLink'>
+                            <form id='exit' action='{{ path('user_exit') }}' method='post'>
+                                <input type='hidden' value='' name='exit'>
+                            </form>
+                        </li>
+                        {% if is_superuser %} {# app.user.is_superuser ?? 'Anonymous user' #}
+                        <li><a class='menuLink' href='/admin'>Админка</a></li>
+                        {% endif %}
+                    {% else %}
+                        <li><a class='menuLink' href='{{ path('user_show_login') }}'>Войти</a></li>
+                    {% endif %}
+                        <li><a class='menuLink' href='{{ path('user_show_cabinet') }}'>Профиль</a></li>
+                        <li><a class='menuLink' href='/search'>Поиск</a></li>
+                        <li><a class='menuLink' href='{{ path('post_show_add') }}'>Добавить пост</a></li>
+                    </ul>
+                </div>
+            {% endblock %}
+        </nav>
         <div class='content'>
 
-        {% block menu %}
-        <nav>
-            <div id="logo">
-                <a class="logo" title="На главную" href='{{ path('post_main') }}'>
-                    <img id='imglogo' src='{{ asset('images/logo.jpg') }}' alt='Лого'>
-                    <div id='namelogo'>Просто Блог</div>
-                </a>
-            </div>
-            <div id="menu">
-                <ul class='menuList'>
-                {% if session_user_id %} {# app.user.user_id ?? 'Anonymous user' #}
-                    <li>
-                        <input type='submit' form='exit' value='Выйти' class='menuLink'>
-                        <form id='exit' action='{{ path('user_exit') }}' method='post'>
-                            <input type='hidden' value='' name='exit'>
-                        </form>
-                    </li>
-                    {% if is_superuser %} {# app.user.is_superuser ?? 'Anonymous user' #}
-                    <li><a class='menuLink' href='/admin'>Админка</a></li>
-                    {% endif %}
-                {% else %}
-                    <li><a class='menuLink' href='{{ path('user_show_login') }}'>Войти</a></li>
-                {% endif %}
-                    <li><a class='menuLink' href='{{ path('user_show_cabinet') }}'>Профиль</a></li>
-                    <li><a class='menuLink' href='/search'>Поиск</a></li>
-                    <li><a class='menuLink' href='{{ path('post_show_add') }}'>Добавить пост</a></li>
-                </ul>
-            </div>
-        </nav>
-        {% endblock %}
+            {% block content %}
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div style='margin-left:30%;'>
+                            <p class='{{ label }}' style='position:absolute; margin-top: -6vmin;'>{{ message }}</p>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                <h1>Наилучший источник информации по теме "Путешествия"</h1>
+                <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
+            {% endblock %}
+        </div>
+        <footer>
 
-        {% block description %}
-        {% endblock %}
-
-        {% block content %}
-            <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
-        {% endblock %}
-    </div>
-    {% block footer %}
-    <footer>
-        <p>Сайт Вячеслава Бельского &copy; 2021-{{ date()|date('Y') }}</p>
-    </footer>
-    {% endblock %}
-</body>
+            {% block footer %}
+                <p>Сайт Вячеслава Бельского &copy; 2021-{{ date()|date('Y') }}</p>
+            {% endblock %}
+        </footer>
+    </body>
 </html>

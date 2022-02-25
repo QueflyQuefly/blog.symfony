@@ -1,0 +1,52 @@
+{% extends 'blog_base.html.twig' %}
+{% set session_user_id = false %}
+{% set is_superuser = false %}
+
+{% block title %} Вход - Просто Блог {% endblock %}
+
+{% block content %}
+<div class='formentry'>
+    <p class='formname'>Вход</p>
+
+    <form action="{{ path('login') }}" method="post">
+        <label class='formlabel'>Введите вашу почту: 
+            <input 
+                type='email' 
+                name='_username' 
+                required minlength="1" 
+                maxlength='50' 
+                autofocus 
+                autocomplete="on" 
+                placeholder='Ваш email (до 50 символов)' 
+                class='formtext'
+                value="{{ last_username }}"
+            >
+        </label>
+        <label class='formlabel'>Введите ваш пароль: 
+            <input 
+                type='password' 
+                name='_password' 
+                required 
+                minlength="1" 
+                maxlength='20' 
+                autocomplete="off" 
+                placeholder='Ваш пароль (до 20 символов)' 
+                class='formtext'
+            >
+        </label>
+
+        {# If you want to control the URL the user is redirected to on success
+        <input type="hidden" name="_target_path" value="/account"/> #}
+
+        <div id='left'><a class='formbutton' href='{{ path('user_show_reg') }}'>Создать аккаунт</a></div>
+        <div id='right'><button type='submit' class='formsubmit'>Войти</button></div>
+
+        {% if error %}
+            <div class='formmsg'>
+                <p class='error'>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+            </div>
+        {% endif %}
+
+    </form>
+</div>
+{% endblock %}

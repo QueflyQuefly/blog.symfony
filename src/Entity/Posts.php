@@ -24,7 +24,6 @@ class Posts
 
     #[ORM\Column(type: 'text')]
     private $content;
-    private static $class;
 
     public function getId(): ?int
     {
@@ -77,15 +76,5 @@ class Posts
         $this->content = $content;
 
         return $this;
-    }
-
-    public function getClass(): ?string
-    {
-        if (is_null(self::$class)) {
-            self::$class = 'generalpost';
-            return self::$class;
-        } else {
-            return 'viewpost';
-        }
     }
 }

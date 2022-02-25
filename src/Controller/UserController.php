@@ -1,12 +1,13 @@
 <?php
 namespace App\Controller;
 
-use App\Entity\Users;
-use App\Repository\UsersRepository;
+use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -14,12 +15,13 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
-    private $sessionUserId, $isSuperuser;
+    private $sessionUserId, $isSuperuser, $session;
 
-    public function __construct(SessionInterface $sessionInterface)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->sessionUserId = $sessionInterface->get('user_id', false);
-        $this->isSuperuser = $sessionInterface->get('is_superuser', false);
+        $this->session = $requestStack->getSession();
+        $this->sessionUserId = $this->session->get('user_id', false);
+        $this->isSuperuser = $this->session->get('is_superuser', false);
     }
 
     #[Route('/cabinet', name: 'show_cabinet', methods: ['GET'])]
@@ -50,8 +52,8 @@ class UserController extends AbstractController
         ]);
     }
     
-    #[Route('/login', name: 'login', methods: ['POST'])]
-    public function login(Request $request, UsersRepository $usersRepository, SessionInterface $sessionInterface): Response
+    #[Route('/log_in', name: 'login', methods: ['POST'])]
+    public function login(Request $request, UserRepository $userRepository): Response
     {
         $email = $request->request->get('email');
         $email = trim(strip_tags($email));
@@ -61,16 +63,16 @@ class UserController extends AbstractController
 
         if ($request->get('variable_of_captcha') == $_SESSION['variable_of_captcha'])
         {
-            $sessionUser = $usersRepository->findOneByEmail($email);
+            $sessionUser = $userRepository->findOneByEmail($email);
             if ($sessionUser && password_verify($password, $sessionUser->getPassword()))
             {
                 $this->sessionUserId = $sessionUser->getId();
-                if ($sessionUser->getRights() === 'superuser')
+                if ($sessionUser->getRoles()[0] === 'superuser')
                 {
                     $this->isSuperuser = true;
                 }
-                $sessionInterface->set('user_id', $this->sessionUserId);
-                $sessionInterface->set('is_superuser', $this->isSuperuser);
+                $this->session->set('user_id', $this->sessionUserId);
+                $this->session->set('is_superuser', $this->isSuperuser);
                 $this->addFlash(
                     'success',
                     'Вы вошли в аккаунт'
@@ -101,46 +103,55 @@ class UserController extends AbstractController
     }
 
     #[Route('/reg', name: 'reg', methods: ['POST'])]
-    public function reg(Request $request, ManagerRegistry $doctrine, UsersRepository $usersRepository, SessionInterface $sessionInterface): Response
+    public function reg(
+        Request $request, 
+        ManagerRegistry $doctrine, 
+        UserRepository $userRepository,
+        UserPasswordHasherInterface $passwordHasher
+        ): Response
     {
         $email = $request->request->get('regemail');
         $email = trim(strip_tags($email));
         $fio = $request->request->get('regfio');
         $fio = trim(strip_tags($fio));
-        $password = $request->request->get('regpassword');
-        $password = password_hash($password, PASSWORD_BCRYPT);
-        $rights = 'user';
+        $plaintextPassword = $request->request->get('regpassword');
+
+        $rights = ['user'];
 
         if ($request->get('add_admin'))
         {
-            $rights = 'superuser';
+            $rights = ['superuser'];
         }
 
         if ($request->get('variable_of_captcha') == $_SESSION['variable_of_captcha'])
         {
-            if (!$usersRepository->findOneByEmail($email))
+            if (!$userRepository->findOneByEmail($email))
             {
                 $entityManager = $doctrine->getManager();
-                $user = new Users();
+                $user = new User();
                 $user->setEmail($email);
                 $user->setFio($fio);
-                $user->setPassWord($password);
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $user,
+                    $plaintextPassword
+                );
+                $user->setPassword($hashedPassword);
                 $user->setDateTime(time());
-                $user->setRights($rights);
+                $user->setRoles($rights);
                 // tell Doctrine you want to (eventually) save the Users (no queries yet)
                 $entityManager->persist($user);
                 // actually executes the queries (i.e. the INSERT query)
                 $entityManager->flush();
 
-                $sessionUser = $usersRepository->findOneByEmail($email);
+                $sessionUser = $userRepository->findOneByEmail($email);
                 $sessionUserId = $sessionUser->getId();
                 $isSuperuser = false;
-                if ($sessionUser->getRights() === 'superuser')
+                if ($sessionUser->getRoles()[0] === 'superuser')
                 {
                     $isSuperuser = true;
                 }
-                $sessionInterface->set('user_id', $sessionUserId);
-                $sessionInterface->set('is_superuser', $isSuperuser);
+                $this->session->set('user_id', $sessionUserId);
+                $this->session->set('is_superuser', $isSuperuser);
                 $this->addFlash(
                     'success',
                     'Выполнен вход в аккаунт'
@@ -170,9 +181,9 @@ class UserController extends AbstractController
     } */
 
     #[Route('/exit', name: 'exit', methods: ['POST'])]
-    public function exitUser(SessionInterface $sessionInterface) {
-        $sessionInterface->set('user_id', 0);
-        $sessionInterface->set('is_superuser', 0);
+    public function exitUser() {
+        $this->session->set('user_id', 0);
+        $this->session->set('is_superuser', 0);
         $this->addFlash(
             'success',
             'Вы вышли из аккаунта'

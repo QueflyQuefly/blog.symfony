@@ -1,0 +1,34 @@
+{% extends 'blog_base.html.twig' %}
+{% set session_user_id = false %}
+{% set is_superuser = false %}
+
+{% block title %} Регистрация - Просто Блог {% endblock %}
+
+{% block content %}
+    <div class='formentry'>
+        <p class='formname'>Регистрация</p>
+
+
+        {% for flashError in app.flashes('verify_email_error') %}
+            <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+        {% endfor %}
+
+        {{ form_start(registrationForm) }}
+            {{ form_row(registrationForm.email, {
+                label: 'Ваша почта'
+            }) }}
+            {{ form_row(registrationForm.plainPassword, {
+                label: 'Ваш пароль'
+            }) }}
+            {{ form_row(registrationForm.agreeTerms, {
+                label: 'Согласен с правилами сайта'
+            }) }}
+
+            <div id='right'>
+                <button type='submit' class='formsubmit'>Создать аккаунт</button>
+            </div>
+        {{ form_end(registrationForm) }}   
+
+
+    </div>
+{% endblock %}

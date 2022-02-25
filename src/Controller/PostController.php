@@ -3,13 +3,16 @@ namespace App\Controller;
 
 use App\Entity\Posts;
 use App\Entity\AdditionalInfoPosts;
+use App\Entity\RatingPosts;
 use App\Repository\PostsRepository;
+use App\Repository\RatingPostsRepository;
+use App\Repository\AdditionalInfoPostsRepository;
 use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -18,10 +21,11 @@ class PostController extends AbstractController
 {
     private $sessionUserId, $isSuperuser, $maxSizeOfUploadImage = 4 * 1024 * 1024; // 4 megabytes
 
-    public function __construct(SessionInterface $sessionInterface)
+    public function __construct(RequestStack $requestStack)
     {
-        $this->sessionUserId = $sessionInterface->get('user_id', false);
-        $this->isSuperuser = $sessionInterface->get('is_superuser', false);
+        $session = $requestStack->getSession();
+        $this->sessionUserId = $session->get('user_id', false);
+        $this->isSuperuser = $session->get('is_superuser', false);
     }
 
     #[Route('', name: 'main', methods: ['GET'])]
@@ -45,6 +49,7 @@ class PostController extends AbstractController
         $numberOfPosts = $request->query->get('number', 10);
         $page = $request->query->get('page', 1);
         $posts = $postsRepository->getPosts($numberOfPosts, $page);
+
         return $this->render('post/allposts.html.twig', [
             'session_user_id' => $this->sessionUserId,
             'is_superuser' => $this->isSuperuser,
@@ -59,24 +64,27 @@ class PostController extends AbstractController
     public function showPost(
             int $post_id, 
             PostsRepository $postsRepository,
+            RatingPostsRepository $ratingPostsRepository,
             CommentsRepository $commentsRepository
         ): Response
     {
-        $post = $postsRepository->find($post_id);
-        $comments = $commentsRepository->findByPostId($post_id);
-        
+        $post = $postsRepository->getPostById($post_id);
         if (!$post) {
-            return $this->render('blog_message.html.twig', [
-                'session_user_id' => $this->sessionUserId,
-                'is_superuser' => $this->isSuperuser,
-                'description' => "Пост №$post_id не найден"
-            ]);
+            throw $this->createNotFoundException('Пост не найден');
         }
+        $comments = $commentsRepository->findByPostId($post_id);
+        $isUserAddRating = $ratingPostsRepository->findOneBy(
+            [
+                'user_id' => $this->sessionUserId,
+                'post_id' => $post_id
+            ]
+        );
 
         return $this->render('post/view.html.twig', [
             'session_user_id' => $this->sessionUserId,
             'is_superuser' => $this->isSuperuser,
             'post' => $post,
+            'is_user_add_rating' => $isUserAddRating,
             'comments' => $comments
         ]);
     }
@@ -134,8 +142,41 @@ class PostController extends AbstractController
         }
         return $this->redirectToRoute('post_show_add');
     }
-    
-    #[Route('/delete/{id}', name: 'delete', methods: ['POST'])]
+
+    #[Route('/rating/{id}', name: 'rating', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
+    public function addRating(
+            int $id, 
+            Request $request, 
+            ManagerRegistry $doctrine,
+            AdditionalInfoPostsRepository $additionalInfoPostsRepository,
+            RatingPostsRepository $ratingPostsRepository
+        )
+    {
+        if (!$this->sessionUserId)
+        {
+            return $this->redirectToRoute('user_show_login');
+        }
+        $rating = $request->request->get('rating', 0);
+        $entityManager = $doctrine->getManager();
+
+        $ratingPost = new RatingPosts();
+        $ratingPost->setPostId($id);
+        $ratingPost->setUserId($this->sessionUserId);
+        $ratingPost->setRating($rating);
+        $entityManager->persist($ratingPost);
+        $entityManager->flush();
+
+        $infoPost = $additionalInfoPostsRepository->find($id);
+        $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+
+        $generalRatingPost = (string) $ratingPostsRepository->countRating($id);
+        $infoPost->setRating($generalRatingPost);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('post_show', ['post_id' => $id]);
+    }
+
+    #[Route('/delete/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
     public function delete(Posts $posts, ManagerRegistry $doctrine): Response
     {
         if ($this->isSuperuser)

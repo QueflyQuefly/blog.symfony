@@ -7,10 +7,40 @@
         <p class='singleposttitle'>{{ post.title }}</p>
     </div>
     <div id='singlepostauthor'>
-        <p class='singlepostdate'>{# post.rating #}</p>
-        {# ratingArea() #}
-        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_cabinet') }}'>Автор: {{ post.userId }}{# post.author #}</a></p>
-        <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
+        <p class='singlepostdate'>
+            {% if post.count_ratings %}
+                Рейтинг: {{ post.rating }}, оценок: {{ post.count_ratings }}, комментариев: {{ post.count_comments }}
+            {% else %}
+                Нет оценок. Будьте первым! Kомментариев: {{ post.count_comments }}
+            {% endif %}
+        </p>
+        
+        {% if is_user_add_rating %}
+        <p class='singlepostdate'>Оценка принята</p>
+        {% else %}
+        <div class="rating-area">
+            <form action='{{ path('post_rating', {id: post.id}) }}' method='post'>
+                <label class='star' title="Оценка «1»">&#9734;
+                    <input type="submit" name="rating" value="1">
+                </label>
+                <label class='star' title="Оценка «2»">&#9734;
+                    <input type="submit" name="rating" value="2">
+                </label>
+                <label class='star' title="Оценка «3»">&#9734;
+                    <input type="submit" name="rating" value="3">
+                </label>
+                <label class='star' title="Оценка «4»">&#9734;
+                    <input type="submit" name="rating" value="4">
+                </label>
+                <label class='star' title="Оценка «5»">&#9734;
+                    <input type="submit" name="rating" value="5">
+                </label>
+            </form>
+        </div>
+        {% endif %}
+
+        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_cabinet') }}'>Автор: {{ post.author }}{# post.author #}</a></p>
+        <p class='singlepostdate'>{{ post.date_time|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
         <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>

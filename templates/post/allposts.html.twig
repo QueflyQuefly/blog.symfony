@@ -1,5 +1,7 @@
 {% extends 'post/home.html.twig' %}
 
+{% block title %} Все посты - Просто Блог {% endblock %}
+
 {% block content %}
     <div class='singleposttext'>
         <label for='number'>Количество: </label>
@@ -22,14 +24,21 @@
         </select>
     </div>
     {% if posts %}
+        {% dump posts %}
         {% for post in posts %}
             <div class='viewpost'>
                 <a class='postLink' href='{{ path('post_show', {post_id: post.id}) }}'>
                     <div class='posttext'>
                         <p class='posttitle'>{{ post.title }}</p>
                         <p class='postcontent'>{{ post.content|striptags }}</p>
-                        <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.userId }}</p>
-                        <p class='postrating'>{# post.rating #}</p>
+                        <p class='postdate'>{{ post.date_time|date('d.m.Y в H:i') }} &copy; {{ post.author }}</p>
+                        <p class='postrating'>
+                            {% if post.count_ratings %}
+                                Рейтинг: {{ post.rating }}, оценок: {{ post.count_ratings }}, комментариев: {{ post.count_comments }}
+                            {% else %}
+                                Нет оценок. Будьте первым! Kомментариев: {{ post.count_comments }}
+                            {% endif %}
+                        </p>
                     </div>
                     <div class='postimage'>
                         <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
