@@ -10,7 +10,6 @@ use App\Repository\AdditionalInfoPostsRepository;
 use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,25 +18,32 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
-    private $sessionUserId, $isSuperuser, $maxSizeOfUploadImage = 4 * 1024 * 1024; // 4 megabytes
+    private $user, $isUser, $isAdmin, $maxSizeOfUploadImage = 4 * 1024 * 1024; // 4 megabytes
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct()
     {
-        $session = $requestStack->getSession();
-        $this->sessionUserId = $session->get('user_id', false);
-        $this->isSuperuser = $session->get('is_superuser', false);
+        //$this->isUser = $this->isGranted('ROLE_USER');
+        //$this->isAdmin = $this->isGranted('ROLE_ADMIN');
+        // /** @var \App\Entity\User $user */
+        // $this->user = $this->getUser();
+        // if ($this->user)
+        // {
+        //     $this->isUser = true;
+        //     if ($this->user->getRoles()[0] == 'ROLE_ADMIN')
+        //     {
+        //         $this->isAdmin = true;
+        //     }
+        // }
     }
 
     #[Route('', name: 'main', methods: ['GET'])]
     public function main(PostsRepository $postsRepository): Response
     {
-        $amountOfPosts = 10;
-        $amountOfMoreTalkedPosts = 3;
-        $posts = $postsRepository->getLastPosts($amountOfPosts);
-        $moreTalkedPosts = $postsRepository->getMoreTalkedPosts($amountOfMoreTalkedPosts);
+        $numberOfPosts = 10;
+        $numberOfMoreTalkedPosts = 3;
+        $posts = $postsRepository->getLastPosts($numberOfPosts);
+        $moreTalkedPosts = $postsRepository->getMoreTalkedPosts($numberOfMoreTalkedPosts);
         return $this->render('post/home.html.twig', [
-            'session_user_id' => $this->sessionUserId,
-            'is_superuser' => $this->isSuperuser,
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
         ]);
@@ -51,8 +57,6 @@ class PostController extends AbstractController
         $posts = $postsRepository->getPosts($numberOfPosts, $page);
 
         return $this->render('post/allposts.html.twig', [
-            'session_user_id' => $this->sessionUserId,
-            'is_superuser' => $this->isSuperuser,
             'nameOfPath' => 'post_show_all',
             'numberOfPosts' => $numberOfPosts,
             'page' => $page,
@@ -75,14 +79,12 @@ class PostController extends AbstractController
         $comments = $commentsRepository->findByPostId($post_id);
         $isUserAddRating = $ratingPostsRepository->findOneBy(
             [
-                'user_id' => $this->sessionUserId,
+                'user_id' => 0,
                 'post_id' => $post_id
             ]
         );
 
         return $this->render('post/view.html.twig', [
-            'session_user_id' => $this->sessionUserId,
-            'is_superuser' => $this->isSuperuser,
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
             'comments' => $comments
@@ -94,11 +96,9 @@ class PostController extends AbstractController
     {
         if (!$this->sessionUserId)
         {
-            return $this->redirectToRoute('user_show_login');
+            return $this->redirectToRoute('user_login');
         }
         return $this->render('post/add.html.twig', [
-            'session_user_id' => $this->sessionUserId,
-            'is_superuser' => $this->isSuperuser,
             'max_size_of_upload_image' => $this->maxSizeOfUploadImage
         ]);
     }
@@ -154,7 +154,7 @@ class PostController extends AbstractController
     {
         if (!$this->sessionUserId)
         {
-            return $this->redirectToRoute('user_show_login');
+            return $this->redirectToRoute('user_login');
         }
         $rating = $request->request->get('rating', 0);
         $entityManager = $doctrine->getManager();
@@ -179,17 +179,15 @@ class PostController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
     public function delete(Posts $posts, ManagerRegistry $doctrine): Response
     {
-        if ($this->isSuperuser)
-        {
-            $entityManager = $doctrine->getManager();
-            $entityManager->remove($posts);
-            $entityManager->flush();
-            $this->addFlash(
-                'success',
-                'Пост удален'
-            );
-            return $this->redirectToRoute('post_main');
-        }
-        return $this->redirectToRoute('user_show_login');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $entityManager = $doctrine->getManager();
+        $entityManager->remove($posts);
+        $entityManager->flush();
+        $this->addFlash(
+            'success',
+            'Пост удален'
+        );
+        return $this->redirectToRoute('post_main');
     }
 }

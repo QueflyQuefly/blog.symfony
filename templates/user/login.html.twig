@@ -1,28 +1,63 @@
 {% extends 'blog_base.html.twig' %}
+{% set session_user_id = false %}
+{% set is_superuser = false %}
 
 {% block title %} Вход - Просто Блог {% endblock %}
 
 {% block content %}
-    <div class='formentry'>
-        <p class='formname'>Вход</p>
-        <form action='{{ path('user_login') }}' method='post'>
-            <label class='formlabel'>Введите вашу почту: 
-                <input type='email' name='email' required minlength="1" maxlength='50' autofocus autocomplete="on" placeholder='Ваш email (до 50 символов)' class='formtext'>
-            </label>
-            <label class='formlabel'>Введите ваш пароль: 
-                <input type='password' name='password' required minlength="1" maxlength='20' autocomplete="off" placeholder='Ваш пароль (до 20 символов)' class='formtext'>
-            </label>
-            <img class='captcha' src="{{ asset('images/captcha.php') }}"><br>
-            <label class='formlabel'>Введите код с картинки выше: 
-                <input type='login' name='variable_of_captcha' required minlength="1" maxlength='20' autocomplete="off" placeholder='Код с captcha' class='formtext'>
-            </label>
-            {% for message in app.flashes('error') %}
-                <div class='formmsg'>
-                    <p class='error'>{{ message }}</p>
-                </div>
-            {% endfor %}
-            <div id='left'><a class='formbutton' href='{{ path('user_show_reg') }}'>Создать аккаунт</a></div>
-            <div id='right'><input type='submit' value='Войти' class='formsubmit'></div>
-        </form>
-    </div>
+<div class='formentry'>
+    <p class='formname'>Вход</p>
+    <form action="{{ path('user_login') }}" method="post">
+        <label class='formlabel'>Введите вашу почту: 
+            <input 
+                type='email' 
+                name='_username' 
+                required minlength="1" 
+                maxlength='50' 
+                autofocus 
+                autocomplete="on" 
+                placeholder='Ваш email (до 50 символов)' 
+                class='formtext'
+                value="{{ last_username }}"
+            >
+        </label>
+        <label class='formlabel'>Введите ваш пароль: 
+            <input 
+                type='password' 
+                name='_password' 
+                required 
+                minlength="1" 
+                maxlength='20' 
+                autocomplete="off" 
+                placeholder='Ваш пароль (до 20 символов)' 
+                class='formtext'
+            >
+        </label>
+        <img class='captcha' src="{{ asset('images/captcha.php') }}"><br>
+        <label class='formlabel'>Введите код с картинки выше: 
+            <input 
+                type='login' 
+                name='variable_of_captcha' 
+                required 
+                minlength="1" 
+                maxlength='20' 
+                autocomplete="off" 
+                placeholder='Код с captcha' 
+                class='formtext'
+            >
+        </label>
+
+        {# If you want to control the URL the user is redirected to on success
+        <input type="hidden" name="_target_path" value="/account"/> #}
+
+        {% if error %}
+            <div class='formmsg'>
+                <p class='error'>{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+            </div>
+        {% endif %}
+
+        <div id='left'><a class='formbutton' href='{{ path('app_register') }}'>Создать аккаунт</a></div>
+        <div id='right'><button type='submit' class='formsubmit'>Войти</button></div>
+    </form>
+</div>
 {% endblock %}

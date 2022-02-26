@@ -48,7 +48,7 @@
     <div class='singleposttext'>
         <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
 
-        {% if is_superuser %}
+        {% if is_granted('ROLE_ADMIN') %}
         <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
             <input type='submit' value='Удалить этот пост' class='link' style='font-size: 12pt'>
         </form>
@@ -84,12 +84,12 @@
                 <div class='commentcontent'>
                     <p class='commentcontent'>{{ comment.content }}</p> 
                     <p class='commentcontent'>
-                        {% if is_superuser %}
+                        {#% if is_granted('ROLE_ADMIN') %#}
                         <input type='submit' form='deleteComment{{ comment.id }}' value='Удалить комментарий' class='link'>
                         <form id='deleteComment{{ comment.id }}' class='hide' action='{{ path('comment_delete', {post_id: comment.postId, comment_id: comment.id}) }}' method='post'>
                             <input type='hidden' value='{{ comment.id }}' name='deleteCommentById'>
                         </form>
-                        {% endif %}
+                        {#% endif %#}
                     </p> 
                 </div>
                 <div class='like'>

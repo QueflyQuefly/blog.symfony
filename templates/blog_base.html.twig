@@ -25,18 +25,17 @@
                 <div id="menu">
                     <ul class='menuList'>
 
-                    {% if session_user_id %} {# app.user.user_id ?? 'Anonymous user' #}
+                    {% if is_granted('ROLE_USER') %}
                         <li>
-                            <input type='submit' form='exit' value='Выйти' class='menuLink'>
-                            <form id='exit' action='{{ path('user_exit') }}' method='post'>
-                                <input type='hidden' value='' name='exit'>
+                            <form id='exit' action='{{ path('user_logout') }}' method='post'>
+                                <input type='submit' form='exit' value='Выйти' class='menuLink'>
                             </form>
                         </li>
-                        {% if is_superuser %} {# app.user.is_superuser ?? 'Anonymous user' #}
+                        {% if is_granted('ROLE_ADMIN') %}
                         <li><a class='menuLink' href='/admin'>Админка</a></li>
                         {% endif %}
                     {% else %}
-                        <li><a class='menuLink' href='{{ path('user_show_login') }}'>Войти</a></li>
+                        <li><a class='menuLink' href='{{ path('user_login') }}'>Войти</a></li>
                     {% endif %}
                         <li><a class='menuLink' href='{{ path('user_show_cabinet') }}'>Профиль</a></li>
                         <li><a class='menuLink' href='/search'>Поиск</a></li>

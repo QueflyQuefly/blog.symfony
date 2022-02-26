@@ -34,7 +34,7 @@
                     </div>
                 </a>
 
-                {% if is_superuser %}
+                {% if is_granted('ROLE_ADMIN') %}
                 <div class='submitunder'>
                     <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
                     <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
@@ -74,7 +74,7 @@
                     </div>
                 </a>
 
-                {% if is_superuser %}
+                {% if is_granted('ROLE_ADMIN') %}
                 <div class='submitunder'>
                     <input type='submit' form='deletePostById{{ post.id }}' value='Удалить пост с ID = {{ post.id }}' class='link'>
                     <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
