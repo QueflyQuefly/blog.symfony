@@ -14,10 +14,10 @@ class RatingComments
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    private $comment_id;
+    private $commentId;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id;
+    private $userId;
 
     public function getId(): ?int
     {
@@ -26,24 +26,24 @@ class RatingComments
 
     public function getCommentId(): ?int
     {
-        return $this->comment_id;
+        return $this->commentId;
     }
 
-    public function setCommentId(int $comment_id): self
+    public function setCommentId(int $commentId): self
     {
-        $this->comment_id = $comment_id;
+        $this->commentId = $commentId;
 
         return $this;
     }
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(int $user_id): self
+    public function setUserId(int $userId): self
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
 
         return $this;
     }

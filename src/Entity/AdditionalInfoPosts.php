@@ -17,13 +17,13 @@ class AdditionalInfoPosts
     private $rating;
 
     #[ORM\Column(type: 'integer')]
-    private $count_comments;
+    private $countComments;
 
     #[ORM\Column(type: 'integer')]
-    private $count_ratings;
+    private $countRatings;
 
     #[ORM\Column(type: 'integer')]
-    private $post_id;
+    private $postId;
 
     public function getId(): ?int
     {
@@ -44,36 +44,36 @@ class AdditionalInfoPosts
 
     public function getCountComments(): ?int
     {
-        return $this->count_comments;
+        return $this->countComments;
     }
 
-    public function setCountComments(int $count_comments): self
+    public function setCountComments(int $countComments): self
     {
-        $this->count_comments = $count_comments;
+        $this->countComments = $countComments;
 
         return $this;
     }
 
     public function getCountRatings(): ?int
     {
-        return $this->count_ratings;
+        return $this->countRatings;
     }
 
-    public function setCountRatings(int $count_ratings): self
+    public function setCountRatings(int $countRatings): self
     {
-        $this->count_ratings = $count_ratings;
+        $this->countRatings = $countRatings;
 
         return $this;
     }
 
     public function getPostId(): ?int
     {
-        return $this->post_id;
+        return $this->postId;
     }
 
-    public function setPostId(int $post_id): self
+    public function setPostId(int $postId): self
     {
-        $this->post_id = $post_id;
+        $this->postId = $postId;
 
         return $this;
     }

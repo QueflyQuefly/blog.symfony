@@ -22,16 +22,16 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getLastPosts($amountOfPosts)
+    public function getLastPosts(int $amountOfPosts)
     {
         $entityManager = $this->getEntityManager();
-        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
-                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
                 FROM App\Entity\Posts p 
                 JOIN App\Entity\AdditionalInfoPosts a 
-                WITH p.id = a.post_id
+                WITH p.id = a.postId
                 JOIN App\Entity\User u
-                WITH p.user_id = u.id
+                WITH p.userId = u.id
                 ORDER BY p.id DESC'
         ;
         $query = $entityManager->createQuery($dql)
@@ -43,18 +43,18 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getMoreTalkedPosts($amountOfPosts)
+    public function getMoreTalkedPosts(int $amountOfPosts)
     {
         $entityManager = $this->getEntityManager();
-        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
-                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
                 FROM App\Entity\Posts p 
                 JOIN App\Entity\AdditionalInfoPosts a 
-                WITH p.id = a.post_id
+                WITH p.id = a.postId
                 JOIN App\Entity\User u
-                WITH p.user_id = u.id
-                WHERE a.count_comments > 0
-                ORDER BY a.count_comments DESC'
+                WITH p.userId = u.id
+                WHERE a.countComments > 0
+                ORDER BY a.countComments DESC'
         ;
         $query = $entityManager->createQuery($dql)
             ->setMaxResults($amountOfPosts);
@@ -65,18 +65,18 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getPosts($numberOfPosts, $page)
+    public function getPosts(int $numberOfPosts, int $page)
     {
         $moreThanMinId = $page * $numberOfPosts - $numberOfPosts;
         
         $entityManager = $this->getEntityManager();
-        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
-                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
                 FROM App\Entity\Posts p 
                 JOIN App\Entity\AdditionalInfoPosts a 
-                WITH p.id = a.post_id
+                WITH p.id = a.postId
                 JOIN App\Entity\User u
-                WITH p.user_id = u.id
+                WITH p.userId = u.id
                 WHERE p.id >= :val
                 ORDER BY p.id ASC'
         ;
@@ -87,16 +87,16 @@ class PostsRepository extends ServiceEntityRepository
         return $query->getResult();
     }
     
-    public function getPostById($postId)
+    public function getPostById(int $postId)
     {
         $entityManager = $this->getEntityManager();
-        $dql = 'SELECT p.id, p.title, p.user_id, p.date_time, p.content, 
-                    a.rating, a.count_comments, a.count_ratings, u.fio as author 
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
                 FROM App\Entity\Posts p 
                 JOIN App\Entity\AdditionalInfoPosts a 
-                WITH p.id = a.post_id
+                WITH p.id = a.postId
                 JOIN App\Entity\User u
-                WITH p.user_id = u.id
+                WITH p.userId = u.id
                 WHERE p.id = :val
                 ORDER BY p.id ASC'
         ;

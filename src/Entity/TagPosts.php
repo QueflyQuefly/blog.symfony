@@ -14,7 +14,7 @@ class TagPosts
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    private $post_id;
+    private $postId;
 
     #[ORM\Column(type: 'string', length: 50)]
     private $tag;
@@ -26,12 +26,12 @@ class TagPosts
 
     public function getPostId(): ?int
     {
-        return $this->post_id;
+        return $this->postId;
     }
 
-    public function setPostId(int $post_id): self
+    public function setPostId(int $postId): self
     {
-        $this->post_id = $post_id;
+        $this->postId = $postId;
 
         return $this;
     }

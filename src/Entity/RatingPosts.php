@@ -14,10 +14,10 @@ class RatingPosts
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    private $post_id;
+    private $postId;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id;
+    private $userId;
 
     #[ORM\Column(type: 'decimal', precision: 1, scale: '0')]
     private $rating;
@@ -29,24 +29,24 @@ class RatingPosts
 
     public function getPostId(): ?int
     {
-        return $this->post_id;
+        return $this->postId;
     }
 
-    public function setPostId(int $post_id): self
+    public function setPostId(int $postId): self
     {
-        $this->post_id = $post_id;
+        $this->postId = $postId;
 
         return $this;
     }
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(int $user_id): self
+    public function setUserId(int $userId): self
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
 
         return $this;
     }

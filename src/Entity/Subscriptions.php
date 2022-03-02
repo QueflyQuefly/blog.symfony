@@ -14,10 +14,10 @@ class Subscriptions
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id_want_subscribe;
+    private $userIdWantSubscribe;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id;
+    private $userId;
 
     public function getId(): ?int
     {
@@ -26,24 +26,24 @@ class Subscriptions
 
     public function getUserIdWantSubscribe(): ?int
     {
-        return $this->user_id_want_subscribe;
+        return $this->userIdWantSubscribe;
     }
 
-    public function setUserIdWantSubscribe(int $user_id_want_subscribe): self
+    public function setUserIdWantSubscribe(int $userIdWantSubscribe): self
     {
-        $this->user_id_want_subscribe = $user_id_want_subscribe;
+        $this->userIdWantSubscribe = $userIdWantSubscribe;
 
         return $this;
     }
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(int $user_id): self
+    public function setUserId(int $userId): self
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
 
         return $this;
     }

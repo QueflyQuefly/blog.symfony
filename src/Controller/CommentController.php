@@ -14,28 +14,27 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/comment', name: 'comment_')]
 class CommentController extends AbstractController
 {
-    private $user, $isUser, $isAdmin;
+    private ManagerRegistry $doctrine;
+    private CommentsRepository $commentsRepository;
+    private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
 
-    public function __construct()
+    public function __construct(
+        //Request $request, 
+        ManagerRegistry $doctrine, 
+        CommentsRepository $commentsRepository,
+        AdditionalInfoPostsRepository $additionalInfoPostsRepository
+    )
     {
-        $this->isUser = $this->isGranted('ROLE_USER');
-        $this->isAdmin = $this->isGranted('ROLE_ADMIN');
-        // /** @var \App\Entity\User $user */
-        // $this->user = $this->getUser();
-        // if ($this->user)
-        // {
-        //     $this->isUser = true;
-        //     if ($this->user->getRoles()[0] == 'ROLE_ADMIN')
-        //     {
-        //         $this->isAdmin = true;
-        //     }
-        // }
+        //$request = $request;
+        $this->commentsRepository = $commentsRepository;
+        $this->doctrine = $doctrine;
+        $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
     }
 
-    #[Route('/add/{post_id}', name: 'add', methods: ['POST'])]
-    public function add(int $post_id, Request $request, ManagerRegistry $doctrine, AdditionalInfoPostsRepository $additionalInfoPostsRepository): Response
+    #[Route('/add/{postId}', name: 'add', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]
+    public function add(int $postId, Request $request): Response
     {
-        if (false == $this->isUser)
+        if (!$this->isGranted('ROLE_USER'))
         {
             return $this->redirectToRoute('user_login');
         }
@@ -43,10 +42,10 @@ class CommentController extends AbstractController
         $content = trim(strip_tags($content));
         if ('' != $content)
         {
-            $entityManager = $doctrine->getManager();
+            $entityManager = $this->doctrine->getManager();
 
             $comment = new Comments();
-            $comment->setPostId($post_id);
+            $comment->setPostId($postId);
             $comment->setUserId(3); //fffffffffffffffffffffffffffffffffffffff
             $comment->setDateTime(time());
             $comment->setContent($content);
@@ -54,7 +53,7 @@ class CommentController extends AbstractController
             $entityManager->persist($comment);
             $entityManager->flush();
 
-            $infoPost = $additionalInfoPostsRepository->find($post_id);
+            $infoPost = $this->additionalInfoPostsRepository->find($postId);
             $infoPost->setCountComments($infoPost->getCountComments() + 1);
             $entityManager->flush();
 
@@ -62,37 +61,36 @@ class CommentController extends AbstractController
                 'success',
                 'Комментарий добавлен'
             );
-            return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
         } else {
             $this->addFlash(
                 'error',
                 'При добавлении комментария произошла ошибка: заполните поля формы'
             );
         }
-        return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
+        return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
 
-    #[Route('/like/{post_id}/{comment_id}', name: 'like', methods: ['POST'])]
-    public function like(int $post_id, int $comment_id, CommentsRepository $commentsRepository, ManagerRegistry $doctrine): Response
+    #[Route('/like/{postId}/{commentId}', name: 'like', methods: ['POST'], requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
+    public function like(int $postId, int $commentId): Response
     {
-        if ($this->sessionUserId)
+        if (!$this->isGranted('ROLE_USER'))
         {
-            $commentsRepository->like($comment_id, $this->sessionUserId, $doctrine);
-            return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
+            return $this->redirectToRoute('user_login');
         }
-        return $this->redirectToRoute('user_login');
+        $this->commentsRepository->like($commentId, $this->sessionUserId, $this->doctrine);
+        return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
     
-    #[Route('/delete/{post_id}/{comment_id}', name: 'delete', methods: ['POST'])]
-    public function delete(int $post_id, Comments $comments, ManagerRegistry $doctrine, AdditionalInfoPostsRepository $additionalInfoPostsRepository): Response
+    #[Route('/delete/{commentId}/{postId}', name: 'delete', methods: ['POST'], requirements: ['commentId' => '\b[0-9]+', 'postId' => '\b[0-9]+'])]
+    public function delete(Comments $comments, int $postId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $entityManager = $doctrine->getManager();
+        $entityManager = $this->doctrine->getManager();
         $entityManager->remove($comments);
         $entityManager->flush();
 
-        $infoPost = $additionalInfoPostsRepository->find($post_id);
+        $infoPost = $this->additionalInfoPostsRepository->find($postId);
         $infoPost->setCountComments($infoPost->getCountComments() - 1);
         $entityManager->flush();
 
@@ -100,6 +98,6 @@ class CommentController extends AbstractController
             'success',
             'Комментарий удален'
         );
-        return $this->redirectToRoute('post_show', ['post_id' => $post_id]);
+        return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
 }

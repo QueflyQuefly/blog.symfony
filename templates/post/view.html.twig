@@ -8,10 +8,10 @@
     </div>
     <div id='singlepostauthor'>
         <p class='singlepostdate'>
-            {% if post.count_ratings %}
-                Рейтинг: {{ post.rating }}, оценок: {{ post.count_ratings }}, комментариев: {{ post.count_comments }}
+            {% if post.countRatings %}
+                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatings }}, комментариев: {{ post.countComments }}
             {% else %}
-                Нет оценок. Будьте первым! Kомментариев: {{ post.count_comments }}
+                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
             {% endif %}
         </p>
         
@@ -19,7 +19,7 @@
         <p class='singlepostdate'>Оценка принята</p>
         {% else %}
         <div class="rating-area">
-            <form action='{{ path('post_rating', {id: post.id}) }}' method='post'>
+            <form action='{{ path('post_rating', {postId: post.id}) }}' method='post'>
                 <label class='star' title="Оценка «1»">&#9734;
                     <input type="submit" name="rating" value="1">
                 </label>
@@ -40,7 +40,7 @@
         {% endif %}
 
         <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_cabinet') }}'>Автор: {{ post.author }}{# post.author #}</a></p>
-        <p class='singlepostdate'>{{ post.date_time|date('d.m.Y в H:i') }}</p>
+        <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
         <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
@@ -49,7 +49,7 @@
         <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
 
         {% if is_granted('ROLE_ADMIN') %}
-        <form id='deletePostById{{ post.id }}' action='{{ path('post_delete', {id: post.id}) }}' method='post'>
+        <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
             <input type='submit' value='Удалить этот пост' class='link' style='font-size: 12pt'>
         </form>
         {% endif %}
@@ -58,7 +58,7 @@
     <div class='addcomments' id='comment'>
         <p class='center'>Добавьте комментарий:</p>
         <div class='addcomment'>
-            <form action='{{ path('comment_add', {post_id: post.id}) }}' method='post'>
+            <form action='{{ path('comment_add', {postId: post.id}) }}' method='post'>
                 <textarea name='content' required  minlength="1" maxlength='500' wrap='hard' 
                     placeholder="Опишите ваши эмоции :-) (до 500 символов)" id='textcomment'></textarea>
                 <br>
@@ -84,16 +84,16 @@
                 <div class='commentcontent'>
                     <p class='commentcontent'>{{ comment.content }}</p> 
                     <p class='commentcontent'>
-                        {#% if is_granted('ROLE_ADMIN') %#}
-                        <input type='submit' form='deleteComment{{ comment.id }}' value='Удалить комментарий' class='link'>
-                        <form id='deleteComment{{ comment.id }}' class='hide' action='{{ path('comment_delete', {post_id: comment.postId, comment_id: comment.id}) }}' method='post'>
-                            <input type='hidden' value='{{ comment.id }}' name='deleteCommentById'>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        
+                        <form action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId }) }}' method='post'>
+                            <input type='submit' value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
                         </form>
-                        {#% endif %#}
+                        {% endif %}
                     </p> 
                 </div>
                 <div class='like'>
-                    <form action='{{ path('comment_like', {post_id: post.id, comment_id: comment.id}) }}' method='post'>
+                    <form action='{{ path('comment_like', {commentId: comment.id, postId: post.id}) }}' method='post'>
                         <input type='hidden' name='post_id' value="{{ comment.postId }}" >
                         <label id='heartlike' title="Нравится">
                             <span class='like'>&#9825; </span> {{ comment.rating }}

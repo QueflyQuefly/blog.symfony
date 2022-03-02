@@ -14,13 +14,13 @@ class Comments
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    private $post_id;
+    private $postId;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id;
+    private $userId;
 
     #[ORM\Column(type: 'integer')]
-    private $date_time;
+    private $dateTime;
 
     #[ORM\Column(type: 'text')]
     private $content;
@@ -35,36 +35,36 @@ class Comments
 
     public function getPostId(): ?int
     {
-        return $this->post_id;
+        return $this->postId;
     }
 
-    public function setPostId(int $post_id): self
+    public function setPostId(int $postId): self
     {
-        $this->post_id = $post_id;
+        $this->postId = $postId;
 
         return $this;
     }
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(int $user_id): self
+    public function setUserId(int $userId): self
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
 
         return $this;
     }
 
     public function getDateTime(): ?int
     {
-        return $this->date_time;
+        return $this->dateTime;
     }
 
-    public function setDateTime(int $date_time): self
+    public function setDateTime(int $dateTime): self
     {
-        $this->date_time = $date_time;
+        $this->dateTime = $dateTime;
 
         return $this;
     }

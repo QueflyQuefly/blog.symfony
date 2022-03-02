@@ -20,45 +20,15 @@ class AdditionalInfoPostsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return AdditionalInfoPosts Returns an  AdditionalInfoPosts object
+     * @return AdditionalInfoPosts Returns an AdditionalInfoPosts object
      */
-    public function findOneByPostId($postId): ?AdditionalInfoPosts
+    public function findOneByPostId(int $postId): ?AdditionalInfoPosts
     {
         return $this->createQueryBuilder('a')
-            ->andWhere('a.post_id = :val')
+            ->andWhere('a.postId = :val')
             ->setParameter('val', $postId)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-   
-
-    // /**
-    //  * @return AdditionalInfoPosts[] Returns an array of AdditionalInfoPosts objects
-    //  */
-    /*
-    public function findOneBySomeField($value): ?AdditionalInfoPosts
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
-
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
 }

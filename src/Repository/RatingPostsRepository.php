@@ -22,11 +22,11 @@ class RatingPostsRepository extends ServiceEntityRepository
     /**
      * @return float Returns an float number - rating of post
      */
-    public function countRating($id)
+    public function countRating(int $postId)
     {
         $rating = 0.0;
         $i = 0;
-        $allRatingsPost = $this->findBy(['post_id' => $id]);
+        $allRatingsPost = $this->findBy(['postId' => $postId]);
         foreach ($allRatingsPost as $ratingPost)
         {
             $i++;
@@ -35,35 +35,4 @@ class RatingPostsRepository extends ServiceEntityRepository
         $rating = round($rating / $i, 1);
         return $rating;
     }
-   
-    
-    
-    // /**
-    //  * @return RatingPosts[] Returns an array of RatingPosts objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('r.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?RatingPosts
-    {
-        return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

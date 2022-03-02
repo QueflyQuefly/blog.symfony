@@ -27,7 +27,7 @@ class CommentsRepository extends ServiceEntityRepository
     public function findByUserId(int $userId)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.user_id = :val')
+            ->andWhere('c.userId = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults(30)
@@ -42,7 +42,7 @@ class CommentsRepository extends ServiceEntityRepository
     public function findByPostId(int $postId)
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.post_id = :val')
+            ->andWhere('c.postId = :val')
             ->setParameter('val', $postId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults(30)
@@ -58,7 +58,7 @@ class CommentsRepository extends ServiceEntityRepository
     {
         $ratingRepository = new RatingCommentsRepository($doctrine);
 
-        $ratingComment = $ratingRepository->findOneBy(['user_id' => $userId, 'comment_id' => $commentId]);
+        $ratingComment = $ratingRepository->findOneBy(['userId' => $userId, 'commentId' => $commentId]);
         $entityManager = $doctrine->getManager();
         $comment = $entityManager->getRepository(Comments::class)->find($commentId);
 
@@ -81,33 +81,4 @@ class CommentsRepository extends ServiceEntityRepository
         }
         return true;
     }
-
-    // /**
-    //  * @return Comments[] Returns an array of Comments objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Comments
-    {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

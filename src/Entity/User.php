@@ -29,7 +29,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $password;
 
     #[ORM\Column(type: 'integer')]
-    private $date_time;
+    private $dateTime;
 
     #[ORM\Column(type: 'string', length: 50)]
     private $fio;
@@ -130,12 +130,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getDateTime(): ?int
     {
-        return $this->date_time;
+        return $this->dateTime;
     }
 
-    public function setDateTime(int $date_time): self
+    public function setDateTime(int $dateTime): self
     {
-        $this->date_time = $date_time;
+        $this->dateTime = $dateTime;
 
         return $this;
     }

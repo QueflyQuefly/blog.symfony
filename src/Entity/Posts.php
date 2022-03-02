@@ -17,10 +17,10 @@ class Posts
     private $title;
 
     #[ORM\Column(type: 'integer')]
-    private $user_id;
+    private $userId;
 
     #[ORM\Column(type: 'integer')]
-    private $date_time;
+    private $dateTime;
 
     #[ORM\Column(type: 'text')]
     private $content;
@@ -44,24 +44,24 @@ class Posts
 
     public function getUserId(): ?int
     {
-        return $this->user_id;
+        return $this->userId;
     }
 
-    public function setUserId(int $user_id): self
+    public function setUserId(int $userId): self
     {
-        $this->user_id = $user_id;
+        $this->userId = $userId;
 
         return $this;
     }
 
     public function getDateTime(): ?int
     {
-        return $this->date_time;
+        return $this->dateTime;
     }
 
-    public function setDateTime(int $date_time): self
+    public function setDateTime(int $dateTime): self
     {
-        $this->date_time = $date_time;
+        $this->dateTime = $dateTime;
 
         return $this;
     }

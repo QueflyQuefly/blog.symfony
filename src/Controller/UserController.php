@@ -14,29 +14,19 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
-    private $user, $isUser, $isAdmin;
+    private AuthenticationUtils $authenticationUtils;
 
-    public function __construct()
+    public function __construct(      
+        AuthenticationUtils $authenticationUtils
+        )
     {
-        $this->isUser = $this->isGranted('ROLE_USER');
-        $this->isAdmin = $this->isGranted('ROLE_ADMIN');
-        
-        // /** @var \App\Entity\User $user */
-        // $this->user = $this->getUser();
-        // if ($this->user)
-        // {
-        //     $this->isUser = true;
-        //     if ($this->user->getRoles()[0] == 'ROLE_ADMIN')
-        //     {
-        //         $this->isAdmin = true;
-        //     }
-        // }
+        $this->authenticationUtils = $authenticationUtils;
     }
 
     #[Route('/cabinet', name: 'show_cabinet', methods: ['GET'])]
     public function showCabinet(Request $request): Response
     {
-        if (!$this->isUser)
+        if (!$this->isGranted('ROLE_USER'))
         {
             return $this->redirectToRoute('user_login');
         }
@@ -51,13 +41,13 @@ class UserController extends AbstractController
     }
 
     #[Route('/login', name: 'login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(): Response
     {
         // get the login error if there is one
-        $error = $authenticationUtils->getLastAuthenticationError();
+        $error = $this->authenticationUtils->getLastAuthenticationError();
 
         // last username entered by the user
-        $lastUsername = $authenticationUtils->getLastUsername();
+        $lastUsername = $this->authenticationUtils->getLastUsername();
 
         return $this->render('user/login.html.twig', [
             'last_username' => $lastUsername,
