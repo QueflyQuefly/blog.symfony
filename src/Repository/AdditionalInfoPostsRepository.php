@@ -18,17 +18,4 @@ class AdditionalInfoPostsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, AdditionalInfoPosts::class);
     }
-
-    /**
-     * @return AdditionalInfoPosts Returns an AdditionalInfoPosts object
-     */
-    public function findOneByPostId(int $postId): ?AdditionalInfoPosts
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.postId = :val')
-            ->setParameter('val', $postId)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
 }

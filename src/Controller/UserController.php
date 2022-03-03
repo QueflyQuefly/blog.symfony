@@ -3,9 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
-use App\Repository\PostsRepository;
-use App\Repository\CommentsRepository;
-use Symfony\Component\HttpFoundation\Request;
+use App\Service\PostService;
+use App\Service\CommentService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,24 +16,24 @@ class UserController extends AbstractController
 {
     private AuthenticationUtils $authenticationUtils;
     private UserRepository $userRepository;
-    private PostsRepository $postsRepository;
-    private CommentsRepository $commentsRepository;
+    private PostService $postService;
+    private CommentService $commentService;
 
     public function __construct(      
         AuthenticationUtils $authenticationUtils,
         UserRepository $userRepository,
-        PostsRepository $postsRepository,
-        CommentsRepository $commentsRepository
+        PostService $postService, 
+        CommentService $commentService
     )
     {
         $this->authenticationUtils = $authenticationUtils;
         $this->userRepository = $userRepository;
-        $this->postsRepository = $postsRepository;
-        $this->commentsRepository = $commentsRepository;
+        $this->postService = $postService;
+        $this->commentService = $commentService;
     }
 
     #[Route('/profile/{userId<\b[0-9]+>?}', name: 'show_profile', methods: ['GET'])]
-    public function showProfile(?int $userId, Request $request): Response
+    public function showProfile(?int $userId): Response
     {
         if (!empty($userId)) {
             $user = $this->userRepository->find($userId);
@@ -43,10 +42,10 @@ class UserController extends AbstractController
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
         }
-        $posts = $this->postsRepository->getPostsByUserId($user->getId());
-        $comments = $this->commentsRepository->findByUserId($user->getId());
-        $likedPosts = $this->postsRepository->getLikedPostsByUserId($user->getId());
-        $likedComments = $this->commentsRepository->getLikedCommentsByUserId($user->getId());
+        $posts = $this->postService->getPostsByUserId($user->getId());
+        $likedPosts = $this->postService->getLikedPostsByUserId($user->getId());
+        $comments = $this->commentService->getCommentsByUserId($user->getId());
+        $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId());
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,

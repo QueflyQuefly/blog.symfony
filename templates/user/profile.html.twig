@@ -10,7 +10,7 @@
             <p style='font-size: 13pt; color: green;'>Является администратором этого сайта</p>
         {% endif %}
         
-        {% if ( app.user and user.id == app.user.id ) %}
+        {#% if ( app.user and user.id == app.user.id ) %}
             <a 
                 class='link' 
                 style='font-size:13pt; margin-left:30vmin' 
@@ -21,7 +21,7 @@
             </a>
         {% endif %}
         
-        {#% if app.user %}
+        {% if app.user %}
             if (!$this->_subscribeController->isSubscribedUser($sessionUserId, $user['user_id'])) {
                         <input type='submit' style='font-size:13pt;' form='subscribe' value='Подписаться' class='link'>
                         <form id='subscribe' action='' method='post'>

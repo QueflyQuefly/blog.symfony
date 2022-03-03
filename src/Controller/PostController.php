@@ -3,12 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Posts;
-use App\Entity\AdditionalInfoPosts;
 use App\Service\PostService;
-use App\Repository\PostsRepository;
-use App\Repository\RatingPostsRepository;
-use App\Repository\CommentsRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Service\CommentService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,26 +14,15 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
+    private int $userId;
     private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
-    private ManagerRegistry $doctrine;
-    private PostsRepository $postsRepository;
-    private RatingPostsRepository $ratingPostsRepository;
-    private CommentsRepository $commentsRepository;
     private PostService $postService;
+    private CommentService $commentService;
 
-    public function __construct(      
-        ManagerRegistry $doctrine,
-        PostsRepository $postsRepository,
-        RatingPostsRepository $ratingPostsRepository,
-        CommentsRepository $commentsRepository,
-        PostService $postService
-    )
+    public function __construct(PostService $postService, CommentService $commentService)
     {
-        $this->postsRepository = $postsRepository;
-        $this->ratingPostsRepository = $ratingPostsRepository;
-        $this->commentsRepository = $commentsRepository;
-        $this->doctrine = $doctrine;
         $this->postService = $postService;
+        $this->commentService = $commentService;
     }
 
     #[Route('', name: 'main', methods: ['GET'])]
@@ -45,8 +30,8 @@ class PostController extends AbstractController
     {
         $numberOfPosts = 10;
         $numberOfMoreTalkedPosts = 3;
-        $posts = $this->postsRepository->getLastPosts($numberOfPosts);
-        $moreTalkedPosts = $this->postsRepository->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+        $posts = $this->postService->getLastPosts($numberOfPosts);
+        $moreTalkedPosts = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
         return $this->render('post/home.html.twig', [
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
@@ -58,7 +43,7 @@ class PostController extends AbstractController
     {
         $numberOfPosts = (int) $request->query->get('number', 10);
         $page = (int) $request->query->get('page', 1);
-        $posts = $this->postsRepository->getPosts($numberOfPosts, $page);
+        $posts = $this->postService->getPosts($numberOfPosts, $page);
         return $this->render('post/allposts.html.twig', [
             'nameOfPath' => 'post_show_all',
             'numberOfPosts' => $numberOfPosts,
@@ -70,20 +55,15 @@ class PostController extends AbstractController
     #[Route('/{postId}', name: 'show', methods: ['GET'], requirements: ['postId' => '\b[0-9]+'])]
     public function showPost(int $postId): Response
     {
-        $post = $this->postsRepository->getPostById($postId);
+        $post = $this->postService->getPostById($postId);
         if (!$post) {
             throw $this->createNotFoundException('Пост не найден');
         }
-        $comments = $this->commentsRepository->findByPostId($postId);
+        $comments = $this->commentService->getCommentsByPostId($postId);
         $isUserAddRating = false;
-        if ($sessionUserId = $this->getUserId())
+        if ($userId = $this->getUserId())
         {
-            $isUserAddRating = $this->ratingPostsRepository->findOneBy(
-                [
-                    'userId' => $sessionUserId,
-                    'postId' => $postId
-                ]
-            );
+            $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
         }
         return $this->render('post/view.html.twig', [
             'post' => $post,
@@ -105,7 +85,7 @@ class PostController extends AbstractController
     public function add(Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $sessionUserId = $this->getUserId();
+        $userId = $this->getUserId();
 
         $title = $request->request->get('title');
         $title = trim(strip_tags($title));
@@ -113,23 +93,7 @@ class PostController extends AbstractController
         $content = trim(strip_tags($content));
         if ('' != $title && '' != $content)
         {
-            $entityManager = $this->doctrine->getManager();
-            $post = new Posts();
-            $post->setTitle($title);
-            $post->setUserId($sessionUserId);
-            $post->setContent($content);
-            $post->setDateTime(time());
-            $entityManager->persist($post);
-            $entityManager->flush();
-
-            $postInfo = new AdditionalInfoPosts();
-            $postInfo->setRating('0.0');
-            $postInfo->setPostId($post->getId());
-            $postInfo->setCountComments(0);
-            $postInfo->setCountRatings(0);
-            $entityManager->persist($postInfo);
-            $entityManager->flush();
-
+            $this->postService->add($userId, $title, $content);
             $this->addFlash(
                 'success',
                 'Пост добавлен'
@@ -148,22 +112,19 @@ class PostController extends AbstractController
     public function addRating(int $postId, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $sessionUserId = $this->getUserId();
+        $userId = $this->getUserId();
 
         $rating = (int) $request->request->get('rating');
-        $this->postService->addRating($postId, $rating, $sessionUserId);
+        $this->postService->addRating($userId, $postId, $rating);
 
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
-    public function delete(Posts $posts): Response
+    public function delete(Posts $post): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $entityManager = $this->doctrine->getManager();
-        $entityManager->remove($posts);
-        $entityManager->flush();
+        $this->postService->delete($post);
         $this->addFlash(
             'success',
             'Пост удален'
@@ -171,14 +132,18 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_main');
     }
 
-    private function getUserId(): int
+    private function getUserId(): ?int
     {
-        if (!$this->isGranted('ROLE_USER'))
+        if (is_null($this->userId))
         {
-            return 0;
+            if (!$this->isGranted('ROLE_USER'))
+            {
+                return null;
+            }
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            return $this->userId = $user->getId();
         }
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        return $user->getId();
+        return $this->userId;
     }
 }
