@@ -14,7 +14,6 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
-    private int $userId;
     private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private PostService $postService;
     private CommentService $commentService;
@@ -134,16 +133,12 @@ class PostController extends AbstractController
 
     private function getUserId(): ?int
     {
-        if (is_null($this->userId))
+        if (!$this->isGranted('ROLE_USER'))
         {
-            if (!$this->isGranted('ROLE_USER'))
-            {
-                return null;
-            }
-            /** @var \App\Entity\User $user */
-            $user = $this->getUser();
-            return $this->userId = $user->getId();
+            return null;
         }
-        return $this->userId;
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        return $user->getId();
     }
 }

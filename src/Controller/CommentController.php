@@ -13,7 +13,6 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/comment', name: 'comment_')]
 class CommentController extends AbstractController
 {
-    private int $userId;
     private CommentService $commentService;
 
     public function __construct(CommentService $commentService)
@@ -67,16 +66,12 @@ class CommentController extends AbstractController
 
     private function getUserId(): ?int
     {
-        if (is_null($this->userId))
+        if (!$this->isGranted('ROLE_USER'))
         {
-            if (!$this->isGranted('ROLE_USER'))
-            {
-                return null;
-            }
-            /** @var \App\Entity\User $user */
-            $user = $this->getUser();
-            return $this->userId = $user->getId();
+            return null;
         }
-        return $this->userId;
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        return $user->getId();
     }
 }

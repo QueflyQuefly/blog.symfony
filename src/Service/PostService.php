@@ -114,7 +114,8 @@ class PostService
      */
     public function getMoreTalkedPosts(int $amountOfPosts)
     {
-        return $this->postsRepository->getMoreTalkedPosts($amountOfPosts);
+        $timeWeekAgo = time() - 7*24*60*60;
+        return $this->postsRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
     }
 
     /**
@@ -122,9 +123,9 @@ class PostService
      */
     public function getPosts(int $numberOfPosts, int $page)
     {
-        $moreThanMinId = $page * $numberOfPosts - $numberOfPosts;
+        $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
 
-        return $this->postsRepository->getPosts($numberOfPosts, $moreThanMinId);
+        return $this->postsRepository->getPosts($numberOfPosts, $lessThanMaxId);
     }
 
     /**

@@ -39,14 +39,17 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getMoreTalkedPosts(int $numberOfPosts)
+    public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+            ->select(array('DISTINCT p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
+            ->join('App\Entity\Comments', 'c', 'WITH', 'c.postId = p.id')
             ->andWhere('a.countComments > 0')
+            ->andWhere('c.dateTime > :time')
+            ->setParameter('time', $timeWeekAgo)
             ->orderBy('a.countComments', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
@@ -57,16 +60,15 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getPosts(int $numberOfPosts, int $moreThanMinId)
+    public function getPosts(int $numberOfPosts, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('p')
             ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere('p.id >= :val')
-            ->orderBy('p.id', 'ASC')
-            ->setParameter('val', $moreThanMinId)
+            ->orderBy('p.id', 'DESC')
+            ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->getResult()
