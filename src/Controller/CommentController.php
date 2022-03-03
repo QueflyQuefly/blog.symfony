@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Comments;
+use App\Service\CommentService;
 use App\Repository\AdditionalInfoPostsRepository;
-use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,18 +16,16 @@ use Symfony\Component\Routing\Annotation\Route;
 class CommentController extends AbstractController
 {
     private ManagerRegistry $doctrine;
-    private CommentsRepository $commentsRepository;
+    private CommentService $commentService;
     private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
 
     public function __construct(
-        //Request $request, 
         ManagerRegistry $doctrine, 
-        CommentsRepository $commentsRepository,
+        CommentService $commentService,
         AdditionalInfoPostsRepository $additionalInfoPostsRepository
     )
     {
-        //$request = $request;
-        $this->commentsRepository = $commentsRepository;
+        $this->commentService = $commentService;
         $this->doctrine = $doctrine;
         $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
     }
@@ -34,10 +33,8 @@ class CommentController extends AbstractController
     #[Route('/add/{postId}', name: 'add', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]
     public function add(int $postId, Request $request): Response
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $sessionUserId = $this->getUserId();
         $content = $request->request->get('content');
         $content = trim(strip_tags($content));
         if ('' != $content)
@@ -46,7 +43,7 @@ class CommentController extends AbstractController
 
             $comment = new Comments();
             $comment->setPostId($postId);
-            $comment->setUserId(3); //fffffffffffffffffffffffffffffffffffffff
+            $comment->setUserId($sessionUserId);
             $comment->setDateTime(time());
             $comment->setContent($content);
             $comment->setRating(0);
@@ -73,11 +70,9 @@ class CommentController extends AbstractController
     #[Route('/like/{postId}/{commentId}', name: 'like', methods: ['POST'], requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
     public function like(int $postId, int $commentId): Response
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
-        $this->commentsRepository->like($commentId, $this->sessionUserId, $this->doctrine);
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $sessionUserId = $this->getUserId();
+        $this->commentService->like($commentId, $sessionUserId);
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
     
@@ -99,5 +94,16 @@ class CommentController extends AbstractController
             'Комментарий удален'
         );
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
+    }
+
+    private function getUserId(): int
+    {
+        if (!$this->isGranted('ROLE_USER'))
+        {
+            return 0;
+        }
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        return $user->getId();
     }
 }

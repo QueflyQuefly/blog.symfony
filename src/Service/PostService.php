@@ -2,18 +2,51 @@
 
 namespace App\Service;
 
+use App\Entity\Posts;
+use App\Entity\AdditionalInfoPosts;
+use App\Entity\RatingPosts;
+use App\Repository\PostsRepository;
+use App\Repository\RatingPostsRepository;
+use App\Repository\AdditionalInfoPostsRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+
 class PostService
 {
-    public function getHappyMessage(): string
+    private ManagerRegistry $doctrine;
+    private PostsRepository $postsRepository;
+    private RatingPostsRepository $ratingPostsRepository;
+    private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
+
+    public function __construct(      
+        ManagerRegistry $doctrine,
+        PostsRepository $postsRepository,
+        RatingPostsRepository $ratingPostsRepository,
+        AdditionalInfoPostsRepository $additionalInfoPostsRepository
+        )
     {
-        $messages = [
-            'You did it! You updated the system! Amazing!',
-            'That was one of the coolest updates I\'ve seen all day!',
-            'Great work! Keep going!',
-        ];
+        $this->postsRepository = $postsRepository;
+        $this->ratingPostsRepository = $ratingPostsRepository;
+        $this->doctrine = $doctrine;
+        $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
+    }
 
-        $index = array_rand($messages);
+    public function addRating(int $postId, int $rating, int $sessionUserId)
+    {
+        $entityManager = $this->doctrine->getManager();
 
-        return $messages[$index];
+        $ratingPost = new RatingPosts();
+        $ratingPost->setPostId($postId);
+        $ratingPost->setUserId($sessionUserId);
+        $ratingPost->setRating($rating);
+        $entityManager->persist($ratingPost);
+        $entityManager->flush();
+
+        $infoPost = $this->additionalInfoPostsRepository->find($postId);
+        $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+
+        $generalRatingPost = $this->ratingPostsRepository->countRating($postId);
+        $infoPost->setRating((string) $generalRatingPost);
+        $entityManager->flush();
     }
 }

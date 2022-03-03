@@ -1,12 +1,12 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Posts;
 use App\Entity\AdditionalInfoPosts;
-use App\Entity\RatingPosts;
+use App\Service\PostService;
 use App\Repository\PostsRepository;
 use App\Repository\RatingPostsRepository;
-use App\Repository\AdditionalInfoPostsRepository;
 use App\Repository\CommentsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,26 +18,26 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
-    private int $maxSizeOfUploadImage = 4 * 1024 * 1024; // 4 megabytes
+    private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private ManagerRegistry $doctrine;
     private PostsRepository $postsRepository;
     private RatingPostsRepository $ratingPostsRepository;
     private CommentsRepository $commentsRepository;
-    private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
+    private PostService $postService;
 
     public function __construct(      
         ManagerRegistry $doctrine,
         PostsRepository $postsRepository,
         RatingPostsRepository $ratingPostsRepository,
         CommentsRepository $commentsRepository,
-        AdditionalInfoPostsRepository $additionalInfoPostsRepository
-        )
+        PostService $postService
+    )
     {
         $this->postsRepository = $postsRepository;
         $this->ratingPostsRepository = $ratingPostsRepository;
         $this->commentsRepository = $commentsRepository;
         $this->doctrine = $doctrine;
-        $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
+        $this->postService = $postService;
     }
 
     #[Route('', name: 'main', methods: ['GET'])]
@@ -75,13 +75,16 @@ class PostController extends AbstractController
             throw $this->createNotFoundException('Пост не найден');
         }
         $comments = $this->commentsRepository->findByPostId($postId);
-        $isUserAddRating = $this->ratingPostsRepository->findOneBy(
-            [
-                'userId' => 0,
-                'postId' => $postId
-            ]
-        );
-
+        $isUserAddRating = false;
+        if ($sessionUserId = $this->getUserId())
+        {
+            $isUserAddRating = $this->ratingPostsRepository->findOneBy(
+                [
+                    'userId' => $sessionUserId,
+                    'postId' => $postId
+                ]
+            );
+        }
         return $this->render('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
@@ -92,10 +95,7 @@ class PostController extends AbstractController
     #[Route('/add', name: 'show_add', methods: ['GET'])]
     public function showAdd(): Response
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         return $this->render('post/add.html.twig', [
             'max_size_of_upload_image' => $this->maxSizeOfUploadImage
         ]);
@@ -104,10 +104,9 @@ class PostController extends AbstractController
     #[Route('/add', name: 'add', methods: ['POST'])]
     public function add(Request $request): Response
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $sessionUserId = $this->getUserId();
+
         $title = $request->request->get('title');
         $title = trim(strip_tags($title));
         $content = $request->request->get('content');
@@ -117,7 +116,7 @@ class PostController extends AbstractController
             $entityManager = $this->doctrine->getManager();
             $post = new Posts();
             $post->setTitle($title);
-            $post->setUserId(4); //fffffffffffffffffffffffffffffffff
+            $post->setUserId($sessionUserId);
             $post->setContent($content);
             $post->setDateTime(time());
             $entityManager->persist($post);
@@ -148,26 +147,11 @@ class PostController extends AbstractController
     #[Route('/rating/{postId}', name: 'rating', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]
     public function addRating(int $postId, Request $request)
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
-        $rating = $request->request->get('rating', 0);
-        $entityManager = $this->doctrine->getManager();
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $sessionUserId = $this->getUserId();
 
-        $ratingPost = new RatingPosts();
-        $ratingPost->setPostId($postId);
-        $ratingPost->setUserId($this->sessionUserId);
-        $ratingPost->setRating($rating);
-        $entityManager->persist($ratingPost);
-        $entityManager->flush();
-
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
-        $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
-
-        $generalRatingPost = (string) $this->ratingPostsRepository->countRating($postId);
-        $infoPost->setRating($generalRatingPost);
-        $entityManager->flush();
+        $rating = (int) $request->request->get('rating');
+        $this->postService->addRating($postId, $rating, $sessionUserId);
 
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
@@ -185,5 +169,16 @@ class PostController extends AbstractController
             'Пост удален'
         );
         return $this->redirectToRoute('post_main');
+    }
+
+    private function getUserId(): int
+    {
+        if (!$this->isGranted('ROLE_USER'))
+        {
+            return 0;
+        }
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        return $user->getId();
     }
 }

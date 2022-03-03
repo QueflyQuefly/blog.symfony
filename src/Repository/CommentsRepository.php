@@ -50,35 +50,4 @@ class CommentsRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-
-    /**
-     * @return bool
-     */
-    public function like(int $commentId, int $userId, ManagerRegistry $doctrine)
-    {
-        $ratingRepository = new RatingCommentsRepository($doctrine);
-
-        $ratingComment = $ratingRepository->findOneBy(['userId' => $userId, 'commentId' => $commentId]);
-        $entityManager = $doctrine->getManager();
-        $comment = $entityManager->getRepository(Comments::class)->find($commentId);
-
-        if ($ratingComment)
-        {
-            $entityManager->remove($ratingComment);
-            $entityManager->flush();
-
-            $comment->setRating($comment->getRating() - 1);
-            $entityManager->flush();
-        } else {
-            $ratingComment = new RatingComments();
-            $ratingComment->setUserId($userId);
-            $ratingComment->setCommentId($commentId);
-            $entityManager->persist($ratingComment);
-            $entityManager->flush();
-
-            $comment->setRating($comment->getRating() + 1);
-            $entityManager->flush();
-        }
-        return true;
-    }
 }

@@ -87,7 +87,7 @@
                         {% if is_granted('ROLE_ADMIN') %}
                         
                         <form action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId }) }}' method='post'>
-                            <input type='submit' value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
+                            <input type='submit' name="comment_delete" value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
                         </form>
                         {% endif %}
                     </p> 

@@ -1,9 +1,7 @@
 <?php
+
 namespace App\Controller;
 
-/* use App\Entity\User;
-use App\Repository\UserRepository;
-use Doctrine\Persistence\ManagerRegistry; */
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -26,13 +24,11 @@ class UserController extends AbstractController
     #[Route('/cabinet', name: 'show_cabinet', methods: ['GET'])]
     public function showCabinet(Request $request): Response
     {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return $this->redirectToRoute('user_login');
-        }
         $pageDescription = 'Кабинет - Просто Блог';
         if (!empty($request->query->get('user'))) {
             $sessionUserId = (int) $request->query->get('user');
+        } else {
+            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         }
 
         return $this->render('blog_message.html.twig', [
