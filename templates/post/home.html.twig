@@ -1,46 +1,14 @@
 {% extends 'blog_base.html.twig' %}
 
 {% block content %}
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-        <div style='margin-left:30%;'>
-            <p class='{{ label }}' style='position:absolute; margin-top: -6vmin;'>{{ message }}</p>
-        </div>
-        {% endfor %}
-    {% endfor %}
+    {{ include('_blog_flashes.html.twig') }}
 
     <h1>Наилучший источник информации по теме "Путешествия"</h1>
 
     {% if posts %}
         {% set class = 'generalpost' %}
         {% for post in posts %}
-            <div class='{{ class }}'>
-                <a class='postLink' href='{{ path('post_show', {postId: post.id}) }}'>
-                    <div class='posttext'>
-                        <p class='posttitle'>{{ post.title }}</p>
-                        <p class='postcontent'>{{ post.content|striptags }}</p>
-                        <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.author }}</p>
-                        <p class='postrating'>
-                            {% if post.countRatings %}
-                                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatings }}, комментариев: {{ post.countComments }}
-                            {% else %}
-                                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div class='postimage'>
-                        <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
-                    </div>
-                </a>
-
-                {% if is_granted('ROLE_ADMIN') %}
-                <div class='submitunder'>
-                    <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
-                        <input type='submit' value='Удалить пост с ID = {{ post.id }}' class='link'>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
+            {{ include('post/_post.html.twig') }}
             {% set class = 'viewpost' %}
         {% endfor %}
     {% else %}
@@ -53,34 +21,9 @@
 
     {% if moreTalkedPosts %}
         <p style='text-align:center; font-size:16pt; margin-top:5%'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
+        {% set class = 'viewpost' %}
         {% for post in moreTalkedPosts %}
-            <div class='viewpost'>
-                <a class='postLink' href='{{ path('post_show', {postId: post.id}) }}'>
-                    <div class='posttext'>
-                        <p class='posttitle'>{{ post.title }}</p>
-                        <p class='postcontent'>{{ post.content|striptags }}</p>
-                        <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.author }}</p>
-                        <p class='postrating'>
-                            {% if post.countRatings %}
-                                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatings }}, комментариев: {{ post.countComments }}
-                            {% else %}
-                                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div class='postimage'>
-                        <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
-                    </div>
-                </a>
-
-                {% if is_granted('ROLE_ADMIN') %}
-                <div class='submitunder'>
-                    <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
-                        <input type='submit' value='Удалить пост с ID = {{ post.id }}' class='link'>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
+            {{ include('post/_post.html.twig') }}
         {% endfor %}
     {% endif %}
 {% endblock %}

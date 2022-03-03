@@ -39,7 +39,7 @@
         </div>
         {% endif %}
 
-        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_cabinet') }}'>Автор: {{ post.author }}{# post.author #}</a></p>
+        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile') }}'>Автор: {{ post.author }}{# post.author #}</a></p>
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
@@ -63,48 +63,17 @@
                     placeholder="Опишите ваши эмоции :-) (до 500 символов)" id='textcomment'></textarea>
                 <br>
                 <input type='submit' value='Добавить комментарий' class='formsubmit'>
-                {% for label, messages in app.flashes %}
-                    {% for message in messages %}
-                            <p class='{{ label }}'>{{ message }}</p>
-                    {% endfor %}
-                {% endfor %}
+                
+                {{ include('_blog_flashes.html.twig') }}
             </form>
         </div>
-
-
     </div>
 
     {% if comments %}
         {% for comment in comments %}
-            <div class='viewcomment' id='comment{{ comment.id }}'>
-                <p class='commentauthor'>
-                    <a class='menuLink' href='{{ path('user_show_cabinet') }}'>{{ comment.userId }}</a>
-                    <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
-                </p>
-                <div class='commentcontent'>
-                    <p class='commentcontent'>{{ comment.content }}</p> 
-                    <p class='commentcontent'>
-                        {% if is_granted('ROLE_ADMIN') %}
-                        
-                        <form action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId }) }}' method='post'>
-                            <input type='submit' name="comment_delete" value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
-                        </form>
-                        {% endif %}
-                    </p> 
-                </div>
-                <div class='like'>
-                    <form action='{{ path('comment_like', {commentId: comment.id, postId: post.id}) }}' method='post'>
-                        <input type='hidden' name='post_id' value="{{ comment.postId }}" >
-                        <label id='heartlike' title="Нравится">
-                            <span class='like'>&#9825; </span> {{ comment.rating }}
-                            <input type="submit" class='nodisplay' name="comment_id_like" value="{{ comment.id }}">
-                        </label>
-                    </form>
-                </div>
-                <hr>
-            </div>
+            {{ include('comment/_comment.html.twig') }}
         {% endfor %}
     {% else %}
-        <div class='contentsinglepost'><p class='center' style='color: rgb(150, 20, 20);'>Нет комментариев для отображения</p></div>
+        <div class='contentsinglepost'><p class='center'>Нет комментариев для отображения</p></div>
     {% endif %}
 {% endblock %}

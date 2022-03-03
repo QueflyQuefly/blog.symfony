@@ -61,7 +61,7 @@ class CommentController extends AbstractController
         } else {
             $this->addFlash(
                 'error',
-                'При добавлении комментария произошла ошибка: заполните поля формы'
+                'Произошла ошибка: заполните поля формы'
             );
         }
         return $this->redirectToRoute('post_show', ['postId' => $postId]);

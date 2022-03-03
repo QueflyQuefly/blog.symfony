@@ -22,18 +22,18 @@ nav{
 }
 nav #logo{
     width: 30%;
-    float:left;
+    float: left;
     height: 8vmin;
     padding-left: 8%;
 }
 nav #imglogo{
-    float:left;
+    float: left;
     width: 7vmin;
     height: 7vmin;
-    margin:0;
+    margin: 0;
 }
 nav #namelogo{
-    float:left;
+    float: left;
     width: 45%;
     padding: 4.5%;
     font-size: 15pt;
@@ -43,10 +43,10 @@ nav #namelogo{
 }
 nav #menu{
     width: 70%;
-    float:right;
+    float: right;
 }
 nav .menuList{
-    display:flex;
+    display: flex;
     justify-content: center;
 }
 nav .menuList li{
@@ -71,7 +71,7 @@ nav .menuList li{
     text-decoration: underline;
 }
 .menuLink:active{
-    text-decoration:currentColor;
+    text-decoration: currentColor;
 }
 .content{
     /* border:1px solid; */
@@ -95,31 +95,31 @@ h1{
 
 .postLink{
     text-decoration: none;
-    color:inherit;
+    color: inherit;
 }
 .postLink:hover{
     text-decoration: none;
-    color:inherit;
+    color: inherit;
 }
 .postLink:active{
     text-decoration: none;
-    color:inherit;
+    color: inherit;
 }
 /* generalpost */
 .generalpost{
     display: inline-block;
-    width:100%;
+    width: 100%;
     height: 52vmin;
-    padding:3vmin 3vmin;
-    margin:0 auto;
-    margin-top:2vmin;
-    transition:0ms;
+    padding: 3vmin 3vmin;
+    margin: 0 auto;
+    margin-top: 2vmin;
+    transition: 0ms;
     color:black;
 }
 .generalpost:hover{
-    border:0.3vmin solid lightgray;
-    padding:2.7vmin 2.7vmin;
-    cursor:pointer;
+    border: 0.3vmin solid lightgray;
+    padding: 2.7vmin 2.7vmin;
+    cursor: pointer;
 }
 .generalpost .posttitle{
     padding-top: 1vmin;
@@ -149,28 +149,28 @@ h1{
 /* smallposts */
 
 .postrating{
-    margin-top:-1.5vmin;
-    margin-left:2vmin;
+    margin-top: -1.5vmin;
+    margin-left: 2vmin;
 }
 .viewpost{
     display: inline-block;
-    padding:2vmin 2vmin;
-    margin:0 12.5%;
-    margin-top:2vmin;
+    padding: 2vmin 2vmin;
+    margin: 0 12.5%;
+    margin-top: 2vmin;
     width: 75%;
-    transition:0ms;
+    transition: 0ms;
     color:black;
 }
 .viewpost:hover{
-    border:0.3vmin solid lightgray;
-    padding:1.7vmin 1.7vmin;
-    cursor:pointer;
+    border: 0.3vmin solid lightgray;
+    padding: 1.7vmin 1.7vmin;
+    cursor: pointer;
 }
 .viewpost:hover .posttitle{
     color:darkslateblue;
 }
 .posttext{
-    float:left;
+    float: left;
     width: 70%;
     text-align: left;
     padding: 2vmin 3vmin 2vmin 2vmin;
@@ -219,7 +219,7 @@ h1{
     overflow: hidden;
     max-width: 99vmin;
     text-align: left; 
-    margin:0 auto;
+    margin: 0 auto;
     padding: 0;
     font-size: 28pt;
     text-indent: 1%;
@@ -235,13 +235,13 @@ h1{
 	cursor: pointer;
 }
 .rating-area input{
-    display:none;
+    display: none;
 }
 .rating-area label{
-    background-color:transparent;
+    background-color: transparent;
     border: none;
     font-size: 15pt;
-    padding:0;
+    padding: 0;
 	cursor: pointer;
 }
 .rating-area label:hover {
@@ -265,13 +265,13 @@ h1{
 .singlepostimage{
     width: 80%;
     height: 80vmin;
-    margin:5% auto;
-    display:none;
+    margin: 5% auto;
+    display: none;
 }
 .singlepostimg{
     width: 100%;
-    height:100%;
-    display:none;
+    height: 100%;
+    display: none;
 }
 .singleposttext{
     margin:0 auto;
@@ -292,18 +292,18 @@ h1{
 }
 .addcomments:hover{
     border: 0.3vmin solid lightgray;
-    padding:1.7vmin;
+    padding: 1.7vmin;
 }
 .addcomment{
     padding-left: 5%;
 }
 #textcomment{
     margin-bottom: 2%;
-    height:15vmin;
+    height: 15vmin;
     width: 80%;
-    padding:1%;
+    padding: 1%;
     font-size: 12pt;
-    resize:none;
+    resize: none;
     border: 0.3vmin solid lightgray;
 }
 #textcomment:hover {
@@ -314,7 +314,7 @@ h1{
     text-overflow: ellipsis;
     margin: 1% auto;
     width: 80%;
-    padding:1vmin;
+    padding: 1vmin;
     padding-left: 2vmin;
     color:black;
 }
@@ -325,16 +325,16 @@ h1{
     cursor:pointer;
 }
 .commentauthor{
-    margin-bottom:0;
-    padding-bottom:0;
+    margin-bottom: 0;
+    padding-bottom: 0;
     font-size: 13pt;
 }
 .commentdate{
     font-style: oblique;
-    margin-top:0;
-    padding-top:1%;
+    margin-top: 0;
+    padding-top: 1%;
     font-size: 11pt;
-    padding-left:5%;
+    padding-left: 5%;
 }
 .commentcontent{
     text-overflow: ellipsis;
@@ -347,7 +347,7 @@ h1{
 /* like area */
 .like{
     margin-left: 8%;
-    background-color:transparent;
+    background-color: transparent;
     border: none;
     max-width: 20vmin;
     font-size: 15pt;
@@ -371,26 +371,26 @@ hr{
     font-size: 14pt;
     text-overflow: ellipsis;
     overflow: hidden;
-    text-decoration:none;
+    text-decoration: none;
     list-style: none;
-    padding:1.5vmin;
-    padding-bottom:0.5vmin;
+    padding: 1.5vmin;
+    padding-bottom: 0.5vmin;
     color: darkslateblue;
-    float:right;
+    float: right;
     margin-right: 3%;
 }
 .list:hover{
     border: 0.3vmin solid lightgray;
     padding: 1.2vmin;
-    padding-bottom:0.2vmin;
+    padding-bottom: 0.2vmin;
 }
 /* Style the search field */
 .search{
     /* position:absolute; */
-    left:1vmin;
-    top:2.5vmin;
+    left: 1vmin;
+    top: 2.5vmin;
     display: inline-table;
-    width:100%;
+    width: 100%;
 }
 .text {
     padding: 10px;
@@ -452,28 +452,28 @@ hr{
 }
 .formentry{
     border: 1px solid lightgray;
-    width:55%;
+    width: 55%;
     padding-bottom: 10vmin;
     margin: 1% auto;
     text-align: center;
 }
 .formmsg{
-    height:10%;
+    height: 10%;
     margin-bottom: 5%;
     text-align: center;
 }
 #left{
-    float:left;
+    float: left;
     margin-left: 15%;
     margin-top: 1vmin;
 }
 #right{
-    float:right;
+    float: right;
     margin-right: 20%;
 }
 .formname{
     font-size: 17pt;
-    text-align:center;
+    text-align: center;
 }
 .formlabel{
     font-size: 11pt;
@@ -493,13 +493,13 @@ hr{
     transition: 0ms;
 }    
 .formtext:focus {
-    border:0.3vmin solid rgb(1, 90, 255);
+    border: 0.3vmin solid rgb(1, 90, 255);
 }
 .formtext:focus:hover {
-    border:0.3vmin solid rgb(1, 90, 255);
+    border: 0.3vmin solid rgb(1, 90, 255);
 }
 .formtext:hover {
-    border:0.3vmin solid gray;
+    border: 0.3vmin solid gray;
 }
 .captcha{
     margin-top: 7px;
@@ -520,7 +520,7 @@ hr{
     padding: 1vmin 3.5vmin;
     background-color:rgb(1, 90, 255);
     color:white;
-    border:0;
+    border: 0;
     font-size: 12pt;
     text-decoration: none;
 }
@@ -529,7 +529,7 @@ hr{
     cursor: pointer;
 }
 .formradio {
-    text-align:left;
+    text-align: left;
     margin-left: 10vmin;
     padding: 2vmin;
 }
@@ -545,20 +545,14 @@ hr{
     margin: -3% auto;
 }
 .addpostform{
-    height:75vmin;
-    width:100%;
+    height: 75vmin;
+    width: 100%;
     margin: 1% auto;
-    text-align:center;
-}
-.addpostmsg{
-    height:3vmin;
-    width:50%;
-    margin: -2% auto 0 auto;
-    text-align:center;
+    text-align: center;
 }
 .addpostlabel{
-    font-size: 17pt;
-    text-align:center;
+    margin-top: 1vmin;
+    margin-bottom: 0;
 }
 .addpostname{
     background-color:white;
@@ -575,10 +569,10 @@ hr{
     transition: 1s;
 }    
 .addpostname:hover {
-    border:0.3vmin solid gray;
+    border: 0.3vmin solid gray;
 }
 .addpostname:focus {
-    border:0.3vmin solid rgb(1, 90, 255);
+    border: 0.3vmin solid rgb(1, 90, 255);
 }
 .addpostimg{
     background-color:white;
@@ -593,17 +587,17 @@ hr{
     margin: 5px auto;
 }    
 .addpostimg:hover {
-    border:0.3vmin solid gray;
-    cursor:pointer;
+    border: 0.3vmin solid gray;
+    cursor: pointer;
 }
 .addpostimg:focus {
-    border:0.3vmin solid rgb(1, 90, 255);
+    border: 0.3vmin solid rgb(1, 90, 255);
 }
 .addpostsubmit{
     padding: 8px 25px;
     background-color:rgb(1, 90, 255);
     color:white;
-    border:0;
+    border: 0;
     font-size: 12pt;
 }
 .addpostsubmit:hover{
@@ -611,9 +605,9 @@ hr{
     cursor: pointer;
 }
 #addposttextarea{
-    height:33vmin;
+    height: 33vmin;
     width: 100%;
-    padding:1%;
+    padding: 1%;
     font-size: 12pt;
     margin: 1% 1.5%;
     resize: none;
@@ -621,13 +615,13 @@ hr{
     transition: 1s;
 }
 #addposttextarea:hover{
-    border:0.3vmin solid gray;
+    border: 0.3vmin solid gray;
 }
 /* addpost */
 
 /* messages */
 .error{
-    text-align:center;
+    text-align: center;
     font-size: 10pt;
     color:crimson;
     height: 1vmin;
@@ -636,7 +630,7 @@ hr{
     animation-iteration-count: 1;
 }
 .success{
-    text-align:center;
+    text-align: center;
     font-size: 10pt;
     color:rgb(7, 128, 71);
     height: 1vmin;
@@ -665,14 +659,14 @@ hr{
     font-size: 1em;
     border: none;
     background-color: transparent;
-    cursor:pointer;
+    cursor: pointer;
 }
 .link:hover{
     color:darkslateblue;
     text-decoration: underline;
 }
 .link:active{
-    text-decoration:currentColor;
+    text-decoration: currentColor;
 }
 .center{
     margin-left: 10%;
@@ -689,7 +683,7 @@ footer{
     text-align: center;
 }
 img[alt="www.000webhost.com"] {
-    display:none;
+    display: none;
 }
  @media (min-width: 300px) and (max-width: 500.98px) {
     .content {
@@ -699,15 +693,15 @@ img[alt="www.000webhost.com"] {
         max-height: 30vmin;
     }
     #logo {
-        width:10%;
+        width: 10%;
         padding: 0;
     }
     #namelogo {
-        width:0;
-        display:none;
+        width: 0;
+        display: none;
     }
     #menu {
-        width:90%;
+        width: 90%;
     }
     nav .menuList {
         justify-content: flex-end;
@@ -722,6 +716,6 @@ img[alt="www.000webhost.com"] {
         margin: 0 5%;
     }
     footer {
-        height:20vmin;
+        height: 20vmin;
     }
 }

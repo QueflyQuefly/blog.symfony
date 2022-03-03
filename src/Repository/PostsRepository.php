@@ -106,6 +106,51 @@ class PostsRepository extends ServiceEntityRepository
         return $query->getOneOrNullResult();
     }
 
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function getPostsByUserId(int $userId)
+    {
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.postId
+                JOIN App\Entity\User u
+                WITH p.userId = u.id
+                WHERE u.id = :val
+                ORDER BY p.id DESC'
+        ;
+        $query = $entityManager->createQuery($dql)
+            ->setParameter('val', $userId);
+
+        return $query->getResult();
+    }
+
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function getLikedPostsByUserId(int $userId)
+    {
+        $entityManager = $this->getEntityManager();
+        $dql = 'SELECT p.id, p.title, p.userId, p.dateTime, p.content, 
+                    a.rating, a.countComments, a.countRatings, u.fio as author 
+                FROM App\Entity\Posts p 
+                JOIN App\Entity\AdditionalInfoPosts a 
+                WITH p.id = a.postId
+                JOIN App\Entity\User u
+                WITH p.userId = u.id
+                JOIN App\Entity\RatingPosts r
+                WHERE r.userId = :val
+                ORDER BY p.id DESC'
+        ;
+        $query = $entityManager->createQuery($dql)
+            ->setParameter('val', $userId);
+
+        return $query->getResult();
+    }
+
     // /**
     //  * @return Posts[] Returns an array of Posts objects
     //  */

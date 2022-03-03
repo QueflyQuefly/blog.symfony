@@ -1,0 +1,26 @@
+<div class='viewcomment' id='comment{{ comment.id }}'>
+    <p class='commentauthor'>
+        <a class='menuLink' href='{{ path('user_show_profile') }}'>{{ comment.author }}</a>
+        <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
+    </p>
+    <div class='commentcontent'>
+        <p class='commentcontent'>{{ comment.content }}</p> 
+        <p class='commentcontent'>
+            {% if is_granted('ROLE_ADMIN') %}
+            
+            <form action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId }) }}' method='post'>
+                <input type='submit' name="comment_delete" value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
+            </form>
+            {% endif %}
+        </p> 
+    </div>
+    <div class='like'>
+        <form action='{{ path('comment_like', {commentId: comment.id, postId: comment.postId}) }}' method='post'>
+            <label id='heartlike' title="Нравится">
+                <span class='like'>&#9825; </span> {{ comment.rating }}
+                <input type="submit" class='nodisplay' name="comment_id_like" value="{{ comment.id }}">
+            </label>
+        </form>
+    </div>
+    <hr>
+</div>

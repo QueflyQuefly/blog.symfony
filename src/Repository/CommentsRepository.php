@@ -27,6 +27,8 @@ class CommentsRepository extends ServiceEntityRepository
     public function findByUserId(int $userId)
     {
         return $this->createQueryBuilder('c')
+            ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'c.userId = u.id')
             ->andWhere('c.userId = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
@@ -42,8 +44,28 @@ class CommentsRepository extends ServiceEntityRepository
     public function findByPostId(int $postId)
     {
         return $this->createQueryBuilder('c')
+            ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'c.userId = u.id')
             ->andWhere('c.postId = :val')
             ->setParameter('val', $postId)
+            ->orderBy('c.id', 'DESC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Comments[] Returns an array of Comments objects
+     */
+    public function getLikedCommentsByUserId(int $userId)
+    {
+        return $this->createQueryBuilder('c')
+            ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'c.userId = u.id')
+            ->join('App\Entity\RatingComments', 'r', 'WITH', 'r.commentId = c.id')
+            ->andWhere('r.userId = :val')
+            ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults(30)
             ->getQuery()

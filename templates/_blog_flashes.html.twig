@@ -1,0 +1,7 @@
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+    <div style='margin-top: -6vmin; padding-bottom: 2vmin;'>
+        <p class='{{ label }}'>{{ message }}</p>
+    </div>
+    {% endfor %}
+{% endfor %}

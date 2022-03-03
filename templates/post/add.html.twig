@@ -3,30 +3,46 @@
 {% block title %} Добавление поста - Просто Блог {% endblock %}
 
 {% block content %}
-    {% for message in app.flashes('error') %}
-        <div style='margin-left:30%;'>
-            <p class='error' style='position:absolute; margin-top: -6vmin;'>{{ message }}</p>
-        </div>
-    {% endfor %}
+    {{ include('_blog_flashes.html.twig') }}
+
     <div class='addpostcontainer'>
-        <p class='addpostlabel'>Форма добавления поста:</p>
+        <p class='formname'>Форма добавления поста:</p>
         <div class='addpostform'>
-            <form action='{{ path('post_add') }}' method='post' enctype="multipart/form-data" id='addpost'>
-                <label id='input' for='addpostname' class='addpost'>Заголовок: </label>
-                <input type='text' id='addpostname' title='Заголовок' class='addpostname' required minlength="1" maxlength='140' autofocus name='title' placeholder="Добавьте заголовок поста. Количество символов: от 20 до 140">
-                
-                <br> <input type="hidden" name="MAX_FILE_SIZE" value="{{ max_size_of_upload_image }}"> <br>
-                <label id='img' for='file_img' class='addpost'>
-                    Пожалуйста, добавьте картинку. Допускаются jpg весом до {{ max_size_of_upload_image / 1024 / 1024 }} мегабайт
+            <form action='{{ path('post_add') }}' method='post' enctype="multipart/form-data">
+                <label>Заголовок: 
+                    <input 
+                        type='text'
+                        title='Заголовок'
+                        class='addpostname'
+                        required minlength="1"
+                        maxlength='140'
+                        autofocus
+                        name='title'
+                        placeholder="Добавьте заголовок поста. Количество символов: от 20 до 140"
+                    >
                 </label>
-                <input class='addpostimg' type='file' name='image' id='file_img' > <!-- required -->
-                <br>
-                <br>
-                <label id='input' for='addposttextarea' class='addpost'>Содержание поста: </label>
-                <br>
-                <textarea title='Содержание' required minlength="1" maxlength='4000' spellcheck="true" wrap='hard' 
-                        name='content' placeholder="Добавление содержания. Количество символов: от 20 до 4000 с пробелами" 
-                        id='addposttextarea'></textarea>
+                <input type="hidden" name="MAX_FILE_SIZE" value="{{ max_size_of_upload_image }}">
+                <label>
+                    <p class='addpostlabel'>
+                        Пожалуйста, добавьте картинку. 
+                        Допускаются jpg весом до {{ max_size_of_upload_image / 1024 / 1024 }} мегабайт
+                    </p>
+                    <input class='addpostimg' type='file' name='image'> <!-- required -->
+                </label>
+                <label>
+                    <p class='addpostlabel'>Содержание поста:</p>
+                    <textarea 
+                        title='Содержание'
+                        required
+                        minlength="1"
+                        maxlength='4000'
+                        spellcheck="true"
+                        wrap='hard'
+                        name='content'
+                        placeholder="Добавление содержания. Количество символов: от 20 до 4000 с пробелами"
+                        id='addposttextarea'
+                    ></textarea>
+                </label>
                 <br>
                 <input type='submit' value='Добавить пост' class='addpostsubmit'>
             </form>

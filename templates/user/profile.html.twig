@@ -1,0 +1,76 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Профиль {{ user.getFio }} - Просто Блог {% endblock %}
+
+{% block content %}
+    <h1>Профиль пользователя: {{ user.fio }}
+        <p>E-mail: {{ user.email }}</p>
+
+        {% if ( user.roles[0] == 'ROLE_ADMIN' ) %}
+            <p style='font-size: 13pt; color: green;'>Является администратором этого сайта</p>
+        {% endif %}
+        
+        {% if ( app.user and user.id == app.user.id ) %}
+            <a 
+                class='link' 
+                style='font-size:13pt; margin-left:30vmin' 
+                title='Изменить параметры профиля' 
+                href='/cabinet/?changeinfo'
+            >
+                Изменить параметры профиля
+            </a>
+        {% endif %}
+        
+        {#% if app.user %}
+            if (!$this->_subscribeController->isSubscribedUser($sessionUserId, $user['user_id'])) {
+                        <input type='submit' style='font-size:13pt;' form='subscribe' value='Подписаться' class='link'>
+                        <form id='subscribe' action='' method='post'>
+                            <input type='hidden' name='subscribe'>
+                        </form>
+            } else {
+                        <input type='submit' style='font-size:13pt;' form='subscribe' value='Отписаться' class='link'>
+                        <form id='subscribe' action='' method='post'>
+                            <input type='hidden' name='unsubscribe'>
+                        </form>
+            }
+        {% endif %#}
+    </h1>
+
+        <br><div class='contentsinglepost'><p class='posttitle'>Посты от автора &copy; {{ user.fio }}:</p></div>
+        {% if posts %}
+            {% set class = 'viewpost' %}
+            {% for post in posts %}
+                {{ include('post/_post.html.twig') }}
+            {% endfor %}
+        {% else %}
+            <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+        {% endif %}
+
+        <div class='contentsinglepost'><p class='posttitle'>Комментарии автора &copy; {{ user.fio }}:</p></div>
+        {% if comments %}
+            {% for comment in comments %}
+                {{ include('comment/_comment.html.twig') }}
+            {% endfor %}
+        {% else %}
+            <div class='contentsinglepost'><p class='center'>Нет комментариев для отображения</p></div>
+        {% endif %}
+
+        <div class='contentsinglepost'><p class='posttitle'>Оценённые посты &copy; {{ user.fio }}:</p></div>
+        {% if likedPosts %}
+            {% set class = 'viewpost' %}
+            {% for post in likedPosts %}
+                {{ include('post/_post.html.twig') }}
+            {% endfor %}
+        {% else %}
+            <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+        {% endif %}
+
+        <div class='contentsinglepost'><p class='posttitle'>Понравившиеся комментарии &copy; {{ user.fio }}:</p></div>
+        {% if likedComments %}
+            {% for comment in likedComments %}
+                {{ include('comment/_comment.html.twig') }}
+            {% endfor %}
+        {% else %}
+            <div class='contentsinglepost'><p class='center'>Нет комментариев для отображения</p></div>
+        {% endif %}
+{% endblock %}

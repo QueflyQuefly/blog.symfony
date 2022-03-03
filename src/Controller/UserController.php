@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\UserRepository;
+use App\Repository\PostsRepository;
+use App\Repository\CommentsRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -13,26 +16,44 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     private AuthenticationUtils $authenticationUtils;
+    private UserRepository $userRepository;
+    private PostsRepository $postsRepository;
+    private CommentsRepository $commentsRepository;
 
     public function __construct(      
-        AuthenticationUtils $authenticationUtils
-        )
+        AuthenticationUtils $authenticationUtils,
+        UserRepository $userRepository,
+        PostsRepository $postsRepository,
+        CommentsRepository $commentsRepository
+    )
     {
         $this->authenticationUtils = $authenticationUtils;
+        $this->userRepository = $userRepository;
+        $this->postsRepository = $postsRepository;
+        $this->commentsRepository = $commentsRepository;
     }
 
-    #[Route('/cabinet', name: 'show_cabinet', methods: ['GET'])]
-    public function showCabinet(Request $request): Response
+    #[Route('/profile/{userId<\b[0-9]+>?}', name: 'show_profile', methods: ['GET'])]
+    public function showProfile(?int $userId, Request $request): Response
     {
-        $pageDescription = 'Кабинет - Просто Блог';
-        if (!empty($request->query->get('user'))) {
-            $sessionUserId = (int) $request->query->get('user');
+        if (!empty($userId)) {
+            $user = $this->userRepository->find($userId);
         } else {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
         }
+        $posts = $this->postsRepository->getPostsByUserId($user->getId());
+        $comments = $this->commentsRepository->findByUserId($user->getId());
+        $likedPosts = $this->postsRepository->getLikedPostsByUserId($user->getId());
+        $likedComments = $this->commentsRepository->getLikedCommentsByUserId($user->getId());
 
-        return $this->render('blog_message.html.twig', [
-            'description' => $pageDescription
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+            'posts' => $posts,
+            'comments' => $comments,
+            'likedPosts' => $likedPosts,
+            'likedComments' => $likedComments,
         ]);
     }
 

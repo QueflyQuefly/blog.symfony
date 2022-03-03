@@ -1,0 +1,20 @@
+<div class='singleposttext'>
+    <label for='number'>Количество: </label>
+    <select id='number' class='select' name="number" onchange="window.location.href=this.options[this.selectedIndex].value">
+        <option value='$numberOfPosts' selected>{{ numberOfPosts }}</option>
+        <option value='{{ path(nameOfPath) }}/?number=25&page={{ page }}'>25</option>
+        <option value='{{ path(nameOfPath) }}/?number=50&page={{ page }}'>50</option>
+        <option value='{{ path(nameOfPath) }}/?number=100&page={{ page }}'>100</option>
+    </select>
+
+    <label style='margin-left:2vmin;' for='page'>Страница: </label>
+    <select id='page' class='select' 
+        name="page" onchange="window.location.href=this.options[this.selectedIndex].value">
+        <option value='{{ page }}' selected>{{ page }}</option>
+            {% for i in page - 3.. page + 3 %}
+                {% if i > 0 %}
+                    <option value='{{ path(nameOfPath) }}/?number={{ numberOfPosts }}&page={{ i }}'>{{ i }}</option>
+                {% endif %}
+            {% endfor %}
+    </select>
+</div>
