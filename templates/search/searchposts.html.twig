@@ -1,0 +1,40 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Поиск постов - Просто Блог {% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <h1> Поиск поста осуществляется по заголовку, автору и хештэгу,
+        <br> а также по его содержимому 
+    </h1>
+
+    <div class='contentsinglepost'>
+        <form class='searchfield' action='{{ path('search_posts') }}/' method='get'>
+            <input
+                type='text'
+                required 
+                autofocus 
+                autocomplete="on" 
+                minlength="1" 
+                maxlength="100" 
+                placeholder='Найти...' 
+                name='search' 
+                value='{{ search }}'
+            >
+            <button type="submit">&#x2315</button>
+        </form>
+    </div>
+
+    <p class='contentsinglepost'><a class='link' href='{{ path('search_users') }}'> Поиск пользователей </a></p>
+
+    {% if posts %}
+        {% set class = 'generalpost' %}
+        {% for post in posts %}
+            {{ include('post/_post.html.twig') }}
+            {% set class = 'viewpost' %}
+        {% endfor %}
+    {% elseif search %}
+        <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+    {% endif %}
+{% endblock %}

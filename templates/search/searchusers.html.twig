@@ -1,0 +1,36 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Поиск пользователей - Просто Блог {% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <h1> Поиск автора осуществляется по ФИО и логину (email) </h1>
+
+    <div class='contentsinglepost'>
+        <form class='searchfield' action='{{ path('search_users') }}/' method='get'>
+            <input
+                type='text'
+                required 
+                autofocus 
+                autocomplete="on" 
+                minlength="1" 
+                maxlength="100" 
+                placeholder='Найти...' 
+                name='search' 
+                value='{{ search }}'
+            >
+            <button type="submit">&#x2315</button>
+        </form>
+    </div>
+
+    <p class='contentsinglepost'><a class='link' href='{{ path('search_posts') }}'> Поиск постов </a></p>
+
+    {% if users %}
+        {% for user in users %}
+            {{ include('user/_user.html.twig') }}
+        {% endfor %}
+    {% elseif search %}
+        <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+    {% endif %}
+{% endblock %}

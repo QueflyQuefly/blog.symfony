@@ -60,7 +60,7 @@ class PostService
     {
         $rating = 0.0;
         $i = 0;
-        $allRatingsPost = $this->ratingPostsRepository->findBy(['postId' => $postId]);
+        $allRatingsPost = $this->ratingPostsRepository->findByPostId($postId);
         foreach ($allRatingsPost as $ratingPost)
         {
             $i++;
@@ -150,6 +150,19 @@ class PostService
     public function getLikedPostsByUserId(int $userId)
     {
         return $this->postsRepository->getLikedPostsByUserId($userId);
+    }
+
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function searchPosts(string $searchWords)
+    {
+        $searchWords = '%'.$searchWords.'%';
+        $posts = $this->postsRepository->searchByTitle($searchWords);
+        $posts1 = $this->postsRepository->searchByAuthor($searchWords);
+        $posts2 = $this->postsRepository->searchByContent($searchWords);
+        $results = array_merge($posts, $posts1, $posts2);
+        return $results;
     }
 
     public function delete($post)

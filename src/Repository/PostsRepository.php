@@ -131,32 +131,60 @@ class PostsRepository extends ServiceEntityRepository
         ;
     }
 
-    // /**
-    //  * @return Posts[] Returns an array of Posts objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function searchByTitle(string $search)
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
+            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
+            ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
+            ->andWhere('p.title LIKE :search')
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('search', $search)
+            ->setMaxResults(20)
             ->getQuery()
             ->getResult()
         ;
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Posts
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function searchByAuthor(string $search)
     {
         return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
+            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
+            ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
+            ->andWhere('u.fio LIKE :search')
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('search', $search)
+            ->setMaxResults(20)
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getResult()
         ;
     }
-    */
+
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function searchByContent(string $search)
+    {
+        return $this->createQueryBuilder('p')
+            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
+            ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
+            ->andWhere('p.content LIKE :search')
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('search', $search)
+            ->setMaxResults(20)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

@@ -38,6 +38,17 @@ class UserService
         return $this->userRepository->getUsers($numberOfUsers, $lessThanMaxId);
     }
 
+    /**
+     * @return Users[] Returns an array of Users objects
+     */
+    public function searchUsers(string $searchWords)
+    {
+        $users = $this->userRepository->findByFio($searchWords);
+        $users1 = $this->userRepository->findByEmail($searchWords);
+        $results = array_merge($users, $users1);
+        return $results;
+    }
+
     public function delete($user)
     {
         $this->entityManager->remove($user);
