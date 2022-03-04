@@ -28,11 +28,11 @@
                     {% if is_granted('ROLE_USER') %}
                         <li>
                             <form id='exit' action='{{ path('user_logout') }}' method='post'>
-                                <input type='submit' form='exit' value='Выйти' class='menuLink'>
+                                <input style='padding-left:0; padding-right:0;' type='submit' form='exit' value='Выйти' class='menuLink'>
                             </form>
                         </li>
                         {% if is_granted('ROLE_ADMIN') %}
-                        <li><a class='menuLink' href='/admin'>Админка</a></li>
+                        <li><a class='menuLink' href='{{ path('admin_main') }}'>Админка</a></li>
                         {% endif %}
                     {% else %}
                         <li><a class='menuLink' href='{{ path('user_login') }}'>Войти</a></li>

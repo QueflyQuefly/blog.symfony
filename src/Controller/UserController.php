@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Repository\UserRepository;
+use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,19 +15,19 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     private AuthenticationUtils $authenticationUtils;
-    private UserRepository $userRepository;
+    private UserService $userService;
     private PostService $postService;
     private CommentService $commentService;
 
-    public function __construct(      
+    public function __construct(
         AuthenticationUtils $authenticationUtils,
-        UserRepository $userRepository,
-        PostService $postService, 
+        UserService $userService,
+        PostService $postService,
         CommentService $commentService
     )
     {
         $this->authenticationUtils = $authenticationUtils;
-        $this->userRepository = $userRepository;
+        $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
     }
@@ -36,7 +36,7 @@ class UserController extends AbstractController
     public function showProfile(?int $userId): Response
     {
         if (!empty($userId)) {
-            $user = $this->userRepository->find($userId);
+            $user = $this->userService->find($userId);
         } else {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
             /** @var \App\Entity\User $user */

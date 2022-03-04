@@ -10,25 +10,27 @@
             <p style='font-size: 13pt; color: green;'>Является администратором этого сайта</p>
         {% endif %}
         
-        {#% if ( app.user and user.id == app.user.id ) %}
+        {% if ( app.user and user.id == app.user.id ) %}
             <a 
                 class='link' 
-                style='font-size:13pt; margin-left:30vmin' 
+                style='font-size:13pt;' 
                 title='Изменить параметры профиля' 
-                href='/cabinet/?changeinfo'
+                href=''
             >
                 Изменить параметры профиля
             </a>
         {% endif %}
         
-        {% if app.user %}
+        {#% if app.user %}
             if (!$this->_subscribeController->isSubscribedUser($sessionUserId, $user['user_id'])) {
-                        <input type='submit' style='font-size:13pt;' form='subscribe' value='Подписаться' class='link'>
+                        <input type='submit' style='font-size:13pt;' form='subscribe' 
+                            value='Подписаться' class='link'>
                         <form id='subscribe' action='' method='post'>
                             <input type='hidden' name='subscribe'>
                         </form>
             } else {
-                        <input type='submit' style='font-size:13pt;' form='subscribe' value='Отписаться' class='link'>
+                        <input type='submit' style='font-size:13pt;' form='subscribe' 
+                            value='Отписаться' class='link'>
                         <form id='subscribe' action='' method='post'>
                             <input type='hidden' name='unsubscribe'>
                         </form>

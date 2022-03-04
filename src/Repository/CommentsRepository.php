@@ -41,6 +41,22 @@ class CommentsRepository extends ServiceEntityRepository
     /**
      * @return Comments[] Returns an array of Comments objects
      */
+    public function getComments(int $numberOfComments, int $lessThanMaxId)
+    {
+        return $this->createQueryBuilder('c')
+            ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'c.userId = u.id')
+            ->orderBy('c.id', 'DESC')
+            ->setFirstResult($lessThanMaxId)
+            ->setMaxResults($numberOfComments)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Comments[] Returns an array of Comments objects
+     */
     public function getCommentsByUserId(int $userId)
     {
         return $this->createQueryBuilder('c')

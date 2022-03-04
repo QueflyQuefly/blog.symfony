@@ -7,18 +7,17 @@
         <p class='commentcontent'>{{ comment.content }}</p> 
         <p class='commentcontent'>
             {% if is_granted('ROLE_ADMIN') %}
-            
-            <form action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId }) }}' method='post'>
-                <input type='submit' name="comment_delete" value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
-            </form>
+                <form id='delete{{ comment.id }}' action='{{ path('comment_delete', {commentId: comment.id, postId: comment.postId}) }}' method='post'>
+                    <input type='submit' form='delete{{ comment.id }}' name="comment_delete" value='Удалить комментарий с ID = {{ comment.id }}' class='link'>
+                </form>
             {% endif %}
         </p> 
     </div>
     <div class='like'>
-        <form action='{{ path('comment_like', {commentId: comment.id, postId: comment.postId}) }}' method='post'>
+        <form id='like{{ comment.id }}' action='{{ path('comment_like', {commentId: comment.id, postId: comment.postId}) }}' method='post'>
             <label id='heartlike' title="Нравится">
                 <span class='like'>&#9825; </span> {{ comment.rating }}
-                <input type="submit" class='nodisplay' name="comment_id_like" value="{{ comment.id }}">
+                <input form='like{{ comment.id }}' type="submit" class='nodisplay' name="comment_id_like" value="{{ comment.id }}">
             </label>
         </form>
     </div>

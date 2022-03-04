@@ -74,6 +74,16 @@ class CommentService
     /**
      * @return Comments[] Returns an array of Comments objects
      */
+    public function getComments(int $numberOfComments, int $page)
+    {
+        $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
+
+        return $this->commentsRepository->getComments($numberOfComments, $lessThanMaxId);
+    }
+    
+    /**
+     * @return Comments[] Returns an array of Comments objects
+     */
     public function getCommentsByPostId(int $postId)
     {
         return $this->commentsRepository->getCommentsByPostId($postId);

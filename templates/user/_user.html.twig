@@ -1,0 +1,15 @@
+<div class='viewpost'>
+    <a class='postLink' title='Перейти в профиль' href='{{ path('user_show_profile', {'userId': user.id}) }}'>
+        <div class='posttext'>
+            <p class='posttitle'> ФИО(псевдоним): {{ user.fio }}</p>
+            <p class='posttitle'> E-mail: {{ user.email }}</p>
+            <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
+            <p class='posttitle'> Права: {{ user.roles[0] }}</p>
+        </div>
+    </a>
+    {% if is_granted('ROLE_ADMIN') %}
+        <form id='deleteUserById{{ user.id }}' action='{{ path('admin_delete_user', {'id': user.id}) }}' method='post'>
+            <input type='submit' form='deleteUserById{{ user.id }}' value='Удалить {{ user.roles[0] }}-a' class='link' id='right'>
+        </form>
+    {% endif %}
+</div>

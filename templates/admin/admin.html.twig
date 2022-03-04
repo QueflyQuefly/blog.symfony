@@ -1,0 +1,23 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Администрирование - Просто Блог {% endblock %}
+
+{% block content %}
+
+    <div class='formentry'>
+        <p class='formname'>Администрирование</p>
+        <div class='formleft'>
+            <ul>
+                <li><a class='menuLink' title='Перейти' href='{{ path('admin_show_users') }}'>К управлению пользователями</a></li>
+                <li><a class='menuLink' title='Перейти' href='{{ path('post_show_all') }}'>К управлению постами</a></li>
+                <li><a class='menuLink' title='Перейти' href='{{ path('admin_show_comments') }}'>К управлению комментариями</a></li>
+                <li><a class='menuLink' title='Перейти' href='{{ path('app_register') }}'>Создать администратора (пользователя)</a></li>
+                <li><a class='menuLink' title='Перейти' href='{{ path('post_show_all') }}'>К стабу базы данных</a></li>
+            </ul>
+        </div>
+        
+        {{ include('_blog_flashes.html.twig') }}
+
+    </div>
+
+{% endblock %}

@@ -4,7 +4,7 @@
 }
 html,
 body{
-    margin: 8vmin 0 0 0;
+    margin: 8vh 0 0 0;
     flex: 1;
     background-color: rgb(250, 250, 250);
 }
@@ -57,7 +57,6 @@ nav .menuList li{
 }
 .menuLink{
     color: black;
-    text-decoration: none;
     background-color: transparent;
     font-family: sans-serif;
     font-size: 12pt;
@@ -65,10 +64,16 @@ nav .menuList li{
     margin: auto 1vmin;
     list-style-type: none;
     border: none;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+    background-size: 0% 1px;
+    transition: background-size .3s;
 }
 .menuLink:hover{
     color: rgb(77, 77, 77);
-    text-decoration: underline;
+    background-size: 100% 1px;
 }
 .menuLink:active{
     text-decoration: currentColor;
@@ -77,7 +82,7 @@ nav .menuList li{
     /* border:1px solid; */
     flex-direction: column;
     width: 100%;
-    min-height: 100vmin;
+    min-height: 95vh;
     padding: 2vmin 10%;
 }
 .content * {
@@ -203,14 +208,6 @@ h1{
 }
 /*  */
 /* view singlepost */
-.allsinglepost{
-    text-overflow: ellipsis;
-    overflow: hidden;
-    margin: 0vmin 0vmin;
-    width: 100%;
-    min-height: 95vmin;
-    display: table;
-}
 .contentsinglepost{
     margin: 2% 17% 2% 17%;
 }
@@ -366,24 +363,6 @@ h1{
 hr{
     width: 85%;
 }
-.list{
-    margin:0 auto;
-    font-size: 14pt;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-decoration: none;
-    list-style: none;
-    padding: 1.5vmin;
-    padding-bottom: 0.5vmin;
-    color: darkslateblue;
-    float: right;
-    margin-right: 3%;
-}
-.list:hover{
-    border: 0.3vmin solid lightgray;
-    padding: 1.2vmin;
-    padding-bottom: 0.2vmin;
-}
 /* Style the search field */
 .search{
     /* position:absolute; */
@@ -528,18 +507,14 @@ hr{
     background-color:rgb(0, 18, 177);
     cursor: pointer;
 }
-.formradio {
+.formleft {
     text-align: left;
     margin-left: 10vmin;
     padding: 2vmin;
 }
-.formradio .formlabel{
-    font-size: 13pt;
+.formleft li{
+    padding: 1vmin;
 }
-.formradio input{
-    margin: 1.5vmin;
-}
-
 /* addpost */
 .addpostcontainer{
     margin: -3% auto;

@@ -1,16 +1,19 @@
-{% extends 'post/home.html.twig' %}
+{% extends 'blog_base.html.twig' %}
 
 {% block title %} Все посты - Просто Блог {% endblock %}
 
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
+    <h1>Наилучший источник информации по теме "Путешествия"</h1>
+
     {{ include('_blog_pagination.html.twig') }}
 
     {% if posts %}
-        {% set class = 'viewpost' %}
+        {% set class = 'generalpost' %}
         {% for post in posts %}
             {{ include('post/_post.html.twig') }}
+            {% set class = 'viewpost' %}
         {% endfor %}
     {% else %}
         <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>

@@ -53,7 +53,7 @@ class CommentController extends AbstractController
     }
     
     #[Route('/delete/{commentId}/{postId}', name: 'delete', methods: ['POST'], requirements: ['commentId' => '\b[0-9]+', 'postId' => '\b[0-9]+'])]
-    public function delete(Comments $comment, int $postId): Response
+    public function deleteComment(Comments $comment, int $postId): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->commentService->delete($comment, $postId);

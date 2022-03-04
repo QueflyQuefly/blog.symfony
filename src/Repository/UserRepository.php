@@ -37,7 +37,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @return Users Returns an array of Users objects
+     * @return User Returns an User object
      */
     public function findOneByEmail(string $email): ?User
     {
@@ -46,6 +46,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('val', $email)
             ->getQuery()
             ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * @return Users[] Returns an array of Users objects
+     */
+    public function getUsers(int $numberOfUsers, int $lessThanMaxId)
+    {
+        return $this->createQueryBuilder('u')
+            ->orderBy('u.id', 'DESC')
+            ->setFirstResult($lessThanMaxId)
+            ->setMaxResults($numberOfUsers)
+            ->getQuery()
+            ->getResult()
         ;
     }
 }

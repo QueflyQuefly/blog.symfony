@@ -37,15 +37,13 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/all', name: 'show_all', methods: ['GET'])]
-    public function showAll(Request $request): Response
+    #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all', methods: ['GET'])]
+    public function showAll(?int $numberOfPosts, ?int $page): Response
     {
-        $numberOfPosts = (int) $request->query->get('number', 10);
-        $page = (int) $request->query->get('page', 1);
         $posts = $this->postService->getPosts($numberOfPosts, $page);
         return $this->render('post/allposts.html.twig', [
             'nameOfPath' => 'post_show_all',
-            'numberOfPosts' => $numberOfPosts,
+            'number' => $numberOfPosts,
             'page' => $page,
             'posts' => $posts
         ]);
@@ -120,7 +118,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/delete/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
-    public function delete(Posts $post): Response
+    public function deletePost(Posts $post): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->postService->delete($post);
