@@ -12,17 +12,16 @@
                     Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
                 {% endif %}
             </p>
+            {% if is_granted('ROLE_ADMIN') %}
+                <div class='submitunder'>
+                    <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
+                        <input type='submit' value='Удалить пост с ID = {{ post.id }}' class='link'>
+                    </form>
+                </div>
+            {% endif %}
         </div>
         <div class='postimage'>
             <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
         </div>
     </a>
-
-    {% if is_granted('ROLE_ADMIN') %}
-    <div class='submitunder'>
-        <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
-            <input type='submit' value='Удалить пост с ID = {{ post.id }}' class='link'>
-        </form>
-    </div>
-    {% endif %}
 </div>

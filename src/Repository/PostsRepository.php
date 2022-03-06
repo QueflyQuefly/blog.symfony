@@ -24,8 +24,9 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getLastPosts(int $numberOfPosts)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
@@ -41,8 +42,9 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('DISTINCT p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('DISTINCT p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
@@ -62,8 +64,9 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getPosts(int $numberOfPosts, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
@@ -97,8 +100,9 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getPostsByUserId(int $userId)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
@@ -116,8 +120,9 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function getLikedPostsByUserId(int $userId)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
@@ -136,12 +141,13 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function searchByTitle(string $search)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere('p.title LIKE :search')
+            ->andWhere($qb->expr()->like('p.title', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -155,12 +161,13 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function searchByAuthor(string $search)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere('u.fio LIKE :search')
+            ->andWhere($qb->expr()->like('u.fio', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -174,12 +181,13 @@ class PostsRepository extends ServiceEntityRepository
      */
     public function searchByContent(string $search)
     {
-        return $this->createQueryBuilder('p')
-            ->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 'p.content', 
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
                 'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
             ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
             ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere('p.content LIKE :search')
+            ->andWhere($qb->expr()->like('p.content', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)

@@ -48,16 +48,13 @@ class RegistrationController extends AbstractController
                     $form->get('plainPassword')->getData()
                 )
             );
-            $rights = ['user'];
+            $rights = ['ROLE_USER'];
             if ($request->get('add_admin'))
             {
-                $rights = ['superuser'];
+                $rights = ['ROLE_ADMIN'];
+                $fio = 'Superuser';
             }
-            $fio = 'user';
-            if ($request->get('add_admin'))
-            {
-                $fio = 'superuser';
-            }
+            $fio = 'User';
             $user->setFio($fio);
             $user->setDateTime(time());
             $user->setRoles($rights);
