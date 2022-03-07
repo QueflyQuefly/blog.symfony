@@ -35,22 +35,21 @@ class PostService
 
     public function add(int $userId, string $title, string $content)
     {
-        $entityManager = $this->doctrine->getManager();
         $post = new Posts();
         $post->setTitle($title);
         $post->setUserId($userId);
         $post->setContent($content);
         $post->setDateTime(time());
-        $entityManager->persist($post);
-        $entityManager->flush();
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
 
         $postInfo = new AdditionalInfoPosts();
         $postInfo->setRating('0.0');
         $postInfo->setPostId($post->getId());
         $postInfo->setCountComments(0);
         $postInfo->setCountRatings(0);
-        $entityManager->persist($postInfo);
-        $entityManager->flush();
+        $this->entityManager->persist($postInfo);
+        $this->entityManager->flush();
     }
 
     /**

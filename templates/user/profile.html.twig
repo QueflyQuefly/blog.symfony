@@ -21,21 +21,17 @@
             </a>
         {% endif %}
         
-        {#% if app.user %}
-            if (!$this->_subscribeController->isSubscribedUser($sessionUserId, $user['user_id'])) {
-                        <input type='submit' style='font-size:13pt;' form='subscribe' 
-                            value='Подписаться' class='link'>
-                        <form id='subscribe' action='' method='post'>
-                            <input type='hidden' name='subscribe'>
-                        </form>
-            } else {
-                        <input type='submit' style='font-size:13pt;' form='subscribe' 
-                            value='Отписаться' class='link'>
-                        <form id='subscribe' action='' method='post'>
-                            <input type='hidden' name='unsubscribe'>
-                        </form>
-            }
-        {% endif %#}
+        {% if can_subscribe %}
+            {% if is_subscribe %}
+                <form id='subscribe' action='{{ path('user_subscribe', {userId: user.id}) }}' method='post'>
+                    <input type='submit' style='font-size:13pt;' form='subscribe' value='Отписаться' class='link'>
+                </form>
+            {% else %}
+                <form id='subscribe' action='{{ path('user_subscribe', {userId: user.id}) }}' method='post'>
+                    <input type='submit' style='font-size:13pt;' form='subscribe' value='Подписаться' class='link'>
+                </form>
+            {% endif %}
+        {% endif %}
     </h1>
 
         <br><div class='contentsinglepost'><p class='posttitle'>Посты от автора &copy; {{ user.fio }}:</p></div>

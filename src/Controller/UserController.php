@@ -37,10 +37,17 @@ class UserController extends AbstractController
     {
         if (!empty($userId)) {
             $user = $this->userService->find($userId);
+            /** @var \App\Entity\User $sessionUser */
+            if ($sessionUser = $this->getUser())
+            {
+                $canSubscribe = true;
+                $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $user->getId());
+            }
         } else {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
+            $canSubscribe = $isSubscribe = false;
         }
         $posts = $this->postService->getPostsByUserId($user->getId());
         $likedPosts = $this->postService->getLikedPostsByUserId($user->getId());
@@ -49,11 +56,26 @@ class UserController extends AbstractController
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
+            'can_subscribe' => $canSubscribe,
+            'is_subscribe' => $isSubscribe,
             'posts' => $posts,
             'comments' => $comments,
             'likedPosts' => $likedPosts,
             'likedComments' => $likedComments,
         ]);
+    }
+
+    #[Route('/profile/subscribe/{userId<\b[0-9]+>}', name: 'subscribe', methods: ['POST'])]
+    public function subscribe(int $userId): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $userIdWantSubscribe = $user->getid();
+
+        $this->userService->subscribe($userIdWantSubscribe, $userId);
+
+        return $this->redirectToRoute('user_show_profile', ['userId' => $userId]);
     }
 
     #[Route('/login', name: 'login')]

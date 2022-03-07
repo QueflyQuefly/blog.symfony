@@ -21,7 +21,7 @@
             {% endif %}
         </div>
         <div class='postimage'>
-            <img src='/images/PostImgId{{ post.id }}.jpg' alt='Картинка'>
+            <img src='{{ asset('images/PostImgId' ~ post.id ~ '.jpg') }}' alt='Картинка'>
         </div>
     </a>
 </div>

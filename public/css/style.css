@@ -131,11 +131,15 @@ h1{
     -webkit-line-clamp: 3;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin: 0vmin 0vmin;
 }
 .generalpost:hover .posttitle{
     color:darkslateblue;
 }
 .generalpost .posttext{
+    float: left;
     font-size: 13pt;
     width: 50%;
 }
@@ -143,18 +147,21 @@ h1{
     -webkit-line-clamp: 4;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 .generalpost .postimage{
+    float: right;
     width: 50%;
+    height: 49vmin;
 }
 /* generalpost */
 
 /* smallposts */
 
 .postrating{
-    margin-top: -1.5vmin;
-    margin-left: 2vmin;
+    margin: -1.5vmin 0 2vmin 0;
+    padding: 0;
 }
 .viewpost{
     display: inline-block;
@@ -162,6 +169,7 @@ h1{
     margin: 0 12.5%;
     margin-top: 2vmin;
     width: 75%;
+    max-height: 46vmin;
     transition: 0ms;
     color:black;
 }
@@ -175,7 +183,7 @@ h1{
 }
 .posttext{
     float: left;
-    width: 70%;
+    width: 60%;
     text-align: left;
     padding: 2vmin 3vmin 2vmin 2vmin;
 }
@@ -198,8 +206,8 @@ h1{
 }
 .postimage{
     float: right;
-    width: 30%;
-    height: 100%;
+    width: 40%;
+    height: 36vmin;
 }
 .postimage img{
     width: 100%;
@@ -619,7 +627,8 @@ hr{
 }
 
 .submitunder{
-    margin: -1.5vmin 0;
+    margin: -2vmin 0;
+    padding: 0;
 }
 .link{
     color: rgb(36, 57, 173);

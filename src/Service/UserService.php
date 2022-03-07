@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\Subscriptions;
 use App\Repository\UserRepository;
+use App\Repository\SubscriptionsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -10,13 +12,16 @@ class UserService
 {
     private $entityManager;
     private UserRepository $userRepository;
+    private SubscriptionsRepository $subscriptionsRepository;
 
     public function __construct(
         ManagerRegistry $doctrine, 
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        SubscriptionsRepository $subscriptionsRepository
     )
     {
         $this->userRepository = $userRepository;
+        $this->subscriptionsRepository = $subscriptionsRepository;
         $this->entityManager = $doctrine->getManager();
     }
 
@@ -26,6 +31,36 @@ class UserService
     public function find(int $userId)
     {
         return $this->userRepository->find($userId);
+    }
+
+    public function subscribe(int $userIdWantSubscribe, int $userId)
+    {
+        if ($subscription = $this->isSubscribe($userIdWantSubscribe, $userId))
+        {
+            $this->entityManager->remove($subscription);
+            $this->entityManager->flush();
+        } else {
+            $subscription = new Subscriptions();
+            $subscription->setUserIdWantSubscribe($userIdWantSubscribe);
+            $subscription->setUserId($userId);
+            $this->entityManager->persist($subscription);
+            $this->entityManager->flush();
+        }
+    }
+
+    /**
+     * @return Subcriptions|bool 
+     */
+    public function isSubscribe(int $userIdWantSubscribe, int $userId)
+    {
+        if ($subscription = $this->subscriptionsRepository->findOneBy([
+            'userIdWantSubscribe' => $userIdWantSubscribe,
+            'userId' => $userId
+        ]))
+        {
+            return $subscription;
+        }
+        return false;
     }
 
     /**
@@ -43,8 +78,8 @@ class UserService
      */
     public function searchUsers(string $searchWords)
     {
-        $users = $this->userRepository->findByFio($searchWords);
-        $users1 = $this->userRepository->findByEmail($searchWords);
+        $users = $this->userRepository->findByEmail($searchWords);
+        $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);
         return $results;
     }

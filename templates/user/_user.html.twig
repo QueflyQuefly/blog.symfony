@@ -4,12 +4,12 @@
             <p class='posttitle'> ФИО(псевдоним): {{ user.fio }}</p>
             <p class='posttitle'> E-mail: {{ user.email }}</p>
             <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
-            <p class='posttitle'> Права: {{ user.roles[0] }}</p>
+            {% if is_granted('ROLE_ADMIN') %}
+                <p class='posttitle'> Права: {{ user.roles[0] }}</p>
+                <form id='deleteUserById{{ user.id }}' action='{{ path('admin_delete_user', {'id': user.id}) }}' method='post'>
+                    <input type='submit' form='deleteUserById{{ user.id }}' value='Удалить {{ user.roles[0] }}-a' class='link'>
+                </form>
+            {% endif %}
         </div>
     </a>
-    {% if is_granted('ROLE_ADMIN') %}
-        <form id='deleteUserById{{ user.id }}' action='{{ path('admin_delete_user', {'id': user.id}) }}' method='post'>
-            <input type='submit' form='deleteUserById{{ user.id }}' value='Удалить {{ user.roles[0] }}-a' class='link' id='right'>
-        </form>
-    {% endif %}
 </div>
