@@ -9,6 +9,7 @@
 /vendor/
 /blog.local/
 /templates/layouts/
+/test/
 ###< symfony/framework-bundle ###
 
 ###> symfony/webpack-encore-bundle ###

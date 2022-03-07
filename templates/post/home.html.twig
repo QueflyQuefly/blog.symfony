@@ -12,11 +12,11 @@
             {% set class = 'viewpost' %}
         {% endfor %}
     {% else %}
-        <div class='contentsinglepost'><p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p></div>
+        <p class='center'style='color: rgb(150, 20, 20);'>Нет информации для отображения</p>
     {% endif %}
 
     {% if posts|length > 9 %}
-        <div class='contentsinglepost'><a class='formsubmit' href='{{ path('post_show_all') }}'>Посмотреть посты за всё время</a></div>
+        <div class='singleposttext'><a class='formsubmit' href='{{ path('post_show_all') }}'>Посмотреть посты за всё время</a></div>
     {% endif %}
 
     {% if moreTalkedPosts %}

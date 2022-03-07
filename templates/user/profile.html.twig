@@ -3,6 +3,8 @@
 {% block title %} Профиль {{ user.getFio }} - Просто Блог {% endblock %}
 
 {% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
     <h1>Профиль пользователя: {{ user.fio }}
         <p>E-mail: {{ user.email }}</p>
 
@@ -34,41 +36,41 @@
         {% endif %}
     </h1>
 
-        <br><div class='contentsinglepost'><p class='posttitle'>Посты от автора &copy; {{ user.fio }}:</p></div>
+        <br><p class='singleposttext'>Посты от автора (последние {{ number_of_results }}) <a class='link' href='{{ path('search_posts', {search: user.fio}) }}'>Посмотреть все</a> &copy; {{ user.fio }}:</p>
         {% if posts %}
             {% set class = 'viewpost' %}
             {% for post in posts %}
                 {{ include('post/_post.html.twig') }}
             {% endfor %}
         {% else %}
-            <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+            <p class='center'>Нет информации для отображения</p>
         {% endif %}
 
-        <div class='contentsinglepost'><p class='posttitle'>Комментарии автора &copy; {{ user.fio }}:</p></div>
+        <p class='singleposttext'>Комментарии автора (последние {{ number_of_results }}) &copy; {{ user.fio }}:</p>
         {% if comments %}
             {% for comment in comments %}
                 {{ include('comment/_comment.html.twig') }}
             {% endfor %}
         {% else %}
-            <div class='contentsinglepost'><p class='center'>Нет комментариев для отображения</p></div>
+            <p class='center'>Нет комментариев для отображения</p>
         {% endif %}
 
-        <div class='contentsinglepost'><p class='posttitle'>Оценённые посты &copy; {{ user.fio }}:</p></div>
+        <p class='singleposttext'>Оценённые посты (последние {{ number_of_results }}) &copy; {{ user.fio }}:</p>
         {% if likedPosts %}
             {% set class = 'viewpost' %}
             {% for post in likedPosts %}
                 {{ include('post/_post.html.twig') }}
             {% endfor %}
         {% else %}
-            <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>
+            <p class='center'>Нет информации для отображения</p>
         {% endif %}
 
-        <div class='contentsinglepost'><p class='posttitle'>Понравившиеся комментарии &copy; {{ user.fio }}:</p></div>
+        <p class='singleposttext'>Понравившиеся комментарии (последние {{ number_of_results }}) &copy; {{ user.fio }}:</p>
         {% if likedComments %}
             {% for comment in likedComments %}
                 {{ include('comment/_comment.html.twig') }}
             {% endfor %}
         {% else %}
-            <div class='contentsinglepost'><p class='center'>Нет комментариев для отображения</p></div>
+            <p class='center'>Нет комментариев для отображения</p>
         {% endif %}
 {% endblock %}

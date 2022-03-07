@@ -4,10 +4,12 @@ namespace App\Service;
 
 use App\Entity\Posts;
 use App\Entity\AdditionalInfoPosts;
+use App\Entity\TagPosts;
 use App\Entity\RatingPosts;
 use App\Repository\PostsRepository;
 use App\Repository\RatingPostsRepository;
 use App\Repository\AdditionalInfoPostsRepository;
+use App\Repository\TagPostsRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -17,18 +19,21 @@ class PostService
     private PostsRepository $postsRepository;
     private RatingPostsRepository $ratingPostsRepository;
     private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
+    private TagPostsRepository $tagPostsRepository;
     private $entityManager;
 
     public function __construct(      
         ManagerRegistry $doctrine,
         PostsRepository $postsRepository,
         RatingPostsRepository $ratingPostsRepository,
-        AdditionalInfoPostsRepository $additionalInfoPostsRepository
+        AdditionalInfoPostsRepository $additionalInfoPostsRepository,
+        TagPostsRepository $tagPostsRepository
         )
     {
         $this->postsRepository = $postsRepository;
         $this->ratingPostsRepository = $ratingPostsRepository;
         $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
+        $this->tagPostsRepository = $tagPostsRepository;
         $this->doctrine = $doctrine;
         $this->entityManager = $this->doctrine->getManager();
     }
@@ -50,8 +55,26 @@ class PostService
         $postInfo->setCountRatings(0);
         $this->entityManager->persist($postInfo);
         $this->entityManager->flush();
+
+        $allText = $title." ".$content;
+        if (strpos($allText, '#') !== false) {
+            $regex = '/#\w+/um';
+            preg_match_all($regex, $allText, $tags);
+            $tags = $tags[0];
+            foreach ($tags as $tag) {
+                $this->addTag($tag, $post->getId());
+            }
+        }
     }
 
+    private function addTag(string $tag, int $postId)
+    {
+        $tagPost = new TagPosts();
+        $tagPost->setPostId($postId);
+        $tagPost->setTag($tag);
+        $this->entityManager->persist($tagPost);
+        $this->entityManager->flush();
+    }
     /**
      * @return float Returns an float number - rating of post
      */
@@ -136,19 +159,27 @@ class PostService
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Tags[] Returns a Tags objects
      */
-    public function getPostsByUserId(int $userId)
+    public function getTagsByPostId(int $postId)
     {
-        return $this->postsRepository->getPostsByUserId($userId);
+        return $this->tagPostsRepository->findByPostId($postId);
     }
 
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getLikedPostsByUserId(int $userId)
+    public function getPostsByUserId(int $userId, int $numberOfPosts)
     {
-        return $this->postsRepository->getLikedPostsByUserId($userId);
+        return $this->postsRepository->getPostsByUserId($userId, $numberOfPosts);
+    }
+
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
+    {
+        return $this->postsRepository->getLikedPostsByUserId($userId, $numberOfPosts);
     }
 
     /**
@@ -157,10 +188,16 @@ class PostService
     public function searchPosts(string $searchWords)
     {
         $searchWords = '%'.$searchWords.'%';
-        $posts = $this->postsRepository->searchByTitle($searchWords);
-        $posts1 = $this->postsRepository->searchByAuthor($searchWords);
-        $posts2 = $this->postsRepository->searchByContent($searchWords);
-        $results = array_merge($posts, $posts1, $posts2);
+        if (strpos($searchWords, '#') === 1)
+        {
+            $searchWords = str_replace('#', '', $searchWords);
+            $results = $this->postsRepository->searchByTag($searchWords);
+        } else {
+            $posts = $this->postsRepository->searchByTitle($searchWords);
+            $posts1 = $this->postsRepository->searchByAuthor($searchWords);
+            $posts2 = $this->postsRepository->searchByContent($searchWords);
+            $results = array_merge($posts, $posts1, $posts2);
+        }
         return $results;
     }
 

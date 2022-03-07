@@ -7,8 +7,8 @@
 
     <h1> Поиск автора осуществляется по ФИО и логину (email) </h1>
 
-    <div class='contentsinglepost'>
-        <form class='searchfield' action='{{ path('search_users') }}/' method='get'>
+    <div class='searchfield'>
+        <form action='{{ path('search_users') }}/' method='get'>
             <input
                 type='text'
                 required 
@@ -23,8 +23,7 @@
             <button type="submit">&#x2315</button>
         </form>
     </div>
-
-    <p class='contentsinglepost'><a class='link' href='{{ path('search_posts') }}'> Поиск постов </a></p>
+    <p class='singleposttext'><a class='link' href='{{ path('search_posts') }}'> Поиск постов </a></p>
 
     {% if users %}
         {% for user in users %}

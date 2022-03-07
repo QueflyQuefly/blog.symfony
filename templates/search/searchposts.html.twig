@@ -9,8 +9,8 @@
         <br> а также по его содержимому 
     </h1>
 
-    <div class='contentsinglepost'>
-        <form class='searchfield' action='{{ path('search_posts') }}/' method='get'>
+    <div class='searchfield'>
+        <form action='{{ path('search_posts') }}/' method='get'>
             <input
                 type='text'
                 required 
@@ -25,14 +25,12 @@
             <button type="submit">&#x2315</button>
         </form>
     </div>
-
-    <p class='contentsinglepost'><a class='link' href='{{ path('search_users') }}'> Поиск пользователей </a></p>
+    <p class='singleposttext'><a class='link' href='{{ path('search_users') }}'> Поиск пользователей </a></p>
 
     {% if posts %}
-        {% set class = 'generalpost' %}
+        {% set class = 'viewpost' %}
         {% for post in posts %}
             {{ include('post/_post.html.twig') }}
-            {% set class = 'viewpost' %}
         {% endfor %}
     {% elseif search %}
         <div class='contentsinglepost'><p class='center'>Нет информации для отображения</p></div>

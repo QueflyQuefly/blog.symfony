@@ -62,9 +62,11 @@ class PostController extends AbstractController
         {
             $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
         }
+        $tags = $this->postService->getTagsByPostId($postId);
         return $this->render('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
+            'tags' => $tags,
             'comments' => $comments
         ]);
     }

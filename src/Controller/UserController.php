@@ -49,15 +49,17 @@ class UserController extends AbstractController
             $user = $this->getUser();
             $canSubscribe = $isSubscribe = false;
         }
-        $posts = $this->postService->getPostsByUserId($user->getId());
-        $likedPosts = $this->postService->getLikedPostsByUserId($user->getId());
-        $comments = $this->commentService->getCommentsByUserId($user->getId());
-        $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId());
+        $numberOfResults = 10;
+        $posts = $this->postService->getPostsByUserId($user->getId(), $numberOfResults);
+        $likedPosts = $this->postService->getLikedPostsByUserId($user->getId(), $numberOfResults);
+        $comments = $this->commentService->getCommentsByUserId($user->getId(), $numberOfResults);
+        $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId(), $numberOfResults);
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
             'can_subscribe' => $canSubscribe,
             'is_subscribe' => $isSubscribe,
+            'number_of_results' => $numberOfResults,
             'posts' => $posts,
             'comments' => $comments,
             'likedPosts' => $likedPosts,
@@ -73,8 +75,18 @@ class UserController extends AbstractController
         $user = $this->getUser();
         $userIdWantSubscribe = $user->getid();
 
-        $this->userService->subscribe($userIdWantSubscribe, $userId);
-
+        if ($this->userService->subscribe($userIdWantSubscribe, $userId))
+        {
+            $this->addFlash(
+                'success',
+                'Вы подписаны'
+            );
+        } else {
+            $this->addFlash(
+                'success',
+                'Подписка отменена'
+            );
+        }
         return $this->redirectToRoute('user_show_profile', ['userId' => $userId]);
     }
 

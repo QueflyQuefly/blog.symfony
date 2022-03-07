@@ -169,7 +169,6 @@ h1{
     margin: 0 12.5%;
     margin-top: 2vmin;
     width: 75%;
-    max-height: 46vmin;
     transition: 0ms;
     color:black;
 }
@@ -215,9 +214,6 @@ h1{
 }
 /*  */
 /* view singlepost */
-.contentsinglepost{
-    margin: 2% 17% 2% 17%;
-}
 #singleposttitle{
     text-overflow: ellipsis;
     overflow: hidden;
@@ -251,7 +247,6 @@ h1{
 .rating-area label:hover {
     color: rgba(163, 126, 4, 0.733);
 }
-
 /* rating area */
 
 #singlepostauthor{
@@ -331,6 +326,8 @@ h1{
 .commentauthor{
     margin-bottom: 0;
     padding-bottom: 0;
+}
+.commentauthor .menuLink{
     font-size: 13pt;
 }
 .commentdate{
@@ -369,11 +366,16 @@ h1{
 
 hr{
     width: 85%;
+    padding: 1px 0 0 0;
+	border: 1px solid lightgray;
+    border-top: 1px solid gray;
+
 }
 /* Style the search field */
 .searchfield{
     display: inline-table;
-    width: 100%;
+    width: 80%;
+    margin-left: 10%;
 }
 .searchfield input {
     padding: 1.5vmin;
@@ -645,7 +647,8 @@ hr{
     text-decoration: 1px underline;
 }
 .link:active{
-    text-decoration: currentColor;
+    color:darkslateblue;
+    text-decoration: 1px underline;
 }
 .center{
     margin-left: 10%;
@@ -666,32 +669,33 @@ img[alt="www.000webhost.com"] {
 }
  @media (min-width: 300px) and (max-width: 500.98px) {
     .content {
-        padding: 2vmin 0;
+        padding: 2vmin 2.5%;
     }
     nav{
-        max-height: 30vmin;
+        max-height: 16vmin;
     }
-    #logo {
+    nav #logo {
         width: 10%;
         padding: 0;
     }
-    #namelogo {
+    nav #imglogo{
+        padding: 0;
+        padding-top: 2vmin;
+        width: 100%;
+        height: 10vmin;
+    }
+    nav #namelogo {
         width: 0;
         display: none;
     }
-    #menu {
+    nav #menu {
         width: 90%;
     }
     nav .menuList {
         justify-content: flex-end;
     }
-    .generalpost {
-        width: 95%;
-        height: 100%;
-        margin: 0 2.5%;
-    }
     .viewpost {
-        width: 90%;
+        width: 85%;
         margin: 0 5%;
     }
     footer {

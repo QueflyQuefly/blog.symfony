@@ -57,7 +57,7 @@ class CommentsRepository extends ServiceEntityRepository
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function getCommentsByUserId(int $userId)
+    public function getCommentsByUserId(int $userId, int $numberOfComments)
     {
         return $this->createQueryBuilder('c')
             ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
@@ -65,7 +65,7 @@ class CommentsRepository extends ServiceEntityRepository
             ->andWhere('c.userId = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
-            ->setMaxResults(30)
+            ->setMaxResults($numberOfComments)
             ->getQuery()
             ->getResult()
         ;
@@ -74,7 +74,7 @@ class CommentsRepository extends ServiceEntityRepository
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function getLikedCommentsByUserId(int $userId)
+    public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
     {
         return $this->createQueryBuilder('c')
             ->select(array('c.id', 'c.postId', 'c.userId', 'c.dateTime', 'c.content', 'c.rating', 'u.fio as author'))
@@ -83,7 +83,7 @@ class CommentsRepository extends ServiceEntityRepository
             ->andWhere('r.userId = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
-            ->setMaxResults(30)
+            ->setMaxResults($numberOfComments)
             ->getQuery()
             ->getResult()
         ;

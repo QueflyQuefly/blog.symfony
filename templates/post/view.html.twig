@@ -39,7 +39,7 @@
         </div>
         {% endif %}
 
-        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile') }}'>Автор: {{ post.author }}{# post.author #}</a></p>
+        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile') }}'>{{ post.author }}{# post.author #}</a></p>
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
@@ -49,10 +49,20 @@
         <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
 
         {% if is_granted('ROLE_ADMIN') %}
-        <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
-            <input type='submit' value='Удалить этот пост' class='link' style='font-size: 12pt'>
-        </form>
+            <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
+                <input type='submit' value='Удалить этот пост' class='link' style='font-size: 14pt'>
+            </form>
         {% endif %}
+
+        <p class='singlepostcontent'> Тэги: 
+            {% if tags %}
+                {% for tag in tags %}
+                    <a class='link' href='{{ path('search_posts', {search: tag.tag}) }}'>{{ tag.tag }}</a>
+                {% endfor %}
+            {% else %}
+                Нет тэгов
+            {% endif %}
+        </p>
     </div>
 
     <div class='addcomments' id='comment'>

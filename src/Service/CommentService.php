@@ -92,17 +92,17 @@ class CommentService
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function getCommentsByUserId(int $userId)
+    public function getCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentsRepository->getCommentsByUserId($userId);
+        return $this->commentsRepository->getCommentsByUserId($userId, $numberOfComments);
     }
 
     /**
      * @return Comments[] Returns an array of Comments objects
      */
-    public function getLikedCommentsByUserId(int $userId)
+    public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentsRepository->getLikedCommentsByUserId($userId);
+        return $this->commentsRepository->getLikedCommentsByUserId($userId, $numberOfComments);
     }
 
     public function delete($comment, $postId)

@@ -98,7 +98,7 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getPostsByUserId(int $userId)
+    public function getPostsByUserId(int $userId, int $numberOfPosts)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
@@ -109,7 +109,7 @@ class PostsRepository extends ServiceEntityRepository
             ->andWhere('u.id = :val')
             ->orderBy('p.id', 'DESC')
             ->setParameter('val', $userId)
-            ->setMaxResults(30)
+            ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->getResult()
         ;
@@ -118,7 +118,7 @@ class PostsRepository extends ServiceEntityRepository
     /**
      * @return Posts[] Returns an array of Posts objects
      */
-    public function getLikedPostsByUserId(int $userId)
+    public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
@@ -130,7 +130,28 @@ class PostsRepository extends ServiceEntityRepository
             ->andWhere('r.userId = :val')
             ->orderBy('p.id', 'DESC')
             ->setParameter('val', $userId)
-            ->setMaxResults(30)
+            ->setMaxResults($numberOfPosts)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Posts[] Returns an array of Posts objects
+     */
+    public function searchByTag(string $search)
+    {
+        $qb = $this->createQueryBuilder('p');
+        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
+                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
+                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
+            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
+            ->join('App\Entity\AdditionalInfoPosts', 'a', 'WITH', 'a.postId = p.id')
+            ->join('App\Entity\TagPosts', 't', 'WITH', 't.postId = p.id')
+            ->andWhere($qb->expr()->like('t.tag', ':search'))
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('search', $search)
+            ->setMaxResults(20)
             ->getQuery()
             ->getResult()
         ;

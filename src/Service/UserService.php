@@ -33,23 +33,28 @@ class UserService
         return $this->userRepository->find($userId);
     }
 
+    /**
+     * @return bool
+     */
     public function subscribe(int $userIdWantSubscribe, int $userId)
     {
         if ($subscription = $this->isSubscribe($userIdWantSubscribe, $userId))
         {
             $this->entityManager->remove($subscription);
             $this->entityManager->flush();
+            return false;
         } else {
             $subscription = new Subscriptions();
             $subscription->setUserIdWantSubscribe($userIdWantSubscribe);
             $subscription->setUserId($userId);
             $this->entityManager->persist($subscription);
             $this->entityManager->flush();
+            return true;
         }
     }
 
     /**
-     * @return Subcriptions|bool 
+     * @return Subcriptions|bool
      */
     public function isSubscribe(int $userIdWantSubscribe, int $userId)
     {
@@ -78,7 +83,7 @@ class UserService
      */
     public function searchUsers(string $searchWords)
     {
-        $users = $this->userRepository->findByEmail($searchWords);
+        $users = $this->userRepository->findOneByEmail($searchWords);
         $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);
         return $results;
