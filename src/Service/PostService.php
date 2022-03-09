@@ -28,7 +28,7 @@ class PostService
         RatingPostsRepository $ratingPostsRepository,
         AdditionalInfoPostsRepository $additionalInfoPostsRepository,
         TagPostsRepository $tagPostsRepository
-        )
+    )
     {
         $this->postsRepository = $postsRepository;
         $this->ratingPostsRepository = $ratingPostsRepository;
@@ -38,13 +38,17 @@ class PostService
         $this->entityManager = $this->doctrine->getManager();
     }
 
-    public function add(int $userId, string $title, string $content)
+    /**
+     * @return int Returns an id of post
+     */
+    public function add(int $userId, string $title, string $content, ?int $dateTime = null)
     {
+        $dateTime ?? time();
         $post = new Posts();
         $post->setTitle($title);
         $post->setUserId($userId);
         $post->setContent($content);
-        $post->setDateTime(time());
+        $post->setDateTime($dateTime);
         $this->entityManager->persist($post);
         $this->entityManager->flush();
 
@@ -65,8 +69,12 @@ class PostService
                 $this->addTag($tag, $post->getId());
             }
         }
+        return $post->getId();
     }
 
+    /**
+     * @return int Returns an id of post
+     */
     private function addTag(string $tag, int $postId)
     {
         $tagPost = new TagPosts();
@@ -74,7 +82,10 @@ class PostService
         $tagPost->setTag($tag);
         $this->entityManager->persist($tagPost);
         $this->entityManager->flush();
+
+        return $tagPost->getId();
     }
+
     /**
      * @return float Returns an float number - rating of post
      */
@@ -92,23 +103,34 @@ class PostService
         return $rating;
     }
 
+    /**
+     * @return bool
+     */
     public function addRating(int $userId, int $postId, int $rating)
     {
-        $ratingPost = new RatingPosts();
-        $ratingPost->setPostId($postId);
-        $ratingPost->setUserId($userId);
-        $ratingPost->setRating($rating);
-        $this->entityManager->persist($ratingPost);
-        $this->entityManager->flush();
-
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
-        $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
-
-        $generalRatingPost = $this->countRating($postId);
-        $infoPost->setRating((string) $generalRatingPost);
-        $this->entityManager->flush();
+        if(!$this->isUserAddRating($userId, $postId))
+        {
+            $ratingPost = new RatingPosts();
+            $ratingPost->setPostId($postId);
+            $ratingPost->setUserId($userId);
+            $ratingPost->setRating($rating);
+            $this->entityManager->persist($ratingPost);
+            $this->entityManager->flush();
+    
+            $infoPost = $this->additionalInfoPostsRepository->find($postId);
+            $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+    
+            $generalRatingPost = $this->countRating($postId);
+            $infoPost->setRating((string) $generalRatingPost);
+            $this->entityManager->flush();
+            return true;
+        }
+        return false;
     }
 
+    /**
+     * @return bool
+     */
     public function isUserAddRating(int $userId, int $postId): bool
     {
         if ($this->ratingPostsRepository->findOneBy(

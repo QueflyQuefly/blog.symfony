@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Service\UserService;
 use App\Service\CommentService;
+use App\Service\StabService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,11 +17,17 @@ class AdminController extends AbstractController
 {
     private UserService $userService;
     private CommentService $commentService;
+    private StabService $stabService;
 
-    public function __construct(UserService $userService, CommentService $commentService)
+    public function __construct(
+        UserService $userService, 
+        CommentService $commentService,
+        StabService $stabService
+    )
     {
         $this->userService = $userService;
         $this->commentService = $commentService;
+        $this->stabService = $stabService;
     }
 
     #[Route('', name: 'main', methods: ['GET'])]
@@ -53,6 +60,19 @@ class AdminController extends AbstractController
             'number' => $numberOfUsers,
             'page' => $page,
             'users' => $users
+        ]);
+    }
+
+    #[Route('/stab', name: 'show_stab', methods: ['GET'])]
+    public function showStab(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $numberOfIterations = $request->query->get('number') ?? 0;
+        $this->stabService->toStabDb($numberOfIterations);
+        $errors = $this->stabService->getErrors() ?? false;
+        return $this->render('admin/stab.html.twig', [
+            'errors' => $errors,
+            'numberOfIterations' => $numberOfIterations
         ]);
     }
 

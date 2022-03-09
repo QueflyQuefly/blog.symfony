@@ -30,20 +30,25 @@ class CommentService
         $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
     }
 
-    public function add(int $userId, int $postId, string $content)
+    /**
+     * @return int Returns an id of comment
+     */
+    public function add(int $userId, int $postId, string $content, int $rating = 0, ?int $dateTime = null)
     {
+        $dateTime ?? time();
         $comment = new Comments();
         $comment->setPostId($postId);
         $comment->setUserId($userId);
-        $comment->setDateTime(time());
+        $comment->setDateTime($dateTime);
         $comment->setContent($content);
-        $comment->setRating(0);
+        $comment->setRating($rating);
         $this->entityManager->persist($comment);
         $this->entityManager->flush();
 
         $infoPost = $this->additionalInfoPostsRepository->find($postId);
         $infoPost->setCountComments($infoPost->getCountComments() + 1);
         $this->entityManager->flush();
+        return $comment->getId();
     }
 
     public function like(int $userId, int $commentId): bool

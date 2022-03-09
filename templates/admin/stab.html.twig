@@ -1,0 +1,34 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Стаб - Просто Блог {% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <h1>
+        {% if errors %}
+            {% for error in errors %}
+                {{ error }} <br>
+            {% endfor %}
+        {% else %}
+            <p>Цикл выполнился столько раз: {{ numberOfIterations }}. Нет сообщений об ошибках </p>
+            В одной итерации цикла создается новый пользователь, новый пост от этого пользователя и несколько 
+            (до 14) комментариев к этому посту.<br> Создание 100 постов занимает примерно 10 секунд
+        {% endif %}
+    </h1>
+
+    <form action='{{ path('admin_show_stab') }}' method='get'>
+        <label class='formlabel'>Введите нужное количество итераций цикла (создание пользователя, поста и комментариев к нему):
+            <input 
+                name='number'
+                type='text'
+                class='formtext'
+                placeholder='Кол-во итераций цикла'
+                style='margin-left: 0'
+                autofocus
+            >
+        </label>
+        <br>
+        <input type='submit' class='formsubmit' value='Применить' style='margin:2vmin;'>
+    </form>
+{% endblock %}
