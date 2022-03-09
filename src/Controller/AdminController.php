@@ -33,14 +33,12 @@ class AdminController extends AbstractController
     #[Route('', name: 'main', methods: ['GET'])]
     public function showAdmin(): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         return $this->render('admin/admin.html.twig');
     }
 
     #[Route('/comments/{numberOfComments<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_comments', methods: ['GET'])]
     public function showComments(?int $numberOfComments, ?int $page): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $comments = $this->commentService->getComments($numberOfComments, $page);
         return $this->render('admin/allcomments.html.twig', [
             'nameOfPath' => 'admin_show_comments',
@@ -53,7 +51,6 @@ class AdminController extends AbstractController
     #[Route('/users/{numberOfUsers<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_users', methods: ['GET'])]
     public function showUsers(?int $numberOfUsers, ?int $page): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $users = $this->userService->getUsers($numberOfUsers, $page);
         return $this->render('admin/allusers.html.twig', [
             'nameOfPath' => 'admin_show_users',
@@ -66,7 +63,6 @@ class AdminController extends AbstractController
     #[Route('/stab', name: 'show_stab', methods: ['GET'])]
     public function showStab(Request $request): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $numberOfIterations = $request->query->get('number') ?? 0;
         $this->stabService->toStabDb($numberOfIterations);
         $errors = $this->stabService->getErrors() ?? false;
@@ -79,7 +75,6 @@ class AdminController extends AbstractController
     #[Route('/users/delete/{id}', name: 'delete_user', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
     public function deleteUser(User $user): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->userService->delete($user);
         $this->addFlash(
             'success',

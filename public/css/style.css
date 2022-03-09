@@ -48,6 +48,7 @@ nav #menu{
 nav .menuList{
     display: flex;
     justify-content: center;
+    padding-inline-start: 0;
 }
 nav .menuList li{
     text-decoration: none;
@@ -669,13 +670,14 @@ img[alt="www.000webhost.com"] {
 }
  @media (min-width: 300px) and (max-width: 500.98px) {
     .content {
-        padding: 2vmin 2.5%;
+        padding: 2vmin 1.5%;
     }
     nav{
         max-height: 16vmin;
     }
     nav #logo {
         width: 10%;
+        height: 100%;
         padding: 0;
     }
     nav #imglogo{
@@ -691,12 +693,9 @@ img[alt="www.000webhost.com"] {
     nav #menu {
         width: 90%;
     }
-    nav .menuList {
-        justify-content: flex-end;
-    }
     .viewpost {
         width: 85%;
-        margin: 0 5%;
+        margin: 0 6%;
     }
     footer {
         height: 20vmin;

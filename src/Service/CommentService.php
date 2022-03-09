@@ -33,9 +33,12 @@ class CommentService
     /**
      * @return int Returns an id of comment
      */
-    public function add(int $userId, int $postId, string $content, int $rating = 0, ?int $dateTime = null)
+    public function add(int $userId, int $postId, string $content, int $rating = 0, $dateTime = false)
     {
-        $dateTime ?? time();
+        if (!$dateTime)
+        {
+            $dateTime = time();
+        }
         $comment = new Comments();
         $comment->setPostId($postId);
         $comment->setUserId($userId);

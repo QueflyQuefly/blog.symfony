@@ -41,9 +41,12 @@ class PostService
     /**
      * @return int Returns an id of post
      */
-    public function add(int $userId, string $title, string $content, ?int $dateTime = null)
+    public function add(int $userId, string $title, string $content, $dateTime = false)
     {
-        $dateTime ?? time();
+        if (!$dateTime)
+        {
+            $dateTime = time();
+        }
         $post = new Posts();
         $post->setTitle($title);
         $post->setUserId($userId);

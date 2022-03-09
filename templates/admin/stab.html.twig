@@ -18,7 +18,8 @@
     </h1>
 
     <form action='{{ path('admin_show_stab') }}' method='get'>
-        <label class='formlabel'>Введите нужное количество итераций цикла (создание пользователя, поста и комментариев к нему):
+        <label class='formlabel' style='font-size: 13pt;'>
+            Введите нужное количество итераций цикла (создание пользователя, поста и комментариев к нему):
             <input 
                 name='number'
                 type='text'
@@ -29,6 +30,6 @@
             >
         </label>
         <br>
-        <input type='submit' class='formsubmit' value='Применить' style='margin:2vmin;'>
+        <input type='submit' class='formsubmit' value='Применить'>
     </form>
 {% endblock %}
