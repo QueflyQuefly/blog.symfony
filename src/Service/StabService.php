@@ -124,7 +124,7 @@ class StabService
                     $this->errors[] = "Пост от пользователя с id = $userId не создан";
                 }
 
-                $random5 = mt_rand(0, 5);
+                $random5 = mt_rand(1, 5);
                 if (!$this->postService->addRating($userId, $postId, $random5))
                 {
                     $this->errors[] = "Рейтинг $random5 к посту №$postId от пользователя с id = $userId не поставился";
