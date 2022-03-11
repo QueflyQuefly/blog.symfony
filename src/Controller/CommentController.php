@@ -29,7 +29,7 @@ class CommentController extends AbstractController
         $content = trim(strip_tags($content));
         if ('' != $content)
         {
-            $this->commentService->add($userId, $postId, $content);
+            $this->commentService->create($userId, $postId, $content);
             $this->addFlash(
                 'success',
                 'Комментарий добавлен'

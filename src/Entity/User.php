@@ -7,9 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 /**
- * @UniqueEntity(fields={"email"}, message="There is already an account with this email")
+ * @UniqueEntity(fields={"email"}, message="Уже есть аккаунт с таким e-mail. Войдите")
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -19,6 +21,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    /**
+     * @Assert\Email(
+     *     message = "'{{ value }}' не является настоящим адресом e-mail"
+     * )
+     */
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     private $email;
 

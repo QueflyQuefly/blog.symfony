@@ -10,20 +10,19 @@ use App\Repository\PostsRepository;
 use App\Repository\RatingPostsRepository;
 use App\Repository\AdditionalInfoPostsRepository;
 use App\Repository\TagPostsRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class PostService
 {
-    private ManagerRegistry $doctrine;
     private PostsRepository $postsRepository;
     private RatingPostsRepository $ratingPostsRepository;
     private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
     private TagPostsRepository $tagPostsRepository;
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     public function __construct(      
-        ManagerRegistry $doctrine,
+        EntityManagerInterface $entityManager,
         PostsRepository $postsRepository,
         RatingPostsRepository $ratingPostsRepository,
         AdditionalInfoPostsRepository $additionalInfoPostsRepository,
@@ -34,14 +33,13 @@ class PostService
         $this->ratingPostsRepository = $ratingPostsRepository;
         $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
         $this->tagPostsRepository = $tagPostsRepository;
-        $this->doctrine = $doctrine;
-        $this->entityManager = $this->doctrine->getManager();
+        $this->entityManager = $entityManager;
     }
 
     /**
-     * @return int Returns an id of post
+     * @return Posts Returns an object of Posts
      */
-    public function add(int $userId, string $title, string $content, $dateTime = false)
+    public function create(int $userId, string $title, string $content, $dateTime = false)
     {
         if (!$dateTime)
         {
@@ -69,24 +67,70 @@ class PostService
             preg_match_all($regex, $allText, $tags);
             $tags = $tags[0];
             foreach ($tags as $tag) {
-                $this->addTag($tag, $post->getId());
+                $this->createTag($tag, $post->getId());
             }
         }
-        return $post->getId();
+        return $post;
     }
 
     /**
-     * @return int Returns an id of post
+     * @return Posts Returns an object of Posts
      */
-    private function addTag(string $tag, int $postId)
+    public function createWithoutFlush(int $userId, string $title, string $content, $dateTime = false)
+    {
+        if (!$dateTime)
+        {
+            $dateTime = time();
+        }
+        $post = new Posts();
+        $post->setTitle($title);
+        $post->setUserId($userId);
+        $post->setContent($content);
+        $post->setDateTime($dateTime);
+        $this->entityManager->persist($post);
+
+        $postInfo = new AdditionalInfoPosts();
+        $postInfo->setRating('0.0');
+        $postInfo->setPostId($post->getId());
+        $postInfo->setCountComments(0);
+        $postInfo->setCountRatings(0);
+        $this->entityManager->persist($postInfo);
+
+        $allText = $title." ".$content;
+        if (strpos($allText, '#') !== false) {
+            $regex = '/#\w+/um';
+            preg_match_all($regex, $allText, $tags);
+            $tags = $tags[0];
+            foreach ($tags as $tag) {
+                $this->createTagWithoutFlush($tag, $post->getId());
+            }
+        }
+        return $post;
+    }
+
+    /**
+     * @return TagPosts Returns an object of TagPosts
+     */
+    private function createTag(string $tag, int $postId)
     {
         $tagPost = new TagPosts();
         $tagPost->setPostId($postId);
         $tagPost->setTag($tag);
         $this->entityManager->persist($tagPost);
         $this->entityManager->flush();
+        return $tagPost;
+    }
 
-        return $tagPost->getId();
+    /**
+     * @return TagPosts Returns an object of TagPosts
+     */
+    private function createTagWithoutFlush(string $tag, int $postId)
+    {
+        $tagPost = new TagPosts();
+        $tagPost->setPostId($postId);
+        $tagPost->setTag($tag);
+        $this->entityManager->persist($tagPost);
+        return $tagPost;
     }
 
     /**
@@ -118,7 +162,6 @@ class PostService
             $ratingPost->setUserId($userId);
             $ratingPost->setRating($rating);
             $this->entityManager->persist($ratingPost);
-            $this->entityManager->flush();
     
             $infoPost = $this->additionalInfoPostsRepository->find($postId);
             $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
@@ -126,6 +169,27 @@ class PostService
             $generalRatingPost = $this->countRating($postId);
             $infoPost->setRating((string) $generalRatingPost);
             $this->entityManager->flush();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function addRatingWithoutFlush(int $userId, int $postId, int $rating)
+    {
+        if(!$this->isUserAddRating($userId, $postId))
+        {
+            $ratingPost = new RatingPosts();
+            $ratingPost->setPostId($postId);
+            $ratingPost->setUserId($userId);
+            $ratingPost->setRating($rating);
+            $this->entityManager->persist($ratingPost);
+            $infoPost = $this->additionalInfoPostsRepository->find($postId);
+            $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+            $generalRatingPost = $this->countRating($postId);
+            $infoPost->setRating((string) $generalRatingPost);
             return true;
         }
         return false;
@@ -230,8 +294,6 @@ class PostService
     {
         $postId = $post->getId();
         $this->entityManager->remove($post);
-        $this->entityManager->flush();
-
         $infoPost = $this->additionalInfoPostsRepository->find($postId);
         $this->entityManager->remove($infoPost);
         $this->entityManager->flush();

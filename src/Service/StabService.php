@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class StabService
@@ -13,7 +13,8 @@ class StabService
     private $errors = [];
     private UserService $userService;
     private PostService $postService;
-    private CommentService $commentService;
+    private CommentService $commentService;    
+    private EntityManagerInterface $entityManager;    
     private $user = [
         "names" => [0 => "Василий", 1 => "Даниил", 2 => "Иван", 3 => "Павел", 4 => "Александр", 5 => "Алексей", 6 => "Давид", 
                     7 => "Фёдор", 8 => 'Анатолий', 9 => "Вячеслав", 10 => "Кирилл", 11 => "Григорий", 12 => "Георгий"],
@@ -70,12 +71,14 @@ class StabService
     public function __construct(
         UserService $userService,
         PostService $postService,
-        CommentService $commentService
+        CommentService $commentService,
+        EntityManagerInterface $entityManager
     )
     {
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -83,9 +86,10 @@ class StabService
      */
     public function toStabDb(int $numberOfIterations)
     {
-        for($i = 0; $i < $numberOfIterations; $i++)
+        try 
         {
-            try {
+            for($i = 0; $i < $numberOfIterations; $i++)
+            {
                 $random1 = mt_rand(0, 12);
                 $random2 = mt_rand(0, 12);
                 $random3 = mt_rand(0, 12);
@@ -104,7 +108,8 @@ class StabService
                 /* Here I add post with info and tags */
                 $title = $this->titles1[$random1].' '.$this->titles2[$random2];
                 $content = $this->texts[$random3].$this->texts[$random2].$this->texts[$random1];
-                $postId = $this->postService->add($userId, $title, $content, $date);
+                $post = $this->postService->createWithoutFlush($userId, $title, $content, $date);
+                $postId = $post->getId();
 
                 if(!$postId)
                 {
@@ -112,7 +117,7 @@ class StabService
                 }
 
                 $random5 = mt_rand(0, 5);
-                if (!$this->postService->addRating($userId, $postId, $random5))
+                if (!$this->postService->addRatingWithoutFlush($userId, $postId, $random5))
                 {
                     $this->errors[] = "Рейтинг $random5 к посту №$postId от пользователя с id = $userId не поставился";
                 }
@@ -136,19 +141,21 @@ class StabService
                     // }
 
                     $randomLike = mt_rand(0, 1000);
-                    $commentId = $this->commentService->add($userId, $postId, $commentContent, $randomLike, $dateOfComment);
+                    $comment = $this->commentService->createWithoutFlush($userId, $postId, $commentContent, $randomLike, $dateOfComment);
+                    $commentId = $comment->getId();
 
                     if(!$commentId)
                     {
                         $this->errors[] = "Комментарий к посту №$postId  от пользователя с id = $userId не создан";
                     }
 
-                    $this->commentService->like($userId, $commentId);
+                    $this->commentService->likeWithoutFlush($userId, $commentId);
                 }
-            } catch(\Exception $e)
-            {
-                $this->errors[] = $e->getMessage();
             }
+
+            $this->entityManager->flush();
+        } catch(\Exception $e) {
+            $this->errors[] = $e->getMessage();
         }
         return true;
     }

@@ -36,7 +36,7 @@ class UserController extends AbstractController
     public function showProfile(?int $userId): Response
     {
         if (!empty($userId)) {
-            $user = $this->userService->find($userId);
+            $user = $this->userService->getUserById($userId);
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser())
             {

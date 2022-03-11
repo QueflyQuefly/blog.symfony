@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Posts;
 use App\Service\PostService;
 use App\Service\CommentService;
+use App\Form\PostFormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -71,40 +72,34 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/add', name: 'show_add', methods: ['GET'])]
-    public function showAdd(): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        return $this->render('post/add.html.twig', [
-            'max_size_of_upload_image' => $this->maxSizeOfUploadImage
-        ]);
-    }
-
-    #[Route('/add', name: 'add', methods: ['POST'])]
+    #[Route('/add', name: 'add')]
     public function add(Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $userId = $this->getUserId();
-
-        $title = $request->request->get('title');
-        $title = trim(strip_tags($title));
-        $content = $request->request->get('content');
-        $content = trim(strip_tags($content));
-        if ('' != $title && '' != $content)
-        {
-            $this->postService->add($userId, $title, $content);
-            $this->addFlash(
-                'success',
-                'Пост добавлен'
-            );
+        $form = $this->createForm(PostFormType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $userId = $this->getUserId();
+            $title = $form->get('title')->getData();
+            $content = $form->get('content')->getData();
+            if ($this->postService->create($userId, $title, $content))
+            {
+                $this->addFlash(
+                    'success',
+                    'Пост добавлен'
+                );
+            } else {
+                $this->addFlash(
+                    'error',
+                    'При добавлении поста произошла ошибка'
+                );
+            }
             return $this->redirectToRoute('post_main');
-        } else {
-            $this->addFlash(
-                'error',
-                'При добавлении поста произошла ошибка: заполните поля формы'
-            );
         }
-        return $this->redirectToRoute('post_show_add');
+        return $this->renderForm('post/add.html.twig', [
+            'form' => $form,
+            'max_size_of_upload_image' => $this->maxSizeOfUploadImage
+        ]);
     }
 
     #[Route('/rating/{postId}', name: 'rating', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]

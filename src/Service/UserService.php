@@ -5,30 +5,30 @@ namespace App\Service;
 use App\Entity\Subscriptions;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionsRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class UserService
 {
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
     private SubscriptionsRepository $subscriptionsRepository;
 
     public function __construct(
-        ManagerRegistry $doctrine, 
+        EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
         SubscriptionsRepository $subscriptionsRepository
     )
     {
         $this->userRepository = $userRepository;
         $this->subscriptionsRepository = $subscriptionsRepository;
-        $this->entityManager = $doctrine->getManager();
+        $this->entityManager = $entityManager;
     }
 
     /**
      * @return User Returns an User object
      */
-    public function find(int $userId)
+    public function getUserById(int $userId)
     {
         return $this->userRepository->find($userId);
     }
@@ -69,7 +69,7 @@ class UserService
     }
 
     /**
-     * @return Users[] Returns an array of Users objects
+     * @return User[] Returns an array of User objects
      */
     public function getUsers(int $numberOfUsers, int $page)
     {
@@ -79,7 +79,7 @@ class UserService
     }
 
     /**
-     * @return Users[] Returns an array of Users objects
+     * @return User[] Returns an array of Users objects
      */
     public function searchUsers(string $searchWords)
     {

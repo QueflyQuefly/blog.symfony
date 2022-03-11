@@ -31,9 +31,9 @@ class SearchController extends AbstractController
         $posts = false;
         if (!$search)
         {
-            $search = $request->query->get('search');
+            $search = (string) $request->query->get('search');
         }
-        $searchWords = (string) trim(strip_tags($search));
+        $searchWords = trim(strip_tags($search));
         if('' !== $searchWords)
         {
             $posts = $this->postService->searchPosts($searchWords);

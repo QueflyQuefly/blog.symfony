@@ -5,47 +5,26 @@
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
-    <div class='addpostcontainer'>
-        <p class='formname'>Форма добавления поста:</p>
-        <div class='addpostform'>
-            <form action='{{ path('post_add') }}' method='post' enctype="multipart/form-data">
-                <label>Заголовок: 
-                    <input 
-                        type='text'
-                        title='Заголовок'
-                        class='addpostname'
-                        required minlength="1"
-                        maxlength='180'
-                        autofocus
-                        name='title'
-                        placeholder="Добавьте заголовок поста. Количество символов: от 20 до 140"
-                    >
-                </label>
-                <input type="hidden" name="MAX_FILE_SIZE" value="{{ max_size_of_upload_image }}">
-                <label>
-                    <p class='addpostlabel'>
-                        Пожалуйста, добавьте картинку. 
-                        Допускаются jpg весом до {{ max_size_of_upload_image / 1024 / 1024 }} мегабайт
-                    </p>
-                    <input class='addpostimg' type='file' name='image'> <!-- required -->
-                </label>
-                <label>
-                    <p class='addpostlabel'>Содержание поста:</p>
-                    <textarea 
-                        title='Содержание'
-                        required
-                        minlength="1"
-                        maxlength='4000'
-                        spellcheck="true"
-                        wrap='hard'
-                        name='content'
-                        placeholder="Добавление содержания. Количество символов: от 20 до 4000 с пробелами"
-                        id='addposttextarea'
-                    ></textarea>
-                </label>
-                <br>
-                <input type='submit' value='Добавить пост' class='addpostsubmit'>
-            </form>
-        </div>
+    <p class='formname'>Форма добавления поста:</p>
+    <div class='addpostform'>
+
+        {{ form_start(form) }}
+            {{ form_row(form.title, {
+                label: 'Заголовок: '
+            }) }}
+
+            <p class='addpostlabel'>
+                Допускаются jpg весом до {{ max_size_of_upload_image / 1024 / 1024 }} мегабайт
+            </p>
+            {{ form_row(form.image, {
+                label: 'Картинка: '
+            }) }}
+
+            {{ form_row(form.content, {
+                label: 'Содержание поста: '
+            }) }}
+            <input type='submit' value='Добавить пост' class='addpostsubmit'>
+        {{ form_end(form) }}   
+
     </div>
 {% endblock %}

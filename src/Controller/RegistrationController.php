@@ -3,15 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\RegistrationService;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mime\Address;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
@@ -19,59 +16,34 @@ use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 class RegistrationController extends AbstractController
 {
     private EmailVerifier $emailVerifier;
-    private UserPasswordHasherInterface $userPasswordHasher;
-    private EntityManagerInterface $entityManager;
+    private RegistrationService $registrationService;
 
     public function __construct(
         EmailVerifier $emailVerifier,
-        UserPasswordHasherInterface $userPasswordHasher, 
-        EntityManagerInterface $entityManager
+        RegistrationService $registrationService
     )
     {
         $this->emailVerifier = $emailVerifier;
-        $this->userPasswordHasher = $userPasswordHasher;
-        $this->entityManager = $entityManager;
+        $this->registrationService = $registrationService;
     }
 
     #[Route('/user/register', name: 'app_register')]
     public function register(Request $request): Response
     {
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form = $this->createForm(RegistrationFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // encode the plain password
-            $user->setPassword(
-            $this->userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
-            );
+            $email = $form->get('email')->getData();
+            $fio = $form->get('fio')->getData();
+            $password = $form->get('plainPassword')->getData();
             $rights = ['ROLE_USER'];
-            if ($request->get('add_admin'))
+            if ($form->get('addAdmin')->getData())
             {
+                $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $rights = ['ROLE_ADMIN'];
-                $fio = 'Superuser';
             }
-            $fio = 'User';
-            $user->setFio($fio);
-            $user->setDateTime(time());
-            $user->setRoles($rights);
-
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
-
-            // generate a signed url and email it to the user
-            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-                (new TemplatedEmail())
-                    ->from(new Address('prostoblog.local@gmail.com', 'Prosto Blog'))
-                    ->to($user->getEmail())
-                    ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
-            );
-            // do anything else you need here, like send an email
-
+            $this->registrationService->register($email, $fio, $password, $rights);
             return $this->redirectToRoute('user_login');
         }
 
@@ -89,14 +61,12 @@ class RegistrationController extends AbstractController
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
         } catch (VerifyEmailExceptionInterface $exception) {
-            $this->addFlash('verify_email_error', $exception->getReason());
+            $this->addFlash('error', 'Произошла ошибка при проверке e-mail');
 
             return $this->redirectToRoute('app_register');
         }
 
-        // @TODO Change the redirect on success and handle or remove the flash message in your templates
-        $this->addFlash('success', 'Your email address has been verified.');
-
-        return $this->redirectToRoute('app_register');
+        $this->addFlash('success', 'Ваш e-mail верифицирован. Войдите');
+        return $this->redirectToRoute('user_login');
     }
 }

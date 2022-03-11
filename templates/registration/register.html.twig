@@ -17,6 +17,9 @@
             {{ form_row(registrationForm.email, {
                 label: 'Ваша почта'
             }) }}
+            {{ form_row(registrationForm.fio, {
+                label: 'ФИО или псевдоним'
+            }) }}
             {{ form_row(registrationForm.plainPassword, {
                 label: 'Ваш пароль'
             }) }}
@@ -24,6 +27,13 @@
                 label: 'Согласен с правилами сайта'
             }) }}
 
+            {% if is_granted('ROLE_ADMIN') %}
+                {{ form_row(registrationForm.addAdmin, {
+                    label: 'Добавить администратора'
+                }) }}
+            {% endif %}
+
+            <br>
             <div id='right'>
                 <button type='submit' class='formsubmit'>Создать аккаунт</button>
             </div>
