@@ -52,27 +52,6 @@ class CommentService
         return $comment;
     }
 
-    /**
-     * @return Comments Returns an object of Comments
-     */
-    public function createWithoutFlush(int $userId, int $postId, string $content, int $rating = 0, $dateTime = false)
-    {
-        if (!$dateTime)
-        {
-            $dateTime = time();
-        }
-        $comment = new Comments();
-        $comment->setPostId($postId);
-        $comment->setUserId($userId);
-        $comment->setDateTime($dateTime);
-        $comment->setContent($content);
-        $comment->setRating($rating);
-        $this->entityManager->persist($comment);
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
-        $infoPost->setCountComments($infoPost->getCountComments() + 1);
-        return $comment;
-    }
-
     public function like(int $userId, int $commentId)
     {
         $ratingComment = $this->ratingCommentsRepository->findOneBy(['userId' => $userId, 'commentId' => $commentId]);
@@ -90,24 +69,6 @@ class CommentService
             $this->entityManager->persist($ratingComment);
             $comment->setRating($comment->getRating() + 1);
             $this->entityManager->flush();
-        }
-    }
-
-    public function likeWithoutFlush(int $userId, int $commentId)
-    {
-        $ratingComment = $this->ratingCommentsRepository->findOneBy(['userId' => $userId, 'commentId' => $commentId]);
-        $comment = $this->commentsRepository->find($commentId);
-
-        if ($ratingComment)
-        {
-            $this->entityManager->remove($ratingComment);
-            $comment->setRating($comment->getRating() - 1);
-        } else {
-            $ratingComment = new RatingComments();
-            $ratingComment->setUserId($userId);
-            $ratingComment->setCommentId($commentId);
-            $this->entityManager->persist($ratingComment);
-            $comment->setRating($comment->getRating() + 1);
         }
     }
 

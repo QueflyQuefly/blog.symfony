@@ -51,6 +51,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * @return int Returns an id
+     */
+    public function getLastUserId()
+    {
+        return $this->createQueryBuilder('u')
+            ->select('MAX(u.id) as max_id')
+            ->getQuery()
+            ->getOneOrNullResult()['max_id']
+        ;
+    }
+
+    /**
      * @return Users[] Returns an array of Users objects
      */
     public function searchByFio(string $search)

@@ -34,6 +34,14 @@ class UserService
     }
 
     /**
+     * @return int - Returns an id of User object
+     */
+    public function getLastUserId()
+    {
+        return $this->userRepository->getLastUserId();
+    }
+
+    /**
      * @return bool
      */
     public function subscribe(int $userIdWantSubscribe, int $userId)

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Service\UserService;
+use App\Service\RegistrationService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,7 @@ class StabService
 {
     private $errors = [];
     private UserService $userService;
+    private RegistrationService $registrationService;
     private PostService $postService;
     private CommentService $commentService;    
     private EntityManagerInterface $entityManager;    
@@ -64,18 +66,20 @@ class StabService
         8 => 'Но на автомобиле сложно или практически невозможно посмотреть дальние страны. Тут без самолёта не обойтись. Когда я вырасту, я хочу совершить кругосветное путешествие, используя различные виды транспорта. Это моя самая большая мечта.',
         9 => 'Путешествие одно из самых любимых занятий большинства людей. А многие так любят путешествовать... Все просто, когда человек путешествует, он познает окружающий мир и самого себя. На земле очень много необычных уголков, красивых мест, которые заставляют пережить потрясающие эмоции, чувства.',
         10 => 'Во время путешествия наполняешься энергией, силой, положительными эмоциями. Начинаешь ощущать гармонию и тесную связь человека с природой. Удивительные страны, красивые пейзажи всегда манили романтиков. Многие писатели, музыканты, художники создавали произведения искусства после путешествий, которое наполняли их новыми ощущениями, меняли их взгляды на жизнь.',
-        11 => 'Когда человек начинает путешествовать, он меняется, ведь на него оказывает влияние новые страны, города, люди, природа. Мир становится более интересным и разнообразным, появляются новые друзья.',
+        11 => 'Когда человек начинает путешествовать, он меняется, ведь на него оказывают влияние новые страны, города, люди, природа. Мир становится более интересным и разнообразным, появляются новые друзья.',
         12 => 'С давних времен люди не зная, что там дальше, отправлялись в путешествие, их манила неизведанность, тайна, любопытство. И это было достаточно опасно, но несмотря на это, открывались новые города, страны, моря, океаны, материки. Сейчас современный человек знает многое, но отправляясь в путешествие, он по-прежнему открывает перед собой удивительный и неповторимый мир.',
     ];
 
     public function __construct(
         UserService $userService,
+        RegistrationService $registrationService,
         PostService $postService,
         CommentService $commentService,
         EntityManagerInterface $entityManager
     )
     {
         $this->userService = $userService;
+        $this->registrationService = $registrationService;
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->entityManager = $entityManager;
@@ -86,29 +90,33 @@ class StabService
      */
     public function toStabDb(int $numberOfIterations)
     {
-        try 
+        $this->entityManager->getConnection()->beginTransaction();
+        try
         {
-            for($i = 0; $i < $numberOfIterations; $i++)
+            $min = $this->userService->getLastUserId();
+            for($i = $min; $i < $numberOfIterations + $min; $i++)
             {
                 $random1 = mt_rand(0, 12);
                 $random2 = mt_rand(0, 12);
                 $random3 = mt_rand(0, 12);
                 $date = time() - mt_rand(100000, 2628000);
-                $userId = 1;
                 
-                // $email = $i.'@gmail.com';
-                // $fio = $this->user['names'][$random2].' '.$this->user['surnames'][$random3];
-                // $password = $i;
-                // $rights = 'ROLE_USER';
-                // if ($this) {
-                //     $this->errors[] = "Пользователь с email = $email не  создан";
-                //     continue;
-                // }
+                $email = "$i@$i.$i";
+                $fio = $this->user['names'][$random2].' '.$this->user['surnames'][$random3];
+                $password = $i;
+                $rights = ['ROLE_USER'];
+                $user = $this->registrationService->registerWithoutEmailVerification($email, $fio, $password, $rights, $date);
+                if (!$user)
+                {
+                    $this->errors[] = "Пользователь с email = $email не  создан";
+                    continue;
+                }
+                $userId = $user->getId();
                 
                 /* Here I add post with info and tags */
                 $title = $this->titles1[$random1].' '.$this->titles2[$random2];
                 $content = $this->texts[$random3].$this->texts[$random2].$this->texts[$random1];
-                $post = $this->postService->createWithoutFlush($userId, $title, $content, $date);
+                $post = $this->postService->create($userId, $title, $content, $date);
                 $postId = $post->getId();
 
                 if(!$postId)
@@ -117,7 +125,7 @@ class StabService
                 }
 
                 $random5 = mt_rand(0, 5);
-                if (!$this->postService->addRatingWithoutFlush($userId, $postId, $random5))
+                if (!$this->postService->addRating($userId, $postId, $random5))
                 {
                     $this->errors[] = "Рейтинг $random5 к посту №$postId от пользователя с id = $userId не поставился";
                 }
@@ -135,13 +143,10 @@ class StabService
                     $dateOfComment = mt_rand($date, time());
                     $commentContent = $this->texts[$random6];
 
-                    // if (!$this->postService->addRating($userId, $postId, $random5))
-                    // {
-                    //     $this->errors[] = "Рейтинг $random5 к посту №$postId от пользователя с id = $userId не поставился";
-                    // }
+                    // $this->postService->addRating($userId, $postId, $random5);
 
                     $randomLike = mt_rand(0, 1000);
-                    $comment = $this->commentService->createWithoutFlush($userId, $postId, $commentContent, $randomLike, $dateOfComment);
+                    $comment = $this->commentService->create($userId, $postId, $commentContent, $randomLike, $dateOfComment);
                     $commentId = $comment->getId();
 
                     if(!$commentId)
@@ -149,12 +154,12 @@ class StabService
                         $this->errors[] = "Комментарий к посту №$postId  от пользователя с id = $userId не создан";
                     }
 
-                    $this->commentService->likeWithoutFlush($userId, $commentId);
+                    $this->commentService->like($userId, $commentId);
                 }
             }
-
-            $this->entityManager->flush();
+            $this->entityManager->getConnection()->commit();
         } catch(\Exception $e) {
+            $this->entityManager->getConnection()->rollBack();
             $this->errors[] = $e->getMessage();
         }
         return true;

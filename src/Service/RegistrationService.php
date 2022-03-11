@@ -36,7 +36,10 @@ class RegistrationService
         $this->entityManager = $entityManager;
     }
 
-    public function Register(string $email, string $fio, string $password, array $rights, $dateTime = false)
+    /**
+     * @return User Returns an User object
+     */
+    public function register(string $email, string $fio, string $password, array $rights, $dateTime = false)
     {
         if (!$dateTime)
         {
@@ -65,5 +68,32 @@ class RegistrationService
             ->subject('Please Confirm your Email')
             ->htmlTemplate('registration/confirmation_email.html.twig')
         );
-    }     
+        return $user;
+    }
+
+    /**
+     * @return User Returns an User object
+     */
+    public function registerWithoutEmailVerification(string $email, string $fio, string $password, array $rights, $dateTime = false)
+    {
+        if (!$dateTime)
+        {
+            $dateTime = time();
+        }
+        $user = new User();
+        $user->setEmail($email);
+        $user->setFio($fio);
+        $user->setPassword(
+            $this->userPasswordHasher->hashPassword(
+                $user,
+                $password
+            )
+        );
+        $user->setDateTime($dateTime);
+        $user->setRoles($rights);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+        return $user;
+    }
 }
