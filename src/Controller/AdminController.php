@@ -30,13 +30,13 @@ class AdminController extends AbstractController
         $this->stabService = $stabService;
     }
 
-    #[Route('', name: 'main', methods: ['GET'])]
+    #[Route('', name: 'main')]
     public function showAdmin(): Response
     {
         return $this->render('admin/admin.html.twig');
     }
 
-    #[Route('/comments/{numberOfComments<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_comments', methods: ['GET'])]
+    #[Route('/comments/{numberOfComments<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_comments')]
     public function showComments(?int $numberOfComments, ?int $page): Response
     {
         $comments = $this->commentService->getComments($numberOfComments, $page);
@@ -48,7 +48,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/users/{numberOfUsers<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_users', methods: ['GET'])]
+    #[Route('/users/{numberOfUsers<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_users')]
     public function showUsers(?int $numberOfUsers, ?int $page): Response
     {
         $users = $this->userService->getUsers($numberOfUsers, $page);
@@ -60,7 +60,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/stab', name: 'show_stab', methods: ['GET'])]
+    #[Route('/stab', name: 'show_stab')]
     public function showStab(Request $request): Response
     {
         $numberOfIterations = $request->query->get('number') ?? 0;
@@ -72,7 +72,7 @@ class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/users/delete/{id}', name: 'delete_user', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/users/delete/{id}', name: 'delete_user', requirements: ['id' => '\b[0-9]+'])]
     public function deleteUser(User $user): Response
     {
         $this->userService->delete($user);

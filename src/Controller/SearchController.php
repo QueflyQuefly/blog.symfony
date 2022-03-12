@@ -25,7 +25,7 @@ class SearchController extends AbstractController
         $this->postService = $postService;
     }
 
-    #[Route('/{search?}', name: 'posts', methods: ['GET'])]
+    #[Route('/{search?}', name: 'posts')]
     public function searchPosts(?string $search, Request $request): Response
     {
         $posts = false;
@@ -44,7 +44,7 @@ class SearchController extends AbstractController
         ]);
     }
 
-    #[Route('/users/{search?}', name: 'users', methods: ['GET'], priority:2)]
+    #[Route('/users/{search?}', name: 'users', priority:2)]
     public function searchUsers(?string $search, Request $request): Response
     {
         $users = false;

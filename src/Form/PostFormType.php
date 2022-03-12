@@ -22,7 +22,9 @@ class PostFormType extends AbstractType
                 'attr' => [
                     'class' => 'addpostname',
                     'placeholder' => 'Добавьте заголовок поста. Количество символов: от 20 до 180',
-                    'autofocus' => 'on'
+                    'autofocus' => 'on',
+                    'minlength' => '1',
+                    'maxlength' => '120'
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -31,7 +33,7 @@ class PostFormType extends AbstractType
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 180
+                        'max' => 125
                     ])
                 ]
             ])
@@ -44,6 +46,8 @@ class PostFormType extends AbstractType
                 'attr' => [
                     'class' => 'addposttextarea',
                     'placeholder' => 'Добавление содержания. Количество символов: от 20 до 4000 с пробелами',
+                    'minlength' => '1',
+                    'maxlength' => '4000',
                     'spellcheck' => 'true',
                     'wrap' => 'hard'
                 ],
@@ -54,7 +58,7 @@ class PostFormType extends AbstractType
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 4000
+                        'max' => 5000
                     ])
                 ]
             ])

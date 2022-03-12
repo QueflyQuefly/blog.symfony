@@ -6,9 +6,9 @@
             <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
             {% if is_granted('ROLE_ADMIN') %}
                 <p class='posttitle'> Права: {{ user.roles[0] }}</p>
-                <form id='deleteUserById{{ user.id }}' action='{{ path('admin_delete_user', {'id': user.id}) }}' method='post'>
-                    <input type='submit' form='deleteUserById{{ user.id }}' value='Удалить {{ user.roles[0] }}-a' class='link'>
-                </form>
+                <a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link'>
+                    Удалить {{ user.roles[0] }}-a
+                </a>
             {% endif %}
         </div>
     </a>

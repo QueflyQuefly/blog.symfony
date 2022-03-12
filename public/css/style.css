@@ -340,6 +340,7 @@ h1{
 }
 .commentcontent{
     text-overflow: ellipsis;
+    overflow: hidden;
     margin: 3% auto;
     font-size: 13pt;
     width: 92%;
@@ -349,18 +350,16 @@ h1{
 /* like area */
 .like{
     margin-left: 8%;
-    background-color: transparent;
-    border: none;
     max-width: 20vmin;
     font-size: 15pt;
-}
-.like #heartlike{
+    color: black;
+    text-decoration: none;
     cursor: pointer;
 }
-.like #heartlike span{
+.like span{
     font-size: 20pt;
 }
-.like:hover #heartlike  span{
+.like:hover span{
     color: rgb(168, 0, 0);
 }
 /* like area */
@@ -635,7 +634,7 @@ hr{
 }
 
 .submitunder{
-    margin: -2vmin 0;
+    margin: -1vmin 0;
     padding: 0;
 }
 .link{

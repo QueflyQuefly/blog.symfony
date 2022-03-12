@@ -32,7 +32,7 @@ class UserController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('/profile/{userId<\b[0-9]+>?}', name: 'show_profile', methods: ['GET'])]
+    #[Route('/profile/{userId<\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $userId): Response
     {
         if (!empty($userId)) {
@@ -67,7 +67,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/profile/subscribe/{userId<\b[0-9]+>}', name: 'subscribe', methods: ['POST'])]
+    #[Route('/profile/subscribe/{userId<\b[0-9]+>}', name: 'subscribe')]
     public function subscribe(int $userId): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -105,7 +105,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/logout', name: 'logout', methods: ['POST'])]
+    #[Route('/logout', name: 'logout')]
     public function logout()
     {
         // controller can be blank: it will never be called!

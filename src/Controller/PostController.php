@@ -25,7 +25,7 @@ class PostController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('', name: 'main', methods: ['GET'])]
+    #[Route('', name: 'main')]
     public function main(): Response
     {
         $numberOfPosts = 10;
@@ -38,7 +38,7 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all', methods: ['GET'])]
+    #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all')]
     public function showAll(?int $numberOfPosts, ?int $page): Response
     {
         $posts = $this->postService->getPosts($numberOfPosts, $page);
@@ -50,7 +50,7 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{postId}', name: 'show', methods: ['GET'], requirements: ['postId' => '\b[0-9]+'])]
+    #[Route('/{postId}', name: 'show', requirements: ['postId' => '\b[0-9]+'])]
     public function showPost(int $postId): Response
     {
         $post = $this->postService->getPostById($postId);
@@ -114,7 +114,7 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
 
-    #[Route('/delete/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
     public function deletePost(Posts $post): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');

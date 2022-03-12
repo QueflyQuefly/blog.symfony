@@ -43,7 +43,7 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
 
-    #[Route('/like/{postId}/{commentId}', name: 'like', methods: ['POST'], requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
+    #[Route('/like/{postId}/{commentId}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
     public function like(int $postId, int $commentId): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -52,10 +52,11 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('post_show', ['postId' => $postId]);
     }
     
-    #[Route('/delete/{commentId}/{postId}', name: 'delete', methods: ['POST'], requirements: ['commentId' => '\b[0-9]+', 'postId' => '\b[0-9]+'])]
-    public function deleteComment(Comments $comment, int $postId): Response
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
+    public function deleteComment(Comments $comment): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $postId = $comment->getPostId();
         $this->commentService->delete($comment, $postId);
         $this->addFlash(
             'success',

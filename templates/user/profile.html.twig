@@ -24,15 +24,13 @@
         {% endif %}
         
         {% if can_subscribe %}
-            {% if is_subscribe %}
-                <form id='subscribe' action='{{ path('user_subscribe', {userId: user.id}) }}' method='post'>
-                    <input type='submit' style='font-size:13pt;' form='subscribe' value='Отписаться' class='link'>
-                </form>
-            {% else %}
-                <form id='subscribe' action='{{ path('user_subscribe', {userId: user.id}) }}' method='post'>
-                    <input type='submit' style='font-size:13pt;' form='subscribe' value='Подписаться' class='link'>
-                </form>
-            {% endif %}
+            <a href='{{ path('user_subscribe', {userId: user.id}) }}' style='font-size:13pt;' class='link'>
+                {% if is_subscribe %}
+                    Отписаться
+                {% else %}
+                    Подписаться
+                {% endif %}
+            </a>
         {% endif %}
     </h1>
 

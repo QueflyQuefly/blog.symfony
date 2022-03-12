@@ -23,7 +23,9 @@ class RegistrationFormType extends AbstractType
                 'attr' => [
                     'class' => 'formtext',
                     'placeholder' => 'Введите e-mail',
-                    'autofocus' => 'on'
+                    'autofocus' => 'on',
+                    'minlength' => '1',
+                    'maxlength' => '40',
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -39,7 +41,9 @@ class RegistrationFormType extends AbstractType
             ->add('fio', TextType::class, [
                 'attr' => [
                     'class' => 'formtext',
-                    'placeholder' => 'Введите ФИО или псевдоним'
+                    'placeholder' => 'Введите ФИО или псевдоним',
+                    'minlength' => '1',
+                    'maxlength' => '40',
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -65,7 +69,9 @@ class RegistrationFormType extends AbstractType
                 'attr' => [
                     'class' => 'formtext',
                     'placeholder' => 'Введите пароль',
-                    'autocomplete' => 'new-password'
+                    'autocomplete' => 'new-password',
+                    'minlength' => '1',
+                    'maxlength' => '40',
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -75,7 +81,7 @@ class RegistrationFormType extends AbstractType
                         'min' => 1,
                         'minMessage' => 'Пароль должен содержать не менее {{ limit }} знаков',
                         // max length allowed by Symfony for security reasons
-                        'max' => 4096,
+                        'max' => 50,
                     ]),
                 ],
             ])
