@@ -20,29 +20,6 @@ class CommentController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('/add/{postId}', name: 'add', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]
-    public function add(int $postId, Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $userId = $this->getUserId();
-        $content = $request->request->get('content');
-        $content = trim(strip_tags($content));
-        if ('' != $content)
-        {
-            $this->commentService->create($userId, $postId, $content);
-            $this->addFlash(
-                'success',
-                'Комментарий добавлен'
-            );
-        } else {
-            $this->addFlash(
-                'error',
-                'Произошла ошибка: заполните поля формы'
-            );
-        }
-        return $this->redirectToRoute('post_show', ['postId' => $postId]);
-    }
-
     #[Route('/like/{postId}/{commentId}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
     public function like(int $postId, int $commentId): Response
     {

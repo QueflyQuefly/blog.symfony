@@ -6,6 +6,7 @@ use App\Entity\Posts;
 use App\Service\PostService;
 use App\Service\CommentService;
 use App\Form\PostFormType;
+use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,7 +52,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/{postId}', name: 'show', requirements: ['postId' => '\b[0-9]+'])]
-    public function showPost(int $postId): Response
+    public function showPost(int $postId, Request $request): Response
     {
         $post = $this->postService->getPostById($postId);
         if (!$post) {
@@ -64,10 +65,19 @@ class PostController extends AbstractController
             $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
         }
         $tags = $this->postService->getTagsByPostId($postId);
-        return $this->render('post/view.html.twig', [
+
+        $form = $this->createForm(CommentFormType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+            $content = $form->get('content')->getData();
+            $this->commentService->create($userId, $postId, $content);
+        }
+        return $this->renderForm('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
             'tags' => $tags,
+            'form' => $form,
             'comments' => $comments
         ]);
     }

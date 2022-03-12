@@ -297,7 +297,13 @@ h1{
 .addcomment{
     padding-left: 5%;
 }
-#textcomment{
+.addcomment label{
+    padding-left: 5%;
+}
+.addcomment input{
+    margin-top: 5vmin;
+}
+.commenttextarea{
     margin-bottom: 2%;
     height: 15vmin;
     width: 80%;
@@ -306,7 +312,7 @@ h1{
     resize: none;
     border: 0.3vmin solid lightgray;
 }
-#textcomment:hover {
+.commenttextarea:hover {
     border: 0.3vmin solid gray;
 }
 /* viewcomments */

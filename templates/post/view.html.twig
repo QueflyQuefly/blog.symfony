@@ -66,16 +66,17 @@
     </div>
 
     <div class='addcomments' id='comment'>
-        <p class='center'>Добавьте комментарий:</p>
         <div class='addcomment'>
-            <form action='{{ path('comment_add', {postId: post.id}) }}' method='post'>
-                <textarea name='content' required  minlength="1" maxlength='500' wrap='hard' 
-                    placeholder="Опишите ваши эмоции :-) (до 500 символов)" id='textcomment'></textarea>
-                <br>
-                <input type='submit' value='Добавить комментарий' class='formsubmit'>
+            {{ form_start(form) }}
+                {{ form_row(form.content, {
+                    label: 'Добавьте комментарий: '
+                }) }}
+                {{ form_row(form.submit, {
+                    label: 'Добавить комментарий'
+                }) }}
                 
                 {{ include('_blog_flashes.html.twig') }}
-            </form>
+            {{ form_end(form) }}
         </div>
     </div>
 
