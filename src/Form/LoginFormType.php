@@ -4,32 +4,32 @@ namespace App\Form;
 
 use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 
-class RegistrationFormType extends AbstractType
+class LoginFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email', TextType::class, [
+            ->add('_username', EmailType::class, [
                 'attr' => [
                     'class' => 'formtext',
-                    'placeholder' => 'Введите email',
+                    'placeholder' => 'Ваш email',
                     'autofocus' => 'on',
                     'minlength' => '1',
                     'maxlength' => '40',
+                    'autocomplete' => 'on',
+                    'value' => $options['last_username']
                 ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Пожалуйста, введите email',
+                        'message' => 'Пожалуйста, введите email'
                     ]),
                     new Length([
                         'min' => 1,
@@ -39,58 +39,45 @@ class RegistrationFormType extends AbstractType
                     ])
                 ]
             ])
-            ->add('fio', TextType::class, [
+            ->add('_password', TextType::class, [
                 'attr' => [
                     'class' => 'formtext',
-                    'placeholder' => 'Введите ФИО или псевдоним',
+                    'placeholder' => 'Ваш пароль',
                     'minlength' => '1',
                     'maxlength' => '40',
+                    'autocomplete' => 'off'
                 ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Пожалуйста, введите ФИО или псевдоним',
+                        'message' => 'Пожалуйста, введите пароль'
                     ]),
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
                         'max' => 50,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
-                    ]),
+                    ])
                 ]
             ])
-            ->add('agreeTerms', CheckboxType::class, [
-                'mapped' => false,
-                'constraints' => [
-                    new IsTrue([
-                        'message' => 'Вам следует согласиться с правилами сайта',
-                    ]),
-                ],
-            ])
-            ->add('plainPassword', PasswordType::class, [
-                'mapped' => false,
+            ->add('captcha', TextType::class, [
                 'attr' => [
                     'class' => 'formtext',
-                    'placeholder' => 'Введите пароль',
-                    'autocomplete' => 'new-password',
+                    'placeholder' => 'Введите код',
                     'minlength' => '1',
                     'maxlength' => '40',
+                    'autocomplete' => 'off'
                 ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Пожалуйста, введите пароль',
+                        'message' => 'Пожалуйста, введите код с картинки выше'
                     ]),
                     new Length([
                         'min' => 1,
-                        'minMessage' => 'Пароль должен содержать не менее {{ limit }} знаков',
-                        // max length allowed by Symfony for security reasons
+                        'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
                         'max' => 50,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
-                    ]),
-                ],
-            ])
-            ->add('addAdmin', CheckboxType::class, [
-                'mapped' => false,
-                'required' => false
+                    ])
+                ]
             ])
         ;
     }
@@ -99,6 +86,7 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'last_username' => ''
         ]);
     }
 }

@@ -7,49 +7,22 @@
 {% block content %}
 <div class='formentry'>
     <p class='formname'>Вход</p>
-    <form action="{{ path('user_login') }}" method="post">
-        <label class='formlabel'>Введите вашу почту: 
-            <input 
-                type='email' 
-                name='_username' 
-                required minlength="1" 
-                maxlength='50' 
-                autofocus 
-                autocomplete="on" 
-                placeholder='Ваш email (до 50 символов)' 
-                class='formtext'
-                value="{{ last_username }}"
-            >
-        </label>
-        <label class='formlabel'>Введите ваш пароль: 
-            <input 
-                type='password' 
-                name='_password' 
-                required 
-                minlength="1" 
-                maxlength='20' 
-                autocomplete="off" 
-                placeholder='Ваш пароль (до 20 символов)' 
-                class='formtext'
-            >
-        </label>
+
+    {{ form_start(form) }}
+        {{ form_row(form._username, {
+            label: 'Введите е-mail:'
+        }) }}
+        {{ form_row(form._password, {
+            label: 'Введите пароль:'
+        }) }}
         <img class='captcha' src="{{ asset('images/captcha.php') }}"><br>
-        <label class='formlabel'>Введите код с картинки выше: 
-            <input 
-                type='login' 
-                name='variable_of_captcha' 
-                required 
-                minlength="1" 
-                maxlength='20' 
-                autocomplete="off" 
-                placeholder='Код с captcha' 
-                class='formtext'
-            >
-        </label>
+        {{ form_row(form.captcha, {
+            label: 'Введите код с картинки:'
+        }) }}
 
         {# If you want to control the URL the user is redirected to on success
         <input type="hidden" name="_target_path" value="/account"/> #}
-        
+
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
         {% if error %}
@@ -58,8 +31,9 @@
             </div>
         {% endif %}
 
-        <div id='left'><a class='formbutton' href='{{ path('app_register') }}'>Создать аккаунт</a></div>
+        <div id='left'><a class='formbutton' href='{{ path('user_register') }}'>Создать аккаунт</a></div>
         <div id='right'><button type='submit' class='formsubmit'>Войти</button></div>
-    </form>
+
+    {{ form_end(form) }}
 </div>
 {% endblock %}

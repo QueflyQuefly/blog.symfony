@@ -2,7 +2,7 @@
     <a class='postLink' title='Перейти в профиль' href='{{ path('user_show_profile', {'userId': user.id}) }}'>
         <div class='posttext'>
             <p class='posttitle'> ФИО(псевдоним): {{ user.fio }}</p>
-            <p class='posttitle'> E-mail: {{ user.email }}</p>
+            <p class='posttitle'> Email: {{ user.email }}</p>
             <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
             {% if is_granted('ROLE_ADMIN') %}
                 <p class='posttitle'> Права: {{ user.roles[0] }}</p>

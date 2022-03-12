@@ -18,13 +18,13 @@
                 label: 'Ваша почта'
             }) }}
             {{ form_row(registrationForm.fio, {
-                label: 'ФИО или псевдоним'
+                label: 'ФИО или псевдоним (будут видны всем)'
             }) }}
             {{ form_row(registrationForm.plainPassword, {
-                label: 'Ваш пароль'
+                label: 'Придумайте надёжный пароль'
             }) }}
             {{ form_row(registrationForm.agreeTerms, {
-                label: 'Согласен с правилами сайта'
+                label: 'Соглашаюсь с правилами сайта'
             }) }}
 
             {% if is_granted('ROLE_ADMIN') %}
@@ -33,11 +33,13 @@
                 }) }}
             {% endif %}
 
+            {{ form_row(registrationForm._token) }}
+            
             <br>
             <div id='right'>
                 <button type='submit' class='formsubmit'>Создать аккаунт</button>
             </div>
-        {{ form_end(registrationForm) }}   
+        {{ form_end(registrationForm, {render_rest: false}) }}   
 
 
     </div>

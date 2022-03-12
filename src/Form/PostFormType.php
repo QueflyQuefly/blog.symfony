@@ -33,7 +33,8 @@ class PostFormType extends AbstractType
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 125
+                        'max' => 125,
+                        'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
                     ])
                 ]
             ])
@@ -58,7 +59,8 @@ class PostFormType extends AbstractType
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 5000
+                        'max' => 5000,
+                        'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
                     ])
                 ]
             ])

@@ -6,7 +6,7 @@
     {{ include('_blog_flashes.html.twig') }}
 
     <h1>Профиль пользователя: {{ user.fio }}
-        <p>E-mail: {{ user.email }}</p>
+        <p>Email: {{ user.email }}</p>
 
         {% if ( user.roles[0] == 'ROLE_ADMIN' ) %}
             <p style='font-size: 13pt; color: green;'>Является администратором этого сайта</p>

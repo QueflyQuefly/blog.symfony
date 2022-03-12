@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 
 /**
- * @UniqueEntity(fields={"email"}, message="Уже есть аккаунт с таким e-mail. Войдите")
+ * @UniqueEntity(fields={"email"}, message="Уже есть аккаунт с таким email. Войдите")
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -23,7 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @Assert\Email(
-     *     message = "'{{ value }}' не является настоящим адресом e-mail"
+     *     message = "'{{ value }}' не является настоящим адресом email"
      * )
      */
     #[ORM\Column(type: 'string', length: 180, unique: true)]
