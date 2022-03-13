@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\PostsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: PostsRepository::class)]
 class Posts
@@ -24,6 +26,16 @@ class Posts
 
     #[ORM\Column(type: 'text')]
     private $content;
+
+    /**  
+     * @ORM\ManyToMany(targetEntity="Comments", cascade={"persist"})
+     */
+    private $comments = [];
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -76,5 +88,10 @@ class Posts
         $this->content = $content;
 
         return $this;
+    }
+
+    public function getComments(): Collection
+    {
+        return $this->comments;
     }
 }

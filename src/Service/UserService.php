@@ -91,7 +91,12 @@ class UserService
      */
     public function searchUsers(string $searchWords)
     {
-        $users = $this->userRepository->findOneByEmail($searchWords);
+        $users = [];
+        if (strpos($searchWords, '@') !== false)
+        {
+            if ($result = $this->userRepository->findOneByEmail($searchWords))
+            $users[] = $result;
+        }
         $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);
         return $results;

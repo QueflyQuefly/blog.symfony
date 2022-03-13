@@ -91,15 +91,17 @@ class PostService
      */
     private function countRating(int $postId)
     {
-        $rating = 0.0;
-        $i = 0.1;
+        $rating = $i = 0.0;
         $allRatingsPost = $this->ratingPostsRepository->findByPostId($postId);
-        foreach ($allRatingsPost as $ratingPost)
+        if ($allRatingsPost)
         {
-            $i++;
-            $rating += $ratingPost->getRating();
+            foreach ($allRatingsPost as $ratingPost)
+            {
+                $i++;
+                $rating += $ratingPost->getRating();
+            }
+            $rating = round($rating / $i, 1);
         }
-        $rating = round($rating / $i, 1);
         return $rating;
     }
 
@@ -118,6 +120,7 @@ class PostService
     
             $infoPost = $this->additionalInfoPostsRepository->find($postId);
             $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+            $this->entityManager->flush();
     
             $generalRatingPost = $this->countRating($postId);
             $infoPost->setRating((string) $generalRatingPost);

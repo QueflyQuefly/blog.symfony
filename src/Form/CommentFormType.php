@@ -3,7 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Comments;
-use PhpParser\Comment;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;

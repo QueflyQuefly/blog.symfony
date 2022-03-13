@@ -58,13 +58,7 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException('Пост не найден');
         }
-        $comments = $this->commentService->getCommentsByPostId($postId);
-        $isUserAddRating = false;
-        if ($userId = $this->getUserId())
-        {
-            $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
-        }
-        $tags = $this->postService->getTagsByPostId($postId);
+        $userId = $this->getUserId();
 
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
@@ -72,7 +66,18 @@ class PostController extends AbstractController
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
             $content = $form->get('content')->getData();
             $this->commentService->create($userId, $postId, $content);
+            // $url = $this->generateUrl('post_show', ['postId' => $postId]).'#addcomment';
+            $this->redirect($request->getUri());
         }
+
+        $comments = $this->commentService->getCommentsByPostId($postId);
+        $isUserAddRating = false;
+        if ($userId)
+        {
+            $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
+        }
+        $tags = $this->postService->getTagsByPostId($postId);
+
         return $this->renderForm('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
