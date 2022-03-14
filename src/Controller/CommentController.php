@@ -2,9 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Comments;
+use App\Entity\Comment;
 use App\Service\CommentService;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,36 +19,25 @@ class CommentController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('/like/{postId}/{commentId}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
-    public function like(int $postId, int $commentId): Response
+    #[Route('/like/{postId}/{id}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
+    public function like(int $postId, Comment $comment): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $userId = $this->getUserId();
-        $this->commentService->like($userId, $commentId);
-        return $this->redirectToRoute('post_show', ['postId' => $postId]);
+        $user = $this->getUser();
+        $this->commentService->like($user, $comment);
+        return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
     
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
-    public function deleteComment(Comments $comment): Response
+    public function deleteComment(Comment $comment): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $postId = $comment->getPostId();
+        $postId = ($comment->getPost())->getId();
         $this->commentService->delete($comment, $postId);
         $this->addFlash(
             'success',
             'Комментарий удален'
         );
-        return $this->redirectToRoute('post_show', ['postId' => $postId]);
-    }
-
-    private function getUserId(): ?int
-    {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return null;
-        }
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        return $user->getId();
+        return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
 }

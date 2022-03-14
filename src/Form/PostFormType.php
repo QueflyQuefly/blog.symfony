@@ -2,7 +2,7 @@
 
 namespace App\Form;
 
-use App\Entity\Posts;
+use App\Entity\Post;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -70,7 +70,7 @@ class PostFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Posts::class,
+            'data_class' => Post::class,
         ]);
     }
 }

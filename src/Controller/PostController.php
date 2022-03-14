@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Posts;
+use App\Entity\Post;
 use App\Service\PostService;
 use App\Service\CommentService;
 use App\Form\PostFormType;
@@ -51,39 +51,35 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{postId}', name: 'show', requirements: ['postId' => '\b[0-9]+'])]
-    public function showPost(int $postId, Request $request): Response
+    #[Route('/{id}', name: 'show', requirements: ['id' => '\b[0-9]+'])]
+    public function showPost(Post $post, Request $request): Response
     {
-        $post = $this->postService->getPostById($postId);
         if (!$post) {
             throw $this->createNotFoundException('Пост не найден');
         }
-        $userId = $this->getUserId();
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
 
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
             $content = $form->get('content')->getData();
-            $this->commentService->create($userId, $postId, $content);
+            $this->commentService->create($user, $post, $content);
             // $url = $this->generateUrl('post_show', ['postId' => $postId]).'#addcomment';
             $this->redirect($request->getUri());
         }
 
-        $comments = $this->commentService->getCommentsByPostId($postId);
         $isUserAddRating = false;
-        if ($userId)
+        if ($user)
         {
-            $isUserAddRating = $this->postService->isUserAddRating($userId, $postId);
+            $isUserAddRating = $this->postService->isUserAddRating($user, $post);
         }
-        $tags = $this->postService->getTagsByPostId($postId);
 
         return $this->renderForm('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,
-            'tags' => $tags,
             'form' => $form,
-            'comments' => $comments
         ]);
     }
 
@@ -94,10 +90,10 @@ class PostController extends AbstractController
         $form = $this->createForm(PostFormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $userId = $this->getUserId();
+            $user = $this->getUser();
             $title = $form->get('title')->getData();
             $content = $form->get('content')->getData();
-            if ($this->postService->create($userId, $title, $content))
+            if ($this->postService->create($user, $title, $content))
             {
                 $this->addFlash(
                     'success',
@@ -117,20 +113,20 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/rating/{postId}', name: 'rating', methods: ['POST'], requirements: ['postId' => '\b[0-9]+'])]
-    public function addRating(int $postId, Request $request)
+    #[Route('/rating/{id}', name: 'rating', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
+    public function addRating(Post $post, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $userId = $this->getUserId();
+        $user = $this->getUser();
 
         $rating = (int) $request->request->get('rating');
-        $this->postService->addRating($userId, $postId, $rating);
+        $this->postService->addRating($user, $post, $rating);
 
-        return $this->redirectToRoute('post_show', ['postId' => $postId]);
+        return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
-    public function deletePost(Posts $post): Response
+    public function deletePost(Post $post): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $this->postService->delete($post);
@@ -139,16 +135,5 @@ class PostController extends AbstractController
             'Пост удален'
         );
         return $this->redirectToRoute('post_main');
-    }
-
-    private function getUserId(): ?int
-    {
-        if (!$this->isGranted('ROLE_USER'))
-        {
-            return null;
-        }
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        return $user->getId();
     }
 }

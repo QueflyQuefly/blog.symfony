@@ -2,114 +2,118 @@
 
 namespace App\Service;
 
-use App\Entity\Comments;
-use App\Entity\RatingComments;
-use App\Repository\RatingCommentsRepository;
-use App\Repository\AdditionalInfoPostsRepository;
-use App\Repository\CommentsRepository;
+use App\Entity\Comment;
+use App\Entity\User;
+use App\Entity\Post;
+use App\Entity\RatingComment;
+use App\Repository\RatingCommentRepository;
+use App\Repository\InfoPostRepository;
+use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
 class CommentService
 {
     private EntityManagerInterface $entityManager;
-    private CommentsRepository $commentsRepository;
-    private RatingCommentsRepository $ratingCommentsRepository;
-    private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
+    private CommentRepository $commentRepository;
+    private RatingCommentRepository $ratingCommentRepository;
+    private InfoPostRepository $infoPostRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
-        CommentsRepository $commentsRepository,
-        RatingCommentsRepository $ratingCommentsRepository,
-        AdditionalInfoPostsRepository $additionalInfoPostsRepository
+        CommentRepository $commentRepository,
+        RatingCommentRepository $ratingCommentRepository,
+        InfoPostRepository $infoPostRepository
     )
     {
-        $this->commentsRepository = $commentsRepository;
+        $this->commentRepository = $commentRepository;
         $this->entityManager = $entityManager;
-        $this->ratingCommentsRepository = $ratingCommentsRepository;
-        $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
+        $this->ratingCommentRepository = $ratingCommentRepository;
+        $this->infoPostRepository = $infoPostRepository;
     }
 
     /**
-     * @return Comments Returns an object of Comments
+     * @return Comment Returns an object of Comment
      */
-    public function create(int $userId, int $postId, string $content, int $rating = 0, $dateTime = false)
+    public function create(User $user, Post $post, string $content, int $rating = 0, $dateTime = false)
     {
         if (!$dateTime)
         {
             $dateTime = time();
         }
-        $comment = new Comments();
-        $comment->setPostId($postId);
-        $comment->setUserId($userId);
+        $comment = new Comment();
+        $comment->setPost($post);
+        $comment->setUser($user);
         $comment->setDateTime($dateTime);
         $comment->setContent($content);
         $comment->setRating($rating);
         $this->entityManager->persist($comment);
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
+        $infoPost = $post->getInfoPost();
         $infoPost->setCountComments($infoPost->getCountComments() + 1);
         $this->entityManager->flush();
         return $comment;
     }
 
-    public function like(int $userId, int $commentId)
+    public function like(User $user, Comment $comment)
     {
-        $ratingComment = $this->ratingCommentsRepository->findOneBy(['userId' => $userId, 'commentId' => $commentId]);
-        $comment = $this->commentsRepository->find($commentId);
+        $ratingComment = $this->ratingCommentRepository->findOneBy([
+            'user' => $user, 
+            'comment' => $comment
+        ]);
+        $comment = $this->commentRepository->find($comment);
 
         if ($ratingComment)
         {
             $this->entityManager->remove($ratingComment);
             $comment->setRating($comment->getRating() - 1);
-            $this->entityManager->flush();
         } else {
-            $ratingComment = new RatingComments();
-            $ratingComment->setUserId($userId);
-            $ratingComment->setCommentId($commentId);
+            $ratingComment = new RatingComment();
+            $ratingComment->setUser($user);
+            $ratingComment->setComment($comment);
             $this->entityManager->persist($ratingComment);
             $comment->setRating($comment->getRating() + 1);
-            $this->entityManager->flush();
         }
+        $this->entityManager->flush();
     }
 
     /**
-     * @return Comments[] Returns an array of Comments objects
+     * @return Comment[] Returns an array of Comment objects
      */
     public function getComments(int $numberOfComments, int $page)
     {
         $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
 
-        return $this->commentsRepository->getComments($numberOfComments, $lessThanMaxId);
+        return $this->commentRepository->getComments($numberOfComments, $lessThanMaxId);
     }
     
     /**
-     * @return Comments[] Returns an array of Comments objects
+     * @return Comment[] Returns an array of Comment objects
      */
     public function getCommentsByPostId(int $postId)
     {
-        return $this->commentsRepository->getCommentsByPostId($postId);
+        return $this->commentRepository->getCommentsByPostId($postId);
     }
 
     /**
-     * @return Comments[] Returns an array of Comments objects
+     * @return Comment[] Returns an array of Comment objects
      */
     public function getCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentsRepository->getCommentsByUserId($userId, $numberOfComments);
+        return $this->commentRepository->getCommentsByUserId($userId, $numberOfComments);
     }
 
     /**
-     * @return Comments[] Returns an array of Comments objects
+     * @return Comment[] Returns an array of Comment objects
      */
     public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentsRepository->getLikedCommentsByUserId($userId, $numberOfComments);
+        return $this->commentRepository->getLikedCommentsByUserId($userId, $numberOfComments);
     }
 
     public function delete($comment, $postId)
     {
         $this->entityManager->remove($comment);
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
+        $infoPost = $this->infoPostRepository->find($postId);
         $infoPost->setCountComments($infoPost->getCountComments() - 1);
         $this->entityManager->flush();
     }

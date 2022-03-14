@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
@@ -87,9 +88,7 @@ class UserController extends AbstractController
             $canSubscribe = $isSubscribe = false;
         }
         $numberOfResults = 10;
-        $posts = $this->postService->getPostsByUserId($user->getId(), $numberOfResults);
         $likedPosts = $this->postService->getLikedPostsByUserId($user->getId(), $numberOfResults);
-        $comments = $this->commentService->getCommentsByUserId($user->getId(), $numberOfResults);
         $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId(), $numberOfResults);
 
         return $this->render('user/profile.html.twig', [
@@ -97,22 +96,19 @@ class UserController extends AbstractController
             'can_subscribe' => $canSubscribe,
             'is_subscribe' => $isSubscribe,
             'number_of_results' => $numberOfResults,
-            'posts' => $posts,
-            'comments' => $comments,
             'likedPosts' => $likedPosts,
             'likedComments' => $likedComments,
         ]);
     }
 
-    #[Route('/profile/subscribe/{userId<\b[0-9]+>}', name: 'subscribe')]
-    public function subscribe(int $userId): Response
+    #[Route('/profile/subscribe/{id<\b[0-9]+>}', name: 'subscribe')]
+    public function subscribe(User $user): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $userIdWantSubscribe = $user->getid();
+        $userSubscribed = $this->getUser();
 
-        if ($this->userService->subscribe($userIdWantSubscribe, $userId))
+        if ($this->userService->subscribe($userSubscribed, $user))
         {
             $this->addFlash(
                 'success',
@@ -124,7 +120,7 @@ class UserController extends AbstractController
                 'Подписка отменена'
             );
         }
-        return $this->redirectToRoute('user_show_profile', ['userId' => $userId]);
+        return $this->redirectToRoute('user_show_profile', ['userId' => $user->getId()]);
     }
 
     #[Route('/verify/email', name: 'verify_email')]
@@ -150,6 +146,10 @@ class UserController extends AbstractController
     {
         // get the login error if there is one
         $error = $this->authenticationUtils->getLastAuthenticationError();
+        if ($error)
+        {
+            $error = 'Неверная почта или пароль';
+        }
 
         // last username entered by the user
         $lastUsername = $this->authenticationUtils->getLastUsername();

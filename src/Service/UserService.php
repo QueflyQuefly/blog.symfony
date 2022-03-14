@@ -2,9 +2,10 @@
 
 namespace App\Service;
 
-use App\Entity\Subscriptions;
+use App\Entity\User;
+use App\Entity\Subscription;
 use App\Repository\UserRepository;
-use App\Repository\SubscriptionsRepository;
+use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
@@ -12,16 +13,16 @@ class UserService
 {
     private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
-    private SubscriptionsRepository $subscriptionsRepository;
+    private SubscriptionRepository $subscriptionRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
-        SubscriptionsRepository $subscriptionsRepository
+        SubscriptionRepository $subscriptionRepository
     )
     {
         $this->userRepository = $userRepository;
-        $this->subscriptionsRepository = $subscriptionsRepository;
+        $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
     }
 
@@ -44,17 +45,17 @@ class UserService
     /**
      * @return bool
      */
-    public function subscribe(int $userIdWantSubscribe, int $userId)
+    public function subscribe(User $userSubscribed, User $user)
     {
-        if ($subscription = $this->isSubscribe($userIdWantSubscribe, $userId))
+        if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId()))
         {
             $this->entityManager->remove($subscription);
             $this->entityManager->flush();
             return false;
         } else {
-            $subscription = new Subscriptions();
-            $subscription->setUserIdWantSubscribe($userIdWantSubscribe);
-            $subscription->setUserId($userId);
+            $subscription = new Subscription();
+            $subscription->setUserSubscribed($userSubscribed);
+            $subscription->setUser($user);
             $this->entityManager->persist($subscription);
             $this->entityManager->flush();
             return true;
@@ -66,7 +67,7 @@ class UserService
      */
     public function isSubscribe(int $userIdWantSubscribe, int $userId)
     {
-        if ($subscription = $this->subscriptionsRepository->findOneBy([
+        if ($subscription = $this->subscriptionRepository->findOneBy([
             'userIdWantSubscribe' => $userIdWantSubscribe,
             'userId' => $userId
         ]))

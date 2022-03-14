@@ -2,19 +2,20 @@
 
 namespace App\Entity;
 
-use App\Repository\AdditionalInfoPostsRepository;
+use App\Repository\InfoPostRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AdditionalInfoPostsRepository::class)]
-class AdditionalInfoPosts
+#[ORM\Entity(repositoryClass: InfoPostRepository::class)]
+class InfoPost
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'decimal', precision: 3, scale: 1)]
-    private $rating;
+    #[ORM\OneToOne(inversedBy: 'infoPost', targetEntity: Post::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private $post;
 
     #[ORM\Column(type: 'integer')]
     private $countComments;
@@ -22,22 +23,19 @@ class AdditionalInfoPosts
     #[ORM\Column(type: 'integer')]
     private $countRatings;
 
-    #[ORM\Column(type: 'integer')]
-    private $postId;
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getRating(): ?string
+    public function getPost(): ?Post
     {
-        return $this->rating;
+        return $this->post;
     }
 
-    public function setRating(string $rating): self
+    public function setPost(Post $post): self
     {
-        $this->rating = $rating;
+        $this->post = $post;
 
         return $this;
     }
@@ -62,18 +60,6 @@ class AdditionalInfoPosts
     public function setCountRatings(int $countRatings): self
     {
         $this->countRatings = $countRatings;
-
-        return $this;
-    }
-
-    public function getPostId(): ?int
-    {
-        return $this->postId;
-    }
-
-    public function setPostId(int $postId): self
-    {
-        $this->postId = $postId;
 
         return $this;
     }

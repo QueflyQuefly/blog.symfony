@@ -1,7 +1,7 @@
 <div class='viewcomment' id='comment{{ comment.id }}'>
-    <a class='postLink' href='{{ path("post_show", {postId: comment.postId}) }}#comment{{ comment.id }}'>
+    <a class='postLink' href='{{ path("post_show", {id: comment.post.id}) }}#comment{{ comment.id }}'>
     <p class='commentauthor'>
-        <object><a class='menuLink' href='{{ path("user_show_profile") }}'>{{ comment.author }}</a></object>
+        <object><a class='menuLink' href='{{ path("user_show_profile") }}'>{{ comment.user.fio }}</a></object>
         <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
     </p>
     <div class='commentcontent'>
@@ -15,7 +15,7 @@
         </p> 
     </div>
     <div>
-        <a class='like' title='Нравится' href='{{ path('comment_like', {commentId: comment.id, postId: comment.postId}) }}'>
+        <a class='like' title='Нравится' href='{{ path('comment_like', {id: comment.id, postId: comment.post.id}) }}'>
             <span>&#9825; </span> {{ comment.rating }}
         </a>
     </div>

@@ -116,18 +116,17 @@ class StabService
                 /* Here I add post with info and tags */
                 $title = $this->titles1[$random1].' '.$this->titles2[$random2];
                 $content = $this->texts[$random3].$this->texts[$random2].$this->texts[$random1];
-                $post = $this->postService->create($userId, $title, $content, $date);
-                $postId = $post->getId();
+                $post = $this->postService->create($user, $title, $content, $date);
 
-                if(!$postId)
+                if(!$post)
                 {
                     $this->errors[] = "Пост от пользователя с id = $userId не создан";
                 }
 
                 $random5 = mt_rand(1, 5);
-                if (!$this->postService->addRating($userId, $postId, $random5))
+                if (!$this->postService->addRating($user, $post, $random5))
                 {
-                    $this->errors[] = "Рейтинг $random5 к посту №$postId от пользователя с id = $userId не поставился";
+                    $this->errors[] = "Рейтинг $random5 к посту №{$post->getId()} от пользователя с id = $userId не поставился";
                 }
 
                 /* Here I add ratings and comments with likes to post */
@@ -146,15 +145,15 @@ class StabService
                     // $this->postService->addRating($userId, $postId, $random5);
 
                     $randomLike = mt_rand(0, 1000);
-                    $comment = $this->commentService->create($userId, $postId, $commentContent, $randomLike, $dateOfComment);
+                    $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment);
                     $commentId = $comment->getId();
 
                     if(!$commentId)
                     {
-                        $this->errors[] = "Комментарий к посту №$postId  от пользователя с id = $userId не создан";
+                        $this->errors[] = "Комментарий к посту №{$post->getId()}  от пользователя с id = $userId не создан";
                     }
 
-                    $this->commentService->like($userId, $commentId);
+                    $this->commentService->like($user, $comment);
                 }
             }
             $this->entityManager->getConnection()->commit();

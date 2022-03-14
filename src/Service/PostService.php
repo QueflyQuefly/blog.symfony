@@ -2,64 +2,63 @@
 
 namespace App\Service;
 
-use App\Entity\Posts;
-use App\Entity\AdditionalInfoPosts;
-use App\Entity\TagPosts;
-use App\Entity\RatingPosts;
-use App\Repository\PostsRepository;
-use App\Repository\RatingPostsRepository;
-use App\Repository\AdditionalInfoPostsRepository;
-use App\Repository\TagPostsRepository;
+use App\Entity\Post;
+use App\Entity\User;
+use App\Entity\InfoPost;
+use App\Entity\PostTag;
+use App\Entity\RatingPost;
+use App\Repository\PostRepository;
+use App\Repository\RatingPostRepository;
+use App\Repository\InfoPostRepository;
+use App\Repository\PostTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 
 class PostService
 {
-    private PostsRepository $postsRepository;
-    private RatingPostsRepository $ratingPostsRepository;
-    private AdditionalInfoPostsRepository $additionalInfoPostsRepository;
-    private TagPostsRepository $tagPostsRepository;
+    private PostRepository $postRepository;
+    private RatingPostRepository $ratingPostRepository;
+    private InfoPostRepository $infoPostRepository;
+    private PostTagRepository $postTagRepository;
     private EntityManagerInterface $entityManager;
 
     public function __construct(      
         EntityManagerInterface $entityManager,
-        PostsRepository $postsRepository,
-        RatingPostsRepository $ratingPostsRepository,
-        AdditionalInfoPostsRepository $additionalInfoPostsRepository,
-        TagPostsRepository $tagPostsRepository
+        PostRepository $postRepository,
+        RatingPostRepository $ratingPostRepository,
+        InfoPostRepository $infoPostRepository,
+        PostTagRepository $postTagRepository
     )
     {
-        $this->postsRepository = $postsRepository;
-        $this->ratingPostsRepository = $ratingPostsRepository;
-        $this->additionalInfoPostsRepository = $additionalInfoPostsRepository;
-        $this->tagPostsRepository = $tagPostsRepository;
+        $this->postRepository = $postRepository;
+        $this->ratingPostRepository = $ratingPostRepository;
+        $this->infoPostRepository = $infoPostRepository;
+        $this->postTagRepository = $postTagRepository;
         $this->entityManager = $entityManager;
     }
 
     /**
-     * @return Posts Returns an object of Posts
+     * @return Post Returns an object of Post
      */
-    public function create(int $userId, string $title, string $content, $dateTime = false)
+    public function create(User $user, string $title, string $content, $dateTime = false)
     {
         if (!$dateTime)
         {
             $dateTime = time();
         }
-        $post = new Posts();
+        $post = new Post();
         $post->setTitle($title);
-        $post->setUserId($userId);
+        $post->setUser($user);
         $post->setContent($content);
         $post->setDateTime($dateTime);
+        $post->setRating('0.0');
         $this->entityManager->persist($post);
-        $this->entityManager->flush();
 
-        $postInfo = new AdditionalInfoPosts();
-        $postInfo->setRating('0.0');
-        $postInfo->setPostId($post->getId());
+        $postInfo = new InfoPost();
+        $postInfo->setPost($post);
         $postInfo->setCountComments(0);
         $postInfo->setCountRatings(0);
         $this->entityManager->persist($postInfo);
-        $this->entityManager->flush();
 
         $allText = $title." ".$content;
         if (strpos($allText, '#') !== false) {
@@ -67,40 +66,40 @@ class PostService
             preg_match_all($regex, $allText, $tags);
             $tags = $tags[0];
             foreach ($tags as $tag) {
-                $this->createTag($tag, $post->getId());
+                $this->createTag($tag, $post);
             }
         }
+        $this->entityManager->flush();
+
         return $post;
     }
 
     /**
-     * @return TagPosts Returns an object of TagPosts
+     * @return PostTag Returns an object of PostTag
      */
-    private function createTag(string $tag, int $postId)
+    private function createTag(string $tag, Post $post)
     {
-        $tagPost = new TagPosts();
-        $tagPost->setPostId($postId);
+        $tagPost = new PostTag();
+        $tagPost->setPost($post);
         $tagPost->setTag($tag);
         $this->entityManager->persist($tagPost);
-        $this->entityManager->flush();
         return $tagPost;
     }
 
     /**
      * @return float Returns an float number - rating of post
      */
-    private function countRating(int $postId)
+    private function countRating(Post $post)
     {
-        $rating = $i = 0.0;
-        $allRatingsPost = $this->ratingPostsRepository->findByPostId($postId);
-        if ($allRatingsPost)
+        $rating = 0.0;
+        $allRatingsPost = $post->getRatingPosts();
+        if ($count = $allRatingsPost->count())
         {
             foreach ($allRatingsPost as $ratingPost)
             {
-                $i++;
                 $rating += $ratingPost->getRating();
             }
-            $rating = round($rating / $i, 1);
+            $rating = round($rating / $count, 1);
         }
         return $rating;
     }
@@ -108,22 +107,23 @@ class PostService
     /**
      * @return bool
      */
-    public function addRating(int $userId, int $postId, int $rating)
+    public function addRating(User $user, Post $post, int $rating)
     {
-        if(!$this->isUserAddRating($userId, $postId))
+        if(!$this->isUserAddRating($user, $post))
         {
-            $ratingPost = new RatingPosts();
-            $ratingPost->setPostId($postId);
-            $ratingPost->setUserId($userId);
+            $ratingPost = new RatingPost();
+            $ratingPost->setPost($post);
+            $ratingPost->setUser($user);
             $ratingPost->setRating($rating);
             $this->entityManager->persist($ratingPost);
     
-            $infoPost = $this->additionalInfoPostsRepository->find($postId);
+            $infoPost = $post->getInfoPost();
             $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
+            $post->setInfoPost($infoPost);
             $this->entityManager->flush();
     
-            $generalRatingPost = $this->countRating($postId);
-            $infoPost->setRating((string) $generalRatingPost);
+            $generalRatingPost = $this->countRating($post);
+            $post->setRating((string) $generalRatingPost);
             $this->entityManager->flush();
             return true;
         }
@@ -133,12 +133,12 @@ class PostService
     /**
      * @return bool
      */
-    public function isUserAddRating(int $userId, int $postId): bool
+    public function isUserAddRating(User $user, Post $post): bool
     {
-        if ($this->ratingPostsRepository->findOneBy(
+        if ($this->ratingPostRepository->findOneBy(
             [
-                'userId' => $userId,
-                'postId' => $postId
+                'user' => $user,
+                'post' => $post
             ]
         ))
         {
@@ -148,38 +148,30 @@ class PostService
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function getLastPosts(int $amountOfPosts)
     {
-        return $this->postsRepository->getLastPosts($amountOfPosts);
+        return $this->postRepository->getLastPosts($amountOfPosts);
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function getMoreTalkedPosts(int $amountOfPosts)
     {
         $timeWeekAgo = time() - 7*24*60*60;
-        return $this->postsRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
+        return $this->postRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function getPosts(int $numberOfPosts, int $page)
     {
         $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
 
-        return $this->postsRepository->getPosts($numberOfPosts, $lessThanMaxId);
-    }
-
-    /**
-     * @return Posts Returns a Posts object
-     */
-    public function getPostById(int $postId)
-    {
-        return $this->postsRepository->getPostById($postId);
+        return $this->postRepository->getPosts($numberOfPosts, $lessThanMaxId);
     }
 
     /**
@@ -187,27 +179,27 @@ class PostService
      */
     public function getTagsByPostId(int $postId)
     {
-        return $this->tagPostsRepository->findByPostId($postId);
+        return $this->postTagRepository->findByPostId($postId);
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function getPostsByUserId(int $userId, int $numberOfPosts)
     {
-        return $this->postsRepository->getPostsByUserId($userId, $numberOfPosts);
+        return $this->postRepository->getPostsByUserId($userId, $numberOfPosts);
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
     {
-        return $this->postsRepository->getLikedPostsByUserId($userId, $numberOfPosts);
+        return $this->postRepository->getLikedPostsByUserId($userId, $numberOfPosts);
     }
 
     /**
-     * @return Posts[] Returns an array of Posts objects
+     * @return Post[] Returns an array of Post objects
      */
     public function searchPosts(string $searchWords)
     {
@@ -215,11 +207,11 @@ class PostService
         if (strpos($searchWords, '#') === 1)
         {
             $searchWords = str_replace('#', '', $searchWords);
-            $results = $this->postsRepository->searchByTag($searchWords);
+            $results = $this->postRepository->searchByTag($searchWords);
         } else {
-            $posts = $this->postsRepository->searchByTitle($searchWords);
-            $posts1 = $this->postsRepository->searchByAuthor($searchWords);
-            $posts2 = $this->postsRepository->searchByContent($searchWords);
+            $posts = $this->postRepository->searchByTitle($searchWords);
+            $posts1 = $this->postRepository->searchByAuthor($searchWords);
+            $posts2 = $this->postRepository->searchByContent($searchWords);
             $results = array_merge($posts, $posts1, $posts2);
         }
         return $results;
@@ -229,7 +221,7 @@ class PostService
     {
         $postId = $post->getId();
         $this->entityManager->remove($post);
-        $infoPost = $this->additionalInfoPostsRepository->find($postId);
+        $infoPost = $this->infoPostRepository->find($postId);
         $this->entityManager->remove($infoPost);
         $this->entityManager->flush();
     }

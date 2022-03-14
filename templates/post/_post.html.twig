@@ -1,15 +1,15 @@
 
 <div class='{{ class }}'>
-    <a class='postLink' href='{{ path('post_show', {postId: post.id}) }}'>
+    <a class='postLink' href='{{ path('post_show', {id: post.id}) }}'>
         <div class='posttext'>
             <p class='posttitle'>{{ post.title }}</p>
             <p class='postcontent'>{{ post.content|striptags }}</p>
-            <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.author }}</p>
+            <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
             <p class='postrating'>
-                {% if post.countRatings %}
-                    Рейтинг: {{ post.rating }}, оценок: {{ post.countRatings }}, комментариев: {{ post.countComments }}
+                {% if post.ratingPosts.count %}
+                    Рейтинг: {{ post.rating }}, оценок: {{ post.ratingPosts.count }}, комментариев: {{ post.comments.count }}
                 {% else %}
-                    Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
+                    Нет оценок. Будьте первым! Kомментариев: {{ post.comments.count }}
                 {% endif %}
             </p>
             {% if is_granted('ROLE_ADMIN') %}

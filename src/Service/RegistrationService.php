@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Repository\SubscriptionsRepository;
+use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Security\EmailVerifier;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -16,7 +16,7 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 class RegistrationService
 {
     private UserRepository $userRepository;
-    private SubscriptionsRepository $subscriptionsRepository;
+    private SubscriptionRepository $subscriptionRepository;
     private EmailVerifier $emailVerifier;
     private UserPasswordHasherInterface $userPasswordHasher;
     private EntityManagerInterface $entityManager;
@@ -25,14 +25,14 @@ class RegistrationService
         EmailVerifier $emailVerifier,
         UserPasswordHasherInterface $userPasswordHasher, 
         UserRepository $userRepository,
-        SubscriptionsRepository $subscriptionsRepository,
+        SubscriptionRepository $subscriptionRepository,
         EntityManagerInterface $entityManager
     )
     {
         $this->emailVerifier = $emailVerifier;
         $this->userPasswordHasher = $userPasswordHasher;
         $this->userRepository = $userRepository;
-        $this->subscriptionsRepository = $subscriptionsRepository;
+        $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
     }
 
