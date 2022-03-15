@@ -64,11 +64,10 @@ class PostRepository extends ServiceEntityRepository
     public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
-            ->join('App\Entity\InfoPost', 'a', 'WITH', 'a.post = p')
             ->join('App\Entity\Comment', 'c', 'WITH', 'c.post = p')
             ->where('c.dateTime > :time')
             ->setParameter('time', $timeWeekAgo)
-            ->orderBy('a.countComments', 'DESC')
+            ->orderBy('c.dateTime', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->getResult()
@@ -111,7 +110,7 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTag(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->join('App\Entity\PostTag', 't', 'WITH', 't.postId = p.id')
+        return $qb->join('App\Entity\PostTag', 't', 'WITH', 't.post = p.id')
             ->where($qb->expr()->like('t.tag', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)

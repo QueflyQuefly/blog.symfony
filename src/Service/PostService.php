@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Post;
 use App\Entity\User;
-use App\Entity\InfoPost;
 use App\Entity\PostTag;
 use App\Entity\RatingPost;
 use App\Repository\PostRepository;
@@ -18,7 +17,6 @@ class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
-    private InfoPostRepository $infoPostRepository;
     private PostTagRepository $postTagRepository;
     private EntityManagerInterface $entityManager;
 
@@ -26,13 +24,11 @@ class PostService
         EntityManagerInterface $entityManager,
         PostRepository $postRepository,
         RatingPostRepository $ratingPostRepository,
-        InfoPostRepository $infoPostRepository,
         PostTagRepository $postTagRepository
     )
     {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
-        $this->infoPostRepository = $infoPostRepository;
         $this->postTagRepository = $postTagRepository;
         $this->entityManager = $entityManager;
     }
@@ -53,12 +49,6 @@ class PostService
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
         $this->entityManager->persist($post);
-
-        $postInfo = new InfoPost();
-        $postInfo->setPost($post);
-        $postInfo->setCountComments(0);
-        $postInfo->setCountRatings(0);
-        $this->entityManager->persist($postInfo);
 
         $allText = $title." ".$content;
         if (strpos($allText, '#') !== false) {
@@ -116,10 +106,6 @@ class PostService
             $ratingPost->setUser($user);
             $ratingPost->setRating($rating);
             $this->entityManager->persist($ratingPost);
-    
-            $infoPost = $post->getInfoPost();
-            $infoPost->setCountRatings($infoPost->getCountRatings() + 1);
-            $post->setInfoPost($infoPost);
             $this->entityManager->flush();
     
             $generalRatingPost = $this->countRating($post);
@@ -135,12 +121,10 @@ class PostService
      */
     public function isUserAddRating(User $user, Post $post): bool
     {
-        if ($this->ratingPostRepository->findOneBy(
-            [
-                'user' => $user,
-                'post' => $post
-            ]
-        ))
+        if ($this->ratingPostRepository->findOneBy([
+            'user' => $user,
+            'post' => $post
+        ]))
         {
             return true;
         }

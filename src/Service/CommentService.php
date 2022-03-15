@@ -7,7 +7,6 @@ use App\Entity\User;
 use App\Entity\Post;
 use App\Entity\RatingComment;
 use App\Repository\RatingCommentRepository;
-use App\Repository\InfoPostRepository;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -17,19 +16,16 @@ class CommentService
     private EntityManagerInterface $entityManager;
     private CommentRepository $commentRepository;
     private RatingCommentRepository $ratingCommentRepository;
-    private InfoPostRepository $infoPostRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
         CommentRepository $commentRepository,
-        RatingCommentRepository $ratingCommentRepository,
-        InfoPostRepository $infoPostRepository
+        RatingCommentRepository $ratingCommentRepository
     )
     {
         $this->commentRepository = $commentRepository;
         $this->entityManager = $entityManager;
         $this->ratingCommentRepository = $ratingCommentRepository;
-        $this->infoPostRepository = $infoPostRepository;
     }
 
     /**
@@ -48,8 +44,6 @@ class CommentService
         $comment->setContent($content);
         $comment->setRating($rating);
         $this->entityManager->persist($comment);
-        $infoPost = $post->getInfoPost();
-        $infoPost->setCountComments($infoPost->getCountComments() + 1);
         $this->entityManager->flush();
         return $comment;
     }

@@ -7,8 +7,11 @@ use App\Service\RegistrationService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\When;
 
+// StabService is only registered in the "dev" environment
 
+#[When(env: 'dev')]
 class StabService
 {
     private $errors = [];
@@ -93,7 +96,7 @@ class StabService
         $this->entityManager->getConnection()->beginTransaction();
         try
         {
-            $min = $this->userService->getLastUserId();
+            $min = $this->userService->getLastUserId() + 1;
             for($i = $min; $i < $numberOfIterations + $min; $i++)
             {
                 $random1 = mt_rand(0, 12);
@@ -115,7 +118,10 @@ class StabService
                 
                 /* Here I add post with info and tags */
                 $title = $this->titles1[$random1].' '.$this->titles2[$random2];
-                $content = $this->texts[$random3].$this->texts[$random2].$this->texts[$random1];
+                $content = $this->texts[$random3].' 
+                    '.$this->texts[$random2].' 
+                    '.$this->texts[$random1]
+                ;
                 $post = $this->postService->create($user, $title, $content, $date);
 
                 if(!$post)
@@ -160,6 +166,7 @@ class StabService
         } catch(\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             $this->errors[] = $e->getMessage();
+            return false;
         }
         return true;
     }

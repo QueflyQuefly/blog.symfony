@@ -3,36 +3,27 @@
 namespace App\Service;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
-use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Security\EmailVerifier;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 
 class RegistrationService
 {
-    private UserRepository $userRepository;
-    private SubscriptionRepository $subscriptionRepository;
     private EmailVerifier $emailVerifier;
     private UserPasswordHasherInterface $userPasswordHasher;
     private EntityManagerInterface $entityManager;
 
     public function __construct(
         EmailVerifier $emailVerifier,
-        UserPasswordHasherInterface $userPasswordHasher, 
-        UserRepository $userRepository,
-        SubscriptionRepository $subscriptionRepository,
+        UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager
     )
     {
         $this->emailVerifier = $emailVerifier;
         $this->userPasswordHasher = $userPasswordHasher;
-        $this->userRepository = $userRepository;
-        $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
     }
 

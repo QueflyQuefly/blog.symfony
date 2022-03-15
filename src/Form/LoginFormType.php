@@ -59,26 +59,6 @@ class LoginFormType extends AbstractType
                     ])
                 ]
             ])
-            ->add('captcha', TextType::class, [
-                'attr' => [
-                    'class' => 'formtext',
-                    'placeholder' => 'Введите код',
-                    'minlength' => '1',
-                    'maxlength' => '40',
-                    'autocomplete' => 'off'
-                ],
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Пожалуйста, введите код с картинки выше'
-                    ]),
-                    new Length([
-                        'min' => 1,
-                        'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 50,
-                        'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
-                    ])
-                ]
-            ])
         ;
     }
 

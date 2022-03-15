@@ -34,9 +34,6 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
     private $comments;
 
-    #[ORM\OneToOne(mappedBy: 'post', targetEntity: InfoPost::class, cascade: ['persist', 'remove'])]
-    private $infoPost;
-
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true)]
     private $ratingPosts;
 
@@ -141,23 +138,6 @@ class Post
                 $comment->setPost(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getInfoPost(): ?InfoPost
-    {
-        return $this->infoPost;
-    }
-
-    public function setInfoPost(InfoPost $infoPost): self
-    {
-        // set the owning side of the relation if necessary
-        if ($infoPost->getPost() !== $this) {
-            $infoPost->setPost($this);
-        }
-
-        $this->infoPost = $infoPost;
 
         return $this;
     }
