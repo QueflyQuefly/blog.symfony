@@ -21,16 +21,16 @@
             >
                 Изменить параметры профиля
             </a>
-        {% endif %}
-        
-        {% if can_subscribe %}
-            <a href='{{ path('user_subscribe', {userId: user.id}) }}' style='font-size:13pt;' class='link'>
-                {% if is_subscribe %}
-                    Отписаться
-                {% else %}
-                    Подписаться
-                {% endif %}
-            </a>
+        {% else %} 
+            {% if can_subscribe %}
+                <a href='{{ path('user_subscribe', {id: user.id}) }}' style='font-size:13pt;' class='link'>
+                    {% if is_subscribe %}
+                        Отписаться
+                    {% else %}
+                        Подписаться
+                    {% endif %}
+                </a>
+            {% endif %}
         {% endif %}
     </h1>
 

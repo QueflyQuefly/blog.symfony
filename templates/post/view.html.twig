@@ -67,9 +67,9 @@
 
     <div class='addcomments' id='addcomment'>
         <div class='addcomment'>
-            {{ form_start(form) }}
+            {{ form_start(form, {'action': path('comment_add', {id: post.id})}) }}
                 {{ form_row(form.content, {
-                    label: 'Добавьте комментарий: '
+                    label: 'Прокомментируйте пост: '
                 }) }}
                 {{ form_row(form.submit, {
                     label: 'Добавить комментарий'

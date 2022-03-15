@@ -30,7 +30,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
-
         $user->setPassword($newHashedPassword);
         $this->_em->persist($user);
         $this->_em->flush();
@@ -68,7 +67,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function searchByFio(string $search)
     {
         $qb = $this->createQueryBuilder('u');
-        return $qb->andWhere($qb->expr()->like('u.fio', ':search'))
+        return $qb->where($qb->expr()->like('u.fio', ':search'))
             ->orderBy('u.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(30)

@@ -52,30 +52,19 @@ class PostController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\b[0-9]+'])]
-    public function showPost(Post $post, Request $request): Response
+    public function showPost(Post $post): Response
     {
         if (!$post) {
             throw $this->createNotFoundException('Пост не найден');
         }
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-
         $form = $this->createForm(CommentFormType::class);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-            $content = $form->get('content')->getData();
-            $this->commentService->create($user, $post, $content);
-            // $url = $this->generateUrl('post_show', ['postId' => $postId]).'#addcomment';
-            $this->redirect($request->getUri());
-        }
-
         $isUserAddRating = false;
         if ($user)
         {
             $isUserAddRating = $this->postService->isUserAddRating($user, $post);
         }
-
         return $this->renderForm('post/view.html.twig', [
             'post' => $post,
             'is_user_add_rating' => $isUserAddRating,

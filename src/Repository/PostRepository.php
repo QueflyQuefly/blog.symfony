@@ -96,7 +96,7 @@ class PostRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->join('App\Entity\RatingPost', 'r', 'WITH', 'r.post = p.id')
-            ->andWhere('r.user = :val')
+            ->where('r.user = :val')
             ->orderBy('p.id', 'DESC')
             ->setParameter('val', $userId)
             ->setMaxResults($numberOfPosts)
@@ -111,13 +111,8 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTag(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
-                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
-                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
-            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
-            ->join('App\Entity\InfoPost', 'a', 'WITH', 'a.postId = p.id')
-            ->join('App\Entity\PostTag', 't', 'WITH', 't.postId = p.id')
-            ->andWhere($qb->expr()->like('t.tag', ':search'))
+        return $qb->join('App\Entity\PostTag', 't', 'WITH', 't.postId = p.id')
+            ->where($qb->expr()->like('t.tag', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -132,12 +127,7 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTitle(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
-                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
-                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
-            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
-            ->join('App\Entity\InfoPost', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere($qb->expr()->like('p.title', ':search'))
+        return $qb->where($qb->expr()->like('p.title', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -152,12 +142,8 @@ class PostRepository extends ServiceEntityRepository
     public function searchByAuthor(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
-                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
-                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
-            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
-            ->join('App\Entity\InfoPost', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere($qb->expr()->like('u.fio', ':search'))
+        return $qb->join('App\Entity\User', 'u', 'WITH', 'p.user = u.id')
+            ->where($qb->expr()->like('u.fio', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -172,12 +158,7 @@ class PostRepository extends ServiceEntityRepository
     public function searchByContent(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select(array('p.id', 'p.title', 'p.userId', 'p.dateTime', 
-                "{$qb->expr()->substring('p.content', 1, 430)} as content", 
-                'a.rating', 'a.countComments', 'a.countRatings', 'u.fio as author'))
-            ->join('App\Entity\User', 'u', 'WITH', 'p.userId = u.id')
-            ->join('App\Entity\InfoPost', 'a', 'WITH', 'a.postId = p.id')
-            ->andWhere($qb->expr()->like('p.content', ':search'))
+        return $qb->where($qb->expr()->like('p.content', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -185,32 +166,4 @@ class PostRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-    // /**
-    //  * @return Post[] Returns an array of Post objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Post
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

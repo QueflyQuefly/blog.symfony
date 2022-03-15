@@ -6,9 +6,10 @@
             <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
             {% if is_granted('ROLE_ADMIN') %}
                 <p class='posttitle'> Права: {{ user.roles[0] }}</p>
-                <a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link'>
+                <p class='postdate'><a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link'>
                     Удалить {{ user.roles[0] }}-a
                 </a>
+                </p>
             {% endif %}
         </div>
     </a>

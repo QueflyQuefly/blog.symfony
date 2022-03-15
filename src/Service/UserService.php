@@ -68,8 +68,8 @@ class UserService
     public function isSubscribe(int $userIdWantSubscribe, int $userId)
     {
         if ($subscription = $this->subscriptionRepository->findOneBy([
-            'userIdWantSubscribe' => $userIdWantSubscribe,
-            'userId' => $userId
+            'userSubscribed' => $userIdWantSubscribe,
+            'user' => $userId
         ]))
         {
             return $subscription;

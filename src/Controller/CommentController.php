@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\Post;
 use App\Service\CommentService;
+use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -17,6 +20,25 @@ class CommentController extends AbstractController
     public function __construct(CommentService $commentService)
     {
         $this->commentService = $commentService;
+    }
+
+    #[Route('/add/{id}', name: 'add', requirements: ['id' => '\b[0-9]+'])]
+    public function create(Post $post, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $form = $this->createForm(CommentFormType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            $content = $form->get('content')->getData();
+            $this->commentService->create($user, $post, $content);
+        } else {
+            $this->addFlash(
+                'error',
+                'Заполните поля формы'
+            );
+        }
+        return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
     #[Route('/like/{postId}/{id}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
