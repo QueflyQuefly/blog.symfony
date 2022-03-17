@@ -10,7 +10,6 @@ use App\Repository\RatingCommentRepository;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-
 class CommentService
 {
     private EntityManagerInterface $entityManager;
@@ -21,8 +20,7 @@ class CommentService
         EntityManagerInterface $entityManager, 
         CommentRepository $commentRepository,
         RatingCommentRepository $ratingCommentRepository
-    )
-    {
+    ) {
         $this->commentRepository = $commentRepository;
         $this->entityManager = $entityManager;
         $this->ratingCommentRepository = $ratingCommentRepository;
@@ -33,8 +31,7 @@ class CommentService
      */
     public function create(User $user, Post $post, string $content, int $rating = 0, $dateTime = false)
     {
-        if (!$dateTime)
-        {
+        if (!$dateTime) {
             $dateTime = time();
         }
         $comment = new Comment();
@@ -56,8 +53,7 @@ class CommentService
         ]);
         $comment = $this->commentRepository->find($comment);
 
-        if ($ratingComment)
-        {
+        if ($ratingComment) {
             $this->entityManager->remove($ratingComment);
             $comment->setRating($comment->getRating() - 1);
         } else {
@@ -76,7 +72,6 @@ class CommentService
     public function getComments(int $numberOfComments, int $page)
     {
         $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
-
         return $this->commentRepository->getComments($numberOfComments, $lessThanMaxId);
     }
     

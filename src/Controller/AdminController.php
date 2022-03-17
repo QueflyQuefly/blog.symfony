@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-
 #[Route('/admin', name: 'admin_')]
 class AdminController extends AbstractController
 {
@@ -19,8 +18,7 @@ class AdminController extends AbstractController
     public function __construct(
         UserService $userService, 
         CommentService $commentService
-    )
-    {
+    ) {
         $this->userService = $userService;
         $this->commentService = $commentService;
     }

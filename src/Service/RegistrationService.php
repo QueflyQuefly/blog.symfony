@@ -9,7 +9,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
-
 class RegistrationService
 {
     private EmailVerifier $emailVerifier;
@@ -20,8 +19,7 @@ class RegistrationService
         EmailVerifier $emailVerifier,
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $entityManager
-    )
-    {
+    ) {
         $this->emailVerifier = $emailVerifier;
         $this->userPasswordHasher = $userPasswordHasher;
         $this->entityManager = $entityManager;
@@ -32,22 +30,17 @@ class RegistrationService
      */
     public function register(string $email, string $fio, string $password, array $rights, $dateTime = false)
     {
-        if (!$dateTime)
-        {
+        if (!$dateTime) {
             $dateTime = time();
         }
         $user = new User();
         $user->setEmail($email);
         $user->setFio($fio);
         $user->setPassword(
-            $this->userPasswordHasher->hashPassword(
-                $user,
-                $password
-            )
+            $this->userPasswordHasher->hashPassword($user, $password)
         );
         $user->setDateTime($dateTime);
         $user->setRoles($rights);
-
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
@@ -67,22 +60,17 @@ class RegistrationService
      */
     public function registerWithoutEmailVerification(string $email, string $fio, string $password, array $rights, $dateTime = false)
     {
-        if (!$dateTime)
-        {
+        if (!$dateTime){
             $dateTime = time();
         }
         $user = new User();
         $user->setEmail($email);
         $user->setFio($fio);
         $user->setPassword(
-            $this->userPasswordHasher->hashPassword(
-                $user,
-                $password
-            )
+            $this->userPasswordHasher->hashPassword($user, $password)
         );
         $user->setDateTime($dateTime);
         $user->setRoles($rights);
-
         $this->entityManager->persist($user);
         $this->entityManager->flush();
         return $user;

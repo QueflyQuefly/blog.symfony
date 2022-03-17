@@ -12,7 +12,6 @@ use App\Repository\InfoPostRepository;
 use App\Repository\PostTagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-
 class PostService
 {
     private PostRepository $postRepository;
@@ -25,8 +24,7 @@ class PostService
         PostRepository $postRepository,
         RatingPostRepository $ratingPostRepository,
         PostTagRepository $postTagRepository
-    )
-    {
+    ) {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
         $this->postTagRepository = $postTagRepository;
@@ -38,8 +36,7 @@ class PostService
      */
     public function create(User $user, string $title, string $content, $dateTime = false)
     {
-        if (!$dateTime)
-        {
+        if (!$dateTime) {
             $dateTime = time();
         }
         $post = new Post();
@@ -83,10 +80,8 @@ class PostService
     {
         $rating = 0.0;
         $allRatingsPost = $post->getRatingPosts();
-        if ($count = $allRatingsPost->count())
-        {
-            foreach ($allRatingsPost as $ratingPost)
-            {
+        if ($count = $allRatingsPost->count()) {
+            foreach ($allRatingsPost as $ratingPost) {
                 $rating += $ratingPost->getRating();
             }
             $rating = round($rating / $count, 1);
@@ -99,8 +94,7 @@ class PostService
      */
     public function addRating(User $user, Post $post, int $rating)
     {
-        if(!$this->isUserAddRating($user, $post))
-        {
+        if(!$this->isUserAddRating($user, $post)) {
             $ratingPost = new RatingPost();
             $ratingPost->setPost($post);
             $ratingPost->setUser($user);
@@ -124,8 +118,7 @@ class PostService
         if ($this->ratingPostRepository->findOneBy([
             'user' => $user,
             'post' => $post
-        ]))
-        {
+        ])) {
             return true;
         }
         return false;
@@ -154,7 +147,6 @@ class PostService
     public function getPosts(int $numberOfPosts, int $page)
     {
         $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
-
         return $this->postRepository->getPosts($numberOfPosts, $lessThanMaxId);
     }
 
@@ -188,8 +180,7 @@ class PostService
     public function searchPosts(string $searchWords)
     {
         $searchWords = '%'.$searchWords.'%';
-        if (strpos($searchWords, '#') === 1)
-        {
+        if (strpos($searchWords, '#') === 1) {
             $searchWords = str_replace('#', '', $searchWords);
             $results = $this->postRepository->searchByTag($searchWords);
         } else {

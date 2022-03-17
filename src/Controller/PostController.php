@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Service\PostService;
-use App\Service\CommentService;
 use App\Form\PostFormType;
 use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,18 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
     private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private PostService $postService;
-    private CommentService $commentService;
 
-    public function __construct(PostService $postService, CommentService $commentService)
-    {
+    public function __construct(
+        PostService $postService
+    ) {
         $this->postService = $postService;
-        $this->commentService = $commentService;
     }
 
     #[Route('', name: 'main')]
@@ -61,8 +58,7 @@ class PostController extends AbstractController
         $user = $this->getUser();
         $form = $this->createForm(CommentFormType::class);
         $isUserAddRating = false;
-        if ($user)
-        {
+        if ($user) {
             $isUserAddRating = $this->postService->isUserAddRating($user, $post);
         }
         return $this->renderForm('post/view.html.twig', [
@@ -82,8 +78,7 @@ class PostController extends AbstractController
             $user = $this->getUser();
             $title = $form->get('title')->getData();
             $content = $form->get('content')->getData();
-            if ($this->postService->create($user, $title, $content))
-            {
+            if ($this->postService->create($user, $title, $content)) {
                 $this->addFlash(
                     'success',
                     'Пост добавлен'
@@ -107,10 +102,8 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $user = $this->getUser();
-
         $rating = (int) $request->request->get('rating');
         $this->postService->addRating($user, $post, $rating);
-
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 

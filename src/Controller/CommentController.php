@@ -11,14 +11,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-
 #[Route('/comment', name: 'comment_')]
 class CommentController extends AbstractController
 {
     private CommentService $commentService;
 
-    public function __construct(CommentService $commentService)
-    {
+    public function __construct(
+        CommentService $commentService
+    ) {
         $this->commentService = $commentService;
     }
 

@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-
 #[Route('/search', name: 'search_')]
 class SearchController extends AbstractController
 {
@@ -19,8 +18,7 @@ class SearchController extends AbstractController
     public function __construct(
         UserService $userService,
         PostService $postService
-    )
-    {
+    ) {
         $this->userService = $userService;
         $this->postService = $postService;
     }
@@ -29,13 +27,11 @@ class SearchController extends AbstractController
     public function searchPosts(?string $search, Request $request): Response
     {
         $posts = false;
-        if (!$search)
-        {
+        if (!$search) {
             $search = (string) $request->query->get('search');
         }
         $searchWords = trim(strip_tags($search));
-        if('' !== $searchWords)
-        {
+        if('' !== $searchWords) {
             $posts = $this->postService->searchPosts($searchWords);
         }
         return $this->render('search/searchposts.html.twig', [
@@ -48,13 +44,11 @@ class SearchController extends AbstractController
     public function searchUsers(?string $search, Request $request): Response
     {
         $users = false;
-        if (!$search)
-        {
+        if (!$search) {
             $search = $request->query->get('search');
         }
         $searchWords = (string) trim(strip_tags($search));
-        if('' !== $searchWords)
-        {
+        if('' !== $searchWords) {
             $users = $this->userService->searchUsers($searchWords);
         }
         return $this->render('search/searchusers.html.twig', [

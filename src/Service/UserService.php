@@ -8,7 +8,6 @@ use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-
 class UserService
 {
     private EntityManagerInterface $entityManager;
@@ -19,8 +18,7 @@ class UserService
         EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository
-    )
-    {
+    ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
@@ -47,8 +45,7 @@ class UserService
      */
     public function subscribe(User $userSubscribed, User $user)
     {
-        if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId()))
-        {
+        if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId())) {
             $this->entityManager->remove($subscription);
             $this->entityManager->flush();
             return false;
@@ -70,8 +67,7 @@ class UserService
         if ($subscription = $this->subscriptionRepository->findOneBy([
             'userSubscribed' => $userIdWantSubscribe,
             'user' => $userId
-        ]))
-        {
+        ])) {
             return $subscription;
         }
         return false;
@@ -93,10 +89,10 @@ class UserService
     public function searchUsers(string $searchWords)
     {
         $users = [];
-        if (strpos($searchWords, '@') !== false)
-        {
-            if ($result = $this->userRepository->findOneByEmail($searchWords))
-            $users[] = $result;
+        if (strpos($searchWords, '@') !== false) {
+            if ($result = $this->userRepository->findOneByEmail($searchWords)) {
+                $users[] = $result;
+            }
         }
         $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);

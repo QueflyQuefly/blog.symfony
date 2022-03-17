@@ -35,8 +35,7 @@ class UserController extends AbstractController
         CommentService $commentService,
         EmailVerifier $emailVerifier,
         RegistrationService $registrationService
-    )
-    {
+    ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
@@ -56,8 +55,7 @@ class UserController extends AbstractController
             $fio = $form->get('fio')->getData();
             $password = $form->get('plainPassword')->getData();
             $rights = ['ROLE_USER'];
-            if ($form->get('addAdmin')->getData())
-            {
+            if ($form->get('addAdmin')->getData()) {
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $rights = ['ROLE_ADMIN'];
             }
@@ -76,8 +74,7 @@ class UserController extends AbstractController
         if (!empty($userId)) {
             $user = $this->userService->getUserById($userId);
             /** @var \App\Entity\User $sessionUser */
-            if ($sessionUser = $this->getUser())
-            {
+            if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;
                 $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $user->getId());
             }
@@ -107,9 +104,7 @@ class UserController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         /** @var \App\Entity\User $user */
         $userSubscribed = $this->getUser();
-
-        if ($this->userService->subscribe($userSubscribed, $user))
-        {
+        if ($this->userService->subscribe($userSubscribed, $user)) {
             $this->addFlash(
                 'success',
                 'Вы подписаны'
@@ -127,7 +122,6 @@ class UserController extends AbstractController
     public function verifyUserEmail(Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
@@ -136,7 +130,6 @@ class UserController extends AbstractController
 
             return $this->redirectToRoute('user_register');
         }
-
         $this->addFlash('success', 'Ваш email верифицирован. Войдите');
         return $this->redirectToRoute('user_login');
     }
@@ -146,17 +139,14 @@ class UserController extends AbstractController
     {
         // get the login error if there is one
         $error = $this->authenticationUtils->getLastAuthenticationError();
-        if ($error)
-        {
+        if ($error) {
             $error = 'Неверная почта или пароль';
         }
-
         // last username entered by the user
         $lastUsername = $this->authenticationUtils->getLastUsername();
         $form = $formFactory->createNamed('', LoginFormType::class, null, [
             'last_username' => $lastUsername
         ]);
-
         return $this->renderForm('user/login.html.twig', [
             'form' => $form,
             'error' => $error
