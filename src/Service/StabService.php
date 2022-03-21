@@ -128,7 +128,7 @@ class StabService
                 $rights = ['ROLE_USER'];
                 $user = $this->registrationService->registerWithoutEmailVerification($email, $fio, $password, $rights, $date);
                 if (!$user) {
-                    $this->errors[] = "Пользователь с email = $email не  создан";
+                    $this->errors[] = 'User with email = ' . $email . ' not created';
                     continue;
                 }
                 $userId = $user->getId();
@@ -140,11 +140,12 @@ class StabService
                 ;
                 $post = $this->postService->create($user, $title, $content, $date);
                 if (!$post) {
-                    $this->errors[] = "Пост от пользователя с id = $userId не создан";
+                    $this->errors[] = 'Post by user with id = ' . $userId . ' not created';
                     continue;
                 }
                 if (!$this->postService->addRating($user, $post, $random4)) {
-                    $this->errors[] = "Рейтинг $random4 к посту №{$post->getId()} от пользователя с id = $userId не поставился";
+                    $this->errors[] = 'Rating ' . $random4 . ' to post № ' . $post->getId() . 
+                        ' by user with id = ' . $userId . ' not created';
                     continue;
                 }
                 /* Here I add ratings and comments with likes to post */
@@ -163,7 +164,7 @@ class StabService
                     $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment);
                     $commentId = $comment->getId();
                     if (!$commentId) {
-                        $this->errors[] = "Комментарий к посту №{$post->getId()}  от пользователя с id = $userId не создан";
+                        $this->errors[] = 'Comment to post №' . $post->getId() . ' by user with id = ' . $userId . ' not created';
                         continue;
                     }
                     $this->commentService->like($user, $comment);

@@ -39,7 +39,7 @@
         </div>
         {% endif %}
 
-        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile', {'userId': post.user.id}) }}'>{{ post.user.fio }}</a></p>
+        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile', {'id': post.user.id}) }}'>{{ post.user.fio }}</a></p>
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>

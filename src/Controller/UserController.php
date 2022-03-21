@@ -63,16 +63,15 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_login');
         }
 
-        return $this->render('user/register.html.twig', [
-            'registrationForm' => $form->createView(),
+        return $this->renderForm('user/register.html.twig', [
+            'form' => $form
         ]);
     }
 
-    #[Route('/profile/{userId<\b[0-9]+>?}', name: 'show_profile')]
-    public function showProfile(?int $userId): Response
+    #[Route('/profile/{id<\b[0-9]+>?}', name: 'show_profile')]
+    public function showProfile(?User $user): Response
     {
-        if (!empty($userId)) {
-            $user = $this->userService->getUserById($userId);
+        if (!empty($user)) {
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;
@@ -98,6 +97,29 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/update', name: 'update')]
+    public function update(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $form = $this->createForm(RegistrationFormType::class, $user, [
+            'email' => $user->getEmail(),
+            'fio' => $user->getFio()
+        ]);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $form->getData();
+            $this->userService->update($user);
+            return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
+        }
+
+        return $this->renderForm('user/update.html.twig', [
+            'user' => $user,
+            'form' => $form
+        ]);
+    }
+
     #[Route('/profile/subscribe/{id<\b[0-9]+>}', name: 'subscribe')]
     public function subscribe(User $user): Response
     {
@@ -115,7 +137,7 @@ class UserController extends AbstractController
                 'Подписка отменена'
             );
         }
-        return $this->redirectToRoute('user_show_profile', ['userId' => $user->getId()]);
+        return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
     }
 
     #[Route('/verify/email', name: 'verify_email')]

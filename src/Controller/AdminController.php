@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Service\UserService;
 use App\Service\CommentService;
+use App\Service\StabService;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,13 +17,19 @@ class AdminController extends AbstractController
 {
     private UserService $userService;
     private CommentService $commentService;
+    private StabService $stabService;
+    private string $env;
 
     public function __construct(
         UserService $userService, 
-        CommentService $commentService
+        CommentService $commentService,
+        StabService $stabService,
+        KernelInterface $kernel
     ) {
         $this->userService = $userService;
         $this->commentService = $commentService;
+        $this->stabService = $stabService;
+        $this->env = $kernel->getEnvironment();
     }
 
     #[Route('', name: 'main')]
@@ -50,6 +59,21 @@ class AdminController extends AbstractController
             'number' => $numberOfUsers,
             'page' => $page,
             'users' => $users
+        ]);
+    }
+
+    #[Route('/stab', name: 'show_stab')]
+    public function showStab(Request $request): Response
+    {
+        if ($this->env !== 'prod') {
+            $this->createNotFoundException();
+        }
+        $numberOfIterations = $request->query->get('number') ?? 0;
+        $this->stabService->toStabDb($numberOfIterations);
+        $errors = $this->stabService->getErrors() ?? false;
+        return $this->render('admin/stab.html.twig', [
+            'errors'             => $errors,
+            'numberOfIterations' => $numberOfIterations
         ]);
     }
 

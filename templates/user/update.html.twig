@@ -1,10 +1,10 @@
 {% extends 'blog_base.html.twig' %}
 
-{% block title %} Регистрация - Просто Блог {% endblock %}
+{% block title %} Редактирование профиля - Просто Блог {% endblock %}
 
 {% block content %}
     <div class='formentry'>
-        <p class='formname'>Регистрация</p>
+        <p class='formname'>Редактирование информации профиля</p>
 
         {{ form_start(form) }}
             {{ form_row(form.email, {
@@ -19,19 +19,13 @@
             {{ form_row(form.agreeTerms, {
                 label: 'Соглашаюсь с правилами сайта'
             }) }}
-
-            {% if is_granted('ROLE_ADMIN') %}
-                {{ form_row(form.addAdmin, {
-                    label: 'Добавить администратора'
-                }) }}
-            {% endif %}
-
             {{ form_row(form._token) }}
+                
             {{ include('_blog_flashes.html.twig') }}
             <br>
             <div id='right'>
-                <button type='submit' class='formsubmit'>Создать аккаунт</button>
+                <button type='submit' class='formsubmit'>Сохранить</button>
             </div>
-        {{ form_end(form, {render_rest: false}) }}   
+        {{ form_end(form, {render_rest: false}) }}
     </div>
 {% endblock %}

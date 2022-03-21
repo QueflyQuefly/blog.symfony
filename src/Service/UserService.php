@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\Subscription;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 class UserService
@@ -13,15 +14,18 @@ class UserService
     private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
     private SubscriptionRepository $subscriptionRepository;
+    private UserPasswordHasherInterface $userPasswordHasher;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
-        SubscriptionRepository $subscriptionRepository
+        SubscriptionRepository $subscriptionRepository,
+        UserPasswordHasherInterface $userPasswordHasher
     ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
+        $this->userPasswordHasher = $userPasswordHasher;
     }
 
     /**
@@ -97,6 +101,15 @@ class UserService
         $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);
         return $results;
+    }
+
+    public function update(User $user)
+    {
+        if ($user->getId()) {
+            $this->entityManager->flush();
+            return true;
+        }
+        return false;
     }
 
     public function delete($user)

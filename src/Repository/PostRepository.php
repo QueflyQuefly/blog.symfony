@@ -45,7 +45,7 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
-        /**
+    /**
      * @return Post[] Returns an array of Post objects
      */
     public function getLastPosts(int $numberOfPosts)

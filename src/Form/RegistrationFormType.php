@@ -25,6 +25,7 @@ class RegistrationFormType extends AbstractType
                     'autofocus' => 'on',
                     'minlength' => '1',
                     'maxlength' => '40',
+                    'value' => $options['email']
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -44,6 +45,7 @@ class RegistrationFormType extends AbstractType
                     'placeholder' => 'Введите ФИО или псевдоним',
                     'minlength' => '1',
                     'maxlength' => '40',
+                    'value' => $options['fio']
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -98,6 +100,8 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'email' => '',
+            'fio' => ''
         ]);
     }
 }

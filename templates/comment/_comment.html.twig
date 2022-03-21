@@ -1,7 +1,7 @@
 <div class='viewcomment' id='comment{{ comment.id }}'>
     <a class='postLink' href='{{ path("post_show", {id: comment.post.id}) }}#comment{{ comment.id }}'>
     <p class='commentauthor'>
-        <object><a class='menuLink' href='{{ path("user_show_profile") }}'>{{ comment.user.fio }}</a></object>
+        <object><a class='menuLink' href='{{ path("user_show_profile", {'id' : comment.user.id}) }}'>{{ comment.user.fio }}</a></object>
         <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
     </p>
     <div class='commentcontent'>

@@ -135,8 +135,8 @@ class StabCommand extends Command
             $this->numberOfIterations = $input->getArgument('number');
         } else {
             $output->writeln([
-                $input->getArgument('number') . ' cannot be an integer to run a loop',
-                'Please enter a valid argument (integer > 0) after app:stab'
+                'Cannot run a cycle with number of iterations = ' . $input->getArgument('number'),
+                'Please enter a valid argument (integer > 0) after "app:stab"'
             ]);
             return Command::INVALID;
         }
@@ -146,10 +146,10 @@ class StabCommand extends Command
         $section4 = $output->section();
         try {
             $this->entityManager->getConnection()->beginTransaction();
-            $output->writeln('Number of itertations = ' . $this->numberOfIterations . '. Begin transaction.');
+            $output->writeln('Number of cycle iterations = ' . $this->numberOfIterations . '. Transaction started.');
             $min = $this->userService->getLastUserId() + 1;
-            $j = 0;
-            $k = 0;
+            $counter = 0;
+            $counterComments = 0;
             for ($i = $min; $i < $this->numberOfIterations + $min; $i++) {
                 $random1 = mt_rand(0, 12);
                 $random2 = mt_rand(0, 12);
@@ -163,7 +163,7 @@ class StabCommand extends Command
                 $rights = ['ROLE_USER'];
                 $user = $this->registrationService->registerWithoutEmailVerification($email, $fio, $password, $rights, $date);
                 if (!$user) {
-                    $this->errors[] = "User with email = $email not created";
+                    $this->errors[] = 'User with email = ' . $email . ' not created';
                     continue;
                 }
                 $section1->overwrite('Created user with email - ' . $email);
@@ -176,16 +176,17 @@ class StabCommand extends Command
                 ;
                 $post = $this->postService->create($user, $title, $content, $date);
                 if (!$post) {
-                    $this->errors[] = "Post by user with id = $userId not created";
+                    $this->errors[] = 'Post by user with id = ' . $userId . ' not created';
                     continue;
                 }
                 $section2->overwrite('Created post by user with id = ' . $userId);
                 if (!$this->postService->addRating($user, $post, $random4)) {
-                    $this->errors[] = "Rating $random4 to post №{$post->getId()} by user with id = $userId not created";
+                    $this->errors[] = 'Rating ' . $random4 . ' to post №' . $post->getId() . 
+                        ' by user with id = ' . $userId . ' not created';
                     continue;
                 }
                 $section3->overwrite('Created rating ' . $random4 . ' to post №' . $post->getId() . ' by user with id = ' . $userId);
-                $j++;
+                $counter++;
                 /* Here I add ratings and comments with likes to post */
                 for ($m = 0; $m <= $random3; $m++) {
                     // $random4 = mt_rand(0, $numberOfIterations - 1);
@@ -202,12 +203,12 @@ class StabCommand extends Command
                     $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment);
                     $commentId = $comment->getId();
                     if (!$commentId) {
-                        $this->errors[] = "Comment to post №{$post->getId()} by user with id = $userId not created";
+                        $this->errors[] = 'Comment to post №' . $post->getId() . ' by user with id = ' . $userId . ' not created';
                         continue;
                     }
                     $this->commentService->like($user, $comment);
                 }
-                $k += $random3 + 1;
+                $counterComments += $random3 + 1;
                 $section4->overwrite(
                     'Created ' . $random3 + 1 . ' comments with likes to post №' . 
                     $post->getId() . ' by user with id = ' . $userId
@@ -218,12 +219,11 @@ class StabCommand extends Command
                 $output->writeln($this->errors);
             }
             if ($this->numberOfIterations > 1) {
-                $section1->overwrite('Created ' . $j . ' users.');
-                $section2->overwrite('Created ' . $j . ' posts.');
-                $section3->overwrite('Created ' . $j . ' ratings.');
-                $section4->overwrite('Created ' . $k . ' comments.');
+                $section1->overwrite('Created ' . $counter . ' users.');
+                $section2->overwrite('Created ' . $counter . ' posts by these users.');
+                $section3->overwrite('Created ' . $counter . ' ratings by these users to these posts.');
+                $section4->overwrite('Created ' . $counterComments . ' comments by these users to these posts with likes.');
             }
-           
             $output->writeln(
                 'Cycle with number of iretations = ' . $this->numberOfIterations . ' completed in ' . 
                 round(microtime(true) - $this->startTime, 4) . ' seconds'
