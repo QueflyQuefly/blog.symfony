@@ -111,11 +111,11 @@ class StabService
      */
     public function toStabDb(int $numberOfIterations)
     {
-        $this->entityManager->getConnection()->beginTransaction();
-        try
-        {
+        try {
+            $this->entityManager->getConnection()->beginTransaction();
+
             $min = $this->userService->getLastUserId() + 1;
-            for($i = $min; $i < $numberOfIterations + $min; $i++) {
+            for ($i = $min; $i < $numberOfIterations + $min; $i++) {
                 $random1 = mt_rand(0, 12);
                 $random2 = mt_rand(0, 12);
                 $random3 = mt_rand(0, 12);
@@ -141,9 +141,11 @@ class StabService
                 $post = $this->postService->create($user, $title, $content, $date);
                 if (!$post) {
                     $this->errors[] = "Пост от пользователя с id = $userId не создан";
+                    continue;
                 }
                 if (!$this->postService->addRating($user, $post, $random4)) {
                     $this->errors[] = "Рейтинг $random4 к посту №{$post->getId()} от пользователя с id = $userId не поставился";
+                    continue;
                 }
                 /* Here I add ratings and comments with likes to post */
                 for ($m = 0; $m <= $random3; $m++) {
@@ -162,12 +164,13 @@ class StabService
                     $commentId = $comment->getId();
                     if (!$commentId) {
                         $this->errors[] = "Комментарий к посту №{$post->getId()}  от пользователя с id = $userId не создан";
+                        continue;
                     }
                     $this->commentService->like($user, $comment);
                 }
             }
             $this->entityManager->getConnection()->commit();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->entityManager->getConnection()->rollBack();
             $this->errors[] = $e->getMessage();
             return false;
