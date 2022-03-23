@@ -6,8 +6,8 @@
             <p class='postcontent'>{{ post.content|striptags }}</p>
             <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
             <p class='postrating'>
-                {% set countRatings = post.ratingPosts.count %}
-                {% set countComments = post.comments.count %}
+                {% set countRatings = post.countRatings %}
+                {% set countComments = post.countComments %}
                 {% if countRatings %}
                     Рейтинг: {{ post.rating }}, оценок: {{ countRatings }}, комментариев: {{ countComments }}
                 {% else %}

@@ -19,22 +19,12 @@ class PostRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries');
         $config = new \Doctrine\ORM\Configuration();
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries', 3600);
         $config->setQueryCache($cache);
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter(
-            'doctrine_results',
-            0,
-            '/src/Doctrine/Cache'
-        );
-        $config = new \Doctrine\ORM\Configuration();
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_results', 3600);
         $config->setResultCache($cache);
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter(
-            'doctrine_metadata',
-            0,
-            '/src/Doctrine/Cache'
-        );
-        $config = new \Doctrine\ORM\Configuration();
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 3600);
         $config->setMetadataCache($cache);
     }
 
@@ -68,6 +58,11 @@ class PostRepository extends ServiceEntityRepository
     public function getLastPosts(int $numberOfPosts)
     {
         return $this->createQueryBuilder('p')
+            ->select('p, u, COUNT(c.id) as countComments, COUNT(r.id) as countRatings')
+            ->join('p.user', 'u')
+            ->join('p.comments', 'c')
+            ->join('p.ratingPosts', 'r')
+            ->groupBy('p.id')
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
@@ -82,10 +77,14 @@ class PostRepository extends ServiceEntityRepository
     public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
+            ->select('p, u, COUNT(c.id) as countComments, COUNT(r.id) as countRatings')
+            ->join('p.user', 'u')
+            ->join('p.ratingPosts', 'r')
             ->join('App\Entity\Comment', 'c', 'WITH', 'c.post = p')
             ->where('c.dateTime > :time')
             ->setParameter('time', $timeWeekAgo)
-            ->orderBy('c.dateTime', 'DESC')
+            ->groupBy('p.id')
+            ->orderBy('c.post', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->enableResultCache(3600)
@@ -99,6 +98,10 @@ class PostRepository extends ServiceEntityRepository
     public function getPosts(int $numberOfPosts, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('p')
+            ->select('p, u, c, r')
+            ->join('p.user.fio', 'u')
+            ->join('p.comments.count', 'c')
+            ->join('p.ratingPosts.count', 'r')
             ->orderBy('p.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfPosts)
@@ -114,9 +117,13 @@ class PostRepository extends ServiceEntityRepository
     public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
     {
         return $this->createQueryBuilder('p')
-            ->join('App\Entity\RatingPost', 'r', 'WITH', 'r.post = p.id')
-            ->where('r.user = :val')
-            ->orderBy('p.id', 'DESC')
+            ->select('p')
+            ->join('p.user.fio', 'u')
+            ->join('p.comments.count', 'c')
+            ->join('p.ratingPosts.count', 'r')
+            ->join('p.ratingPosts', 'rp')
+            ->where('rp.user = :val')
+            ->orderBy('p.comments.count', 'DESC')
             ->setParameter('val', $userId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()

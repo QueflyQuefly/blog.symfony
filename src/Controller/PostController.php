@@ -28,9 +28,20 @@ class PostController extends AbstractController
     {
         $numberOfPosts = 10;
         $numberOfMoreTalkedPosts = 3;
-        $posts = $this->postService->getLastPosts($numberOfPosts);
-        $moreTalkedPosts = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
-
+        $postsMany = $this->postService->getLastPosts($numberOfPosts);
+        foreach ($postsMany as $postOne) {
+            $post = $postOne[0];
+            $post->countComments = $postOne['countComments'];
+            $post->countRatings = $postOne['countRatings'];
+            $posts[] = $post; 
+        }
+        $moreTalkedPostsMany = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+        foreach ($moreTalkedPostsMany as $postOne) {
+            $post = $postOne[0];
+            $post->countComments = $postOne['countComments'];
+            $post->countRatings = $postOne['countRatings'];
+            $moreTalkedPosts[] = $post; 
+        }
         return $this->render('post/home.html.twig', [
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
