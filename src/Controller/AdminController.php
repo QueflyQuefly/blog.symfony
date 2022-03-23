@@ -42,6 +42,7 @@ class AdminController extends AbstractController
     public function showComments(?int $numberOfComments, ?int $page): Response
     {
         $comments = $this->commentService->getComments($numberOfComments, $page);
+
         return $this->render('admin/allcomments.html.twig', [
             'nameOfPath' => 'admin_show_comments',
             'number' => $numberOfComments,
@@ -54,6 +55,7 @@ class AdminController extends AbstractController
     public function showUsers(?int $numberOfUsers, ?int $page): Response
     {
         $users = $this->userService->getUsers($numberOfUsers, $page);
+
         return $this->render('admin/allusers.html.twig', [
             'nameOfPath' => 'admin_show_users',
             'number' => $numberOfUsers,
@@ -65,12 +67,13 @@ class AdminController extends AbstractController
     #[Route('/stab', name: 'show_stab')]
     public function showStab(Request $request): Response
     {
-        if ($this->env !== 'prod') {
-            $this->createNotFoundException();
+        if ($this->env !== 'dev') {
+            throw $this->createNotFoundException('Page not found');
         }
         $numberOfIterations = $request->query->get('number') ?? 0;
         $this->stabService->toStabDb($numberOfIterations);
         $errors = $this->stabService->getErrors() ?? false;
+
         return $this->render('admin/stab.html.twig', [
             'errors'             => $errors,
             'numberOfIterations' => $numberOfIterations

@@ -37,6 +37,7 @@ class CommentService
         $comment->setContent($content);
         $comment->setRating($rating);
         $this->commentRepository->add($comment, $flush);
+        
         return $comment;
     }
 
@@ -46,18 +47,19 @@ class CommentService
             'user' => $user, 
             'comment' => $comment
         ]);
-        $comment = $this->commentRepository->find($comment);
-
         if ($ratingComment) {
             $comment->setRating($comment->getRating() - 1);
             $this->ratingCommentRepository->remove($ratingComment, $flush);
-        } else {
-            $ratingComment = new RatingComment();
-            $ratingComment->setUser($user);
-            $ratingComment->setComment($comment);
-            $comment->setRating($comment->getRating() + 1);
-            $this->ratingCommentRepository->add($ratingComment, $flush);
+
+            return false;
         }
+        $ratingComment = new RatingComment();
+        $ratingComment->setUser($user);
+        $ratingComment->setComment($comment);
+        $comment->setRating($comment->getRating() + 1);
+        $this->ratingCommentRepository->add($ratingComment, $flush);
+
+        return true;
     }
 
     /**
@@ -66,6 +68,7 @@ class CommentService
     public function getComments(int $numberOfComments, int $page)
     {
         $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
+
         return $this->commentRepository->getComments($numberOfComments, $lessThanMaxId);
     }
     
@@ -95,9 +98,6 @@ class CommentService
 
     public function delete(Comment $comment, bool $flush = true)
     {
-        $postId = $comment->getPost()->getId();
-        $infoPost = $this->infoPostRepository->find($postId);
-        $infoPost->setCountComments($infoPost->getCountComments() - 1);
         $this->commentRepository->remove($comment, $flush);
     }
 }

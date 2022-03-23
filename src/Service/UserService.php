@@ -91,6 +91,7 @@ class UserService
         $user->setDateTime($dateTime);
         $user->setRoles($rights);
         $this->userRepository->add($user, $flush);
+        
         return $user;
     }
 
@@ -117,12 +118,14 @@ class UserService
     {
         if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId())) {
             $this->subscriptionRepository->remove($subscription, $flush);
+
             return false;
         } else {
             $subscription = new Subscription();
             $subscription->setUserSubscribed($userSubscribed);
             $subscription->setUser($user);
             $this->subscriptionRepository->add($subscription, $flush);
+
             return true;
         }
     }
@@ -164,6 +167,7 @@ class UserService
         }
         $users1 = $this->userRepository->searchByFio('%'.$searchWords.'%');
         $results = array_merge($users, $users1);
+
         return $results;
     }
 
@@ -171,6 +175,7 @@ class UserService
     {
         if ($user->getId()) {
             $this->userRepository->add($user, $flush);
+
             return true;
         }
         return false;

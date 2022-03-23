@@ -149,6 +149,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_register');
         }
         $this->addFlash('success', 'Ваш email верифицирован. Войдите');
+
         return $this->redirectToRoute('user_login');
     }
 

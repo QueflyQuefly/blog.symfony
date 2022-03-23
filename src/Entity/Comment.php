@@ -35,10 +35,6 @@ class Comment
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'countComments', fetch: 'EXTRA_LAZY')]
-    #[ORM\JoinColumn(nullable: false)]
-    private $postCount;
-
     public function __construct()
     {
         $this->ratingComments = new ArrayCollection();
@@ -135,18 +131,6 @@ class Comment
                 $ratingComment->setComment(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getPostCount(): ?Post
-    {
-        return $this->postCount;
-    }
-
-    public function setPostCount(?Post $postCount): self
-    {
-        $this->postCount = $postCount;
 
         return $this;
     }

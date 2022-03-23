@@ -30,6 +30,7 @@ class PostController extends AbstractController
         $numberOfMoreTalkedPosts = 3;
         $posts = $this->postService->getLastPosts($numberOfPosts);
         $moreTalkedPosts = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+
         return $this->render('post/home.html.twig', [
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
@@ -40,6 +41,7 @@ class PostController extends AbstractController
     public function showAll(?int $numberOfPosts, ?int $page): Response
     {
         $posts = $this->postService->getPosts($numberOfPosts, $page);
+
         return $this->render('post/allposts.html.twig', [
             'nameOfPath' => 'post_show_all',
             'number' => $numberOfPosts,
@@ -104,6 +106,7 @@ class PostController extends AbstractController
         $user = $this->getUser();
         $rating = (int) $request->request->get('rating');
         $this->postService->addRating($user, $post, $rating);
+
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 

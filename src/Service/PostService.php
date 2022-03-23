@@ -51,6 +51,7 @@ class PostService
             }
         }
         $this->postRepository->add($post, $flush);
+        
         return $post;
     }
 
@@ -63,6 +64,7 @@ class PostService
         $tagPost->setPost($post);
         $tagPost->setTag($tag);
         $this->postTagRepository->add($tagPost, $flush);
+
         return $tagPost;
     }
 
@@ -76,7 +78,7 @@ class PostService
             foreach ($allRatingsPost as $ratingPost) {
                 $rating += $ratingPost->getRating();
             }
-            $rating = round($rating / $count, 1);
+            $rating = round($rating / ($count + 1), 1);
         }
         return $rating;
     }
@@ -91,9 +93,9 @@ class PostService
             $ratingPost->setPost($post);
             $ratingPost->setUser($user);
             $ratingPost->setRating($rating);
-            $generalRatingPost = $this->countRating($post, $rating);
-            $post->setRating((string) $generalRatingPost);
+            $post->setRating((string) $this->countRating($post, $rating));
             $this->ratingPostRepository->add($ratingPost, $flush);
+
             return true;
         }
         return false;

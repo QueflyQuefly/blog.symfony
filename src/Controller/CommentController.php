@@ -47,6 +47,7 @@ class CommentController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $user = $this->getUser();
         $this->commentService->like($user, $comment);
+
         return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
     

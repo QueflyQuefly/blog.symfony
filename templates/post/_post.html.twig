@@ -7,8 +7,8 @@
             <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
             <p class='postrating'>
                 {% set countRatings = post.ratingPosts.count %}
+                {% set countComments = post.comments.count %}
                 {% if countRatings %}
-                    {% set countComments = post.countComments.count %}
                     Рейтинг: {{ post.rating }}, оценок: {{ countRatings }}, комментариев: {{ countComments }}
                 {% else %}
                     Нет оценок. Будьте первым! Kомментариев: {{ countComments }}
