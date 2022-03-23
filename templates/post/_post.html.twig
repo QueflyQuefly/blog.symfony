@@ -6,10 +6,12 @@
             <p class='postcontent'>{{ post.content|striptags }}</p>
             <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
             <p class='postrating'>
-                {% if post.ratingPosts.count %}
-                    Рейтинг: {{ post.rating }}, оценок: {{ post.ratingPosts.count }}, комментариев: {{ post.comments.count }}
+                {% set countRatings = post.ratingPosts.count %}
+                {% if countRatings %}
+                    {% set countComments = post.countComments.count %}
+                    Рейтинг: {{ post.rating }}, оценок: {{ countRatings }}, комментариев: {{ countComments }}
                 {% else %}
-                    Нет оценок. Будьте первым! Kомментариев: {{ post.comments.count }}
+                    Нет оценок. Будьте первым! Kомментариев: {{ countComments }}
                 {% endif %}
             </p>
             {% if is_granted('ROLE_ADMIN') %}

@@ -8,28 +8,24 @@ use App\Entity\Post;
 use App\Entity\RatingComment;
 use App\Repository\RatingCommentRepository;
 use App\Repository\CommentRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class CommentService
 {
-    private EntityManagerInterface $entityManager;
     private CommentRepository $commentRepository;
     private RatingCommentRepository $ratingCommentRepository;
 
     public function __construct(
-        EntityManagerInterface $entityManager, 
         CommentRepository $commentRepository,
         RatingCommentRepository $ratingCommentRepository
     ) {
         $this->commentRepository = $commentRepository;
-        $this->entityManager = $entityManager;
         $this->ratingCommentRepository = $ratingCommentRepository;
     }
 
     /**
      * @return Comment Returns an object of Comment
      */
-    public function create(User $user, Post $post, string $content, int $rating = 0, $dateTime = false)
+    public function create(User $user, Post $post, string $content, int $rating = 0, $dateTime = false, bool $flush = true)
     {
         if (!$dateTime) {
             $dateTime = time();
@@ -40,12 +36,11 @@ class CommentService
         $comment->setDateTime($dateTime);
         $comment->setContent($content);
         $comment->setRating($rating);
-        $this->entityManager->persist($comment);
-        $this->entityManager->flush();
+        $this->commentRepository->add($comment, $flush);
         return $comment;
     }
 
-    public function like(User $user, Comment $comment)
+    public function like(User $user, Comment $comment, bool $flush = true)
     {
         $ratingComment = $this->ratingCommentRepository->findOneBy([
             'user' => $user, 
@@ -54,16 +49,15 @@ class CommentService
         $comment = $this->commentRepository->find($comment);
 
         if ($ratingComment) {
-            $this->entityManager->remove($ratingComment);
             $comment->setRating($comment->getRating() - 1);
+            $this->ratingCommentRepository->remove($ratingComment, $flush);
         } else {
             $ratingComment = new RatingComment();
             $ratingComment->setUser($user);
             $ratingComment->setComment($comment);
-            $this->entityManager->persist($ratingComment);
             $comment->setRating($comment->getRating() + 1);
+            $this->ratingCommentRepository->add($ratingComment, $flush);
         }
-        $this->entityManager->flush();
     }
 
     /**
@@ -99,11 +93,11 @@ class CommentService
         return $this->commentRepository->getLikedCommentsByUserId($userId, $numberOfComments);
     }
 
-    public function delete($comment, $postId)
+    public function delete(Comment $comment, bool $flush = true)
     {
-        $this->entityManager->remove($comment);
+        $postId = $comment->getPost()->getId();
         $infoPost = $this->infoPostRepository->find($postId);
         $infoPost->setCountComments($infoPost->getCountComments() - 1);
-        $this->entityManager->flush();
+        $this->commentRepository->remove($comment, $flush);
     }
 }

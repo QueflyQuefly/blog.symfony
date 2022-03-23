@@ -13,11 +13,11 @@ class RatingComment
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingComments')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingComments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
-    #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'ratingComments')]
+    #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'ratingComments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $comment;
 

@@ -8,19 +8,15 @@ use App\Entity\PostTag;
 use App\Entity\RatingPost;
 use App\Repository\PostRepository;
 use App\Repository\RatingPostRepository;
-use App\Repository\InfoPostRepository;
 use App\Repository\PostTagRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
     private PostTagRepository $postTagRepository;
-    private EntityManagerInterface $entityManager;
 
-    public function __construct(      
-        EntityManagerInterface $entityManager,
+    public function __construct(
         PostRepository $postRepository,
         RatingPostRepository $ratingPostRepository,
         PostTagRepository $postTagRepository
@@ -28,13 +24,12 @@ class PostService
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
         $this->postTagRepository = $postTagRepository;
-        $this->entityManager = $entityManager;
     }
 
     /**
      * @return Post Returns an object of Post
      */
-    public function create(User $user, string $title, string $content, $dateTime = false)
+    public function create(User $user, string $title, string $content, $dateTime = false, bool $flush = true)
     {
         if (!$dateTime) {
             $dateTime = time();
@@ -45,9 +40,8 @@ class PostService
         $post->setContent($content);
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
-        $this->entityManager->persist($post);
 
-        $allText = $title." ".$content;
+        $allText = $title . ' ' . $content;
         if (strpos($allText, '#') !== false) {
             $regex = '/#\w+/um';
             preg_match_all($regex, $allText, $tags);
@@ -56,29 +50,27 @@ class PostService
                 $this->createTag($tag, $post);
             }
         }
-        $this->entityManager->flush();
-
+        $this->postRepository->add($post, $flush);
         return $post;
     }
 
     /**
      * @return PostTag Returns an object of PostTag
      */
-    private function createTag(string $tag, Post $post)
+    private function createTag(string $tag, Post $post, bool $flush = false)
     {
         $tagPost = new PostTag();
         $tagPost->setPost($post);
         $tagPost->setTag($tag);
-        $this->entityManager->persist($tagPost);
+        $this->postTagRepository->add($tagPost, $flush);
         return $tagPost;
     }
 
     /**
      * @return float Returns an float number - rating of post
      */
-    private function countRating(Post $post)
+    private function countRating(Post $post, int $rating = 0)
     {
-        $rating = 0.0;
         $allRatingsPost = $post->getRatingPosts();
         if ($count = $allRatingsPost->count()) {
             foreach ($allRatingsPost as $ratingPost) {
@@ -92,19 +84,16 @@ class PostService
     /**
      * @return bool
      */
-    public function addRating(User $user, Post $post, int $rating)
+    public function addRating(User $user, Post $post, int $rating, bool $flush = true)
     {
         if(!$this->isUserAddRating($user, $post)) {
             $ratingPost = new RatingPost();
             $ratingPost->setPost($post);
             $ratingPost->setUser($user);
             $ratingPost->setRating($rating);
-            $this->entityManager->persist($ratingPost);
-            $this->entityManager->flush();
-    
-            $generalRatingPost = $this->countRating($post);
+            $generalRatingPost = $this->countRating($post, $rating);
             $post->setRating((string) $generalRatingPost);
-            $this->entityManager->flush();
+            $this->ratingPostRepository->add($ratingPost, $flush);
             return true;
         }
         return false;
@@ -151,14 +140,6 @@ class PostService
     }
 
     /**
-     * @return Tags[] Returns a Tags objects
-     */
-    public function getTagsByPostId(int $postId)
-    {
-        return $this->postTagRepository->findByPostId($postId);
-    }
-
-    /**
      * @return Post[] Returns an array of Post objects
      */
     public function getPostsByUserId(int $userId, int $numberOfPosts)
@@ -192,12 +173,8 @@ class PostService
         return $results;
     }
 
-    public function delete($post)
+    public function delete($post, bool $flush = true)
     {
-        $postId = $post->getId();
-        $this->entityManager->remove($post);
-        $infoPost = $this->infoPostRepository->find($postId);
-        $this->entityManager->remove($infoPost);
-        $this->entityManager->flush();
+        $this->postRepository->remove($post, $flush);
     }
 }

@@ -6,7 +6,6 @@ use App\Entity\User;
 use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
-use App\Service\RegistrationService;
 use App\Form\RegistrationFormType;
 use App\Form\LoginFormType;
 use App\Security\EmailVerifier;
@@ -26,22 +25,19 @@ class UserController extends AbstractController
     private PostService $postService;
     private CommentService $commentService;
     private EmailVerifier $emailVerifier;
-    private RegistrationService $registrationService;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
         UserService $userService,
         PostService $postService,
         CommentService $commentService,
-        EmailVerifier $emailVerifier,
-        RegistrationService $registrationService
+        EmailVerifier $emailVerifier
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->emailVerifier = $emailVerifier;
-        $this->registrationService = $registrationService;
     }
 
     #[Route('/register', name: 'register')]
@@ -59,7 +55,7 @@ class UserController extends AbstractController
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $rights = ['ROLE_ADMIN'];
             }
-            $this->registrationService->register($email, $fio, $password, $rights);
+            $this->userService->register($email, $fio, $password, $rights);
             return $this->redirectToRoute('user_login');
         }
 

@@ -8,6 +8,9 @@ use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Security\EmailVerifier;
+use Symfony\Component\Mime\Address;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class UserService
 {
@@ -15,17 +18,80 @@ class UserService
     private UserRepository $userRepository;
     private SubscriptionRepository $subscriptionRepository;
     private UserPasswordHasherInterface $userPasswordHasher;
+    private EmailVerifier $emailVerifier;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
-        UserPasswordHasherInterface $userPasswordHasher
+        UserPasswordHasherInterface $userPasswordHasher,
+        EmailVerifier $emailVerifier
     ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->entityManager = $entityManager;
         $this->userPasswordHasher = $userPasswordHasher;
+        $this->emailVerifier = $emailVerifier;
+    }
+
+    /**
+     * @return User Returns an User object
+     */
+    public function register(
+        string $email,
+        string $fio,
+        string $password,
+        array $rights,
+        $dateTime = false,
+        bool $flush = true
+    ) {
+        if (!$dateTime) {
+            $dateTime = time();
+        }
+        $user = new User();
+        $user->setEmail($email);
+        $user->setFio($fio);
+        $user->setPassword(
+            $this->userPasswordHasher->hashPassword($user, $password)
+        );
+        $user->setDateTime($dateTime);
+        $user->setRoles($rights);
+        $this->userRepository->add($user, $flush);
+        // generate a signed url and email it to the user
+        $this->emailVerifier->sendEmailConfirmation('user_verify_email', $user,
+        (new TemplatedEmail())
+            ->from(new Address('prostoblog.local@gmail.com', 'Prosto Blog'))
+            ->to($user->getEmail())
+            ->subject('Просто Блог - Пожалуйста, подтвердите ваш email')
+            ->htmlTemplate('user/confirmation_email.html.twig')
+        );
+        return $user;
+    }
+
+    /**
+     * @return User Returns an User object
+     */
+    public function registerWithoutVerification(
+        string $email,
+        string $fio,
+        string $password,
+        array $rights,
+        $dateTime = false,
+        bool $flush = true
+    ) {
+        if (!$dateTime){
+            $dateTime = time();
+        }
+        $user = new User();
+        $user->setEmail($email);
+        $user->setFio($fio);
+        $user->setPassword(
+            $this->userPasswordHasher->hashPassword($user, $password)
+        );
+        $user->setDateTime($dateTime);
+        $user->setRoles($rights);
+        $this->userRepository->add($user, $flush);
+        return $user;
     }
 
     /**
@@ -47,24 +113,22 @@ class UserService
     /**
      * @return bool
      */
-    public function subscribe(User $userSubscribed, User $user)
+    public function subscribe(User $userSubscribed, User $user, bool $flush = true)
     {
         if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId())) {
-            $this->entityManager->remove($subscription);
-            $this->entityManager->flush();
+            $this->subscriptionRepository->remove($subscription, $flush);
             return false;
         } else {
             $subscription = new Subscription();
             $subscription->setUserSubscribed($userSubscribed);
             $subscription->setUser($user);
-            $this->entityManager->persist($subscription);
-            $this->entityManager->flush();
+            $this->subscriptionRepository->add($subscription, $flush);
             return true;
         }
     }
 
     /**
-     * @return Subcriptions|bool
+     * @return Subscription|bool
      */
     public function isSubscribe(int $userIdWantSubscribe, int $userId)
     {
@@ -103,18 +167,17 @@ class UserService
         return $results;
     }
 
-    public function update(User $user)
+    public function update(User $user, bool $flush = true)
     {
         if ($user->getId()) {
-            $this->entityManager->flush();
+            $this->userRepository->add($user, $flush);
             return true;
         }
         return false;
     }
 
-    public function delete($user)
+    public function delete($user, bool $flush = true)
     {
-        $this->entityManager->remove($user);
-        $this->entityManager->flush();
+        $this->userRepository->remove($user, $flush);
     }
 }

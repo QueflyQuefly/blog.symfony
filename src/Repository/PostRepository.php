@@ -19,6 +19,23 @@ class PostRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries');
+        $config = new \Doctrine\ORM\Configuration();
+        $config->setQueryCache($cache);
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter(
+            'doctrine_results',
+            0,
+            '/src/Doctrine/Cache'
+        );
+        $config = new \Doctrine\ORM\Configuration();
+        $config->setResultCache($cache);
+        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter(
+            'doctrine_metadata',
+            0,
+            '/src/Doctrine/Cache'
+        );
+        $config = new \Doctrine\ORM\Configuration();
+        $config->setMetadataCache($cache);
     }
 
     /**
@@ -54,6 +71,7 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }
@@ -70,6 +88,7 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('c.dateTime', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }
@@ -84,6 +103,7 @@ class PostRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }
@@ -100,6 +120,7 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('val', $userId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }

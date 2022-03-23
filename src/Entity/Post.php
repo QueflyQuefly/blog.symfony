@@ -31,20 +31,24 @@ class Post
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
     private $rating;
 
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostTag::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostTag::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $postTags;
+
+    #[ORM\OneToMany(mappedBy: 'postCount', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
+    private $countComments;
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->ratingPosts = new ArrayCollection();
         $this->postTags = new ArrayCollection();
+        $this->countComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -196,6 +200,36 @@ class Post
             // set the owning side to null (unless already changed)
             if ($postTag->getPost() === $this) {
                 $postTag->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, comment>
+     */
+    public function getCountComments(): Collection
+    {
+        return $this->countComments;
+    }
+
+    public function addCountComment(comment $countComment): self
+    {
+        if (!$this->countComments->contains($countComment)) {
+            $this->countComments[] = $countComment;
+            $countComment->setPostCount($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCountComment(comment $countComment): self
+    {
+        if ($this->countComments->removeElement($countComment)) {
+            // set the owning side to null (unless already changed)
+            if ($countComment->getPostCount() === $this) {
+                $countComment->setPostCount(null);
             }
         }
 

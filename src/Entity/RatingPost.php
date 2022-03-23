@@ -13,11 +13,11 @@ class RatingPost
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'ratingPosts')]
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'ratingPosts', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingPosts')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingPosts', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 

@@ -55,7 +55,7 @@ class CommentController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $postId = ($comment->getPost())->getId();
-        $this->commentService->delete($comment, $postId);
+        $this->commentService->delete($comment);
         $this->addFlash(
             'success',
             'Комментарий удален'

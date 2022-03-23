@@ -13,7 +13,7 @@ class PostTag
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'postTags')]
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'postTags', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 

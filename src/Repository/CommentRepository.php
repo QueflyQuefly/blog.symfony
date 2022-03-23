@@ -55,6 +55,7 @@ class CommentRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfComments)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }
@@ -71,6 +72,7 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfComments)
             ->getQuery()
+            ->enableResultCache(3600)
             ->getResult()
         ;
     }

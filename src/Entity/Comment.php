@@ -28,12 +28,16 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $rating;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
-    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
+
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'countComments', fetch: 'EXTRA_LAZY')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $postCount;
 
     public function __construct()
     {
@@ -131,6 +135,18 @@ class Comment
                 $ratingComment->setComment(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPostCount(): ?Post
+    {
+        return $this->postCount;
+    }
+
+    public function setPostCount(?Post $postCount): self
+    {
+        $this->postCount = $postCount;
 
         return $this;
     }

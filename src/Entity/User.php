@@ -48,22 +48,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $isVerified = false;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $posts;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingPost::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingComment::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
 
-    #[ORM\OneToMany(mappedBy: 'userSubscribed', targetEntity: Subscription::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'userSubscribed', targetEntity: Subscription::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $subscriptions;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Subscription::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Subscription::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $mySubscriptions;
 
     public function __construct()

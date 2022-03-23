@@ -3,7 +3,6 @@
 namespace App\Command;
 
 use App\Service\UserService;
-use App\Service\RegistrationService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,40 +21,39 @@ class StabCommand extends Command
     private $errors = [];
     private float $startTime;
     private UserService $userService;
-    private RegistrationService $registrationService;
     private PostService $postService;
     private CommentService $commentService;    
     private EntityManagerInterface $entityManager;
     private $names = [
-        0  => "Василий",
-        1  => "Даниил",
-        2  => "Иван",
-        3  => "Павел",
-        4  => "Александр",
-        5  => "Алексей",
-        6  => "Давид", 
-        7  => "Фёдор",
+        0  => 'Василий',
+        1  => 'Даниил',
+        2  => 'Иван',
+        3  => 'Павел',
+        4  => 'Александр',
+        5  => 'Алексей',
+        6  => 'Давид', 
+        7  => 'Фёдор',
         8  => 'Анатолий',
-        9  => "Вячеслав",
-        10 => "Кирилл",
-        11 => "Григорий",
-        12 => "Георгий"
+        9  => 'Вячеслав',
+        10 => 'Кирилл',
+        11 => 'Григорий',
+        12 => 'Георгий'
     ];
     private $surnames = [
-        0  => "Бродский",
-        1  => "Васильев",
-        2  => "Пугачев",
-        3  => "Иванюк",
-        4  => "Житомирский",
-        5  => "Данилов",
-        6  => "Крупской", 
-        7  => "Павлов",
+        0  => 'Бродский',
+        1  => 'Васильев',
+        2  => 'Пугачев',
+        3  => 'Иванюк',
+        4  => 'Житомирский',
+        5  => 'Данилов',
+        6  => 'Крупской', 
+        7  => 'Павлов',
         8  => 'Анатольев',
-        9  => "Вертеловский",
-        10 => "Кириллов",
-        11 => "Григорьев",
-        12 => "Георгиевский"
-    ]; 
+        9  => 'Вертеловский',
+        10 => 'Кириллов',
+        11 => 'Григорьев',
+        12 => 'Георгиевский'
+    ];
     private $titles1 = [
         0  => 'Пушкиногорье -',
         1  => 'Полуостров Крым -',
@@ -104,13 +102,11 @@ class StabCommand extends Command
 
     public function __construct(
         UserService $userService,
-        RegistrationService $registrationService,
         PostService $postService,
         CommentService $commentService,
         EntityManagerInterface $entityManager
     ) {
         $this->userService = $userService;
-        $this->registrationService = $registrationService;
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->entityManager = $entityManager;
@@ -157,11 +153,11 @@ class StabCommand extends Command
                 $random4 = mt_rand(1, 5);
                 $date = time() - mt_rand(100000, 2628000);
 
-                $email = "$i@$i.$i";
-                $fio = $this->names[$random2].' '.$this->surnames[$random3];
+                $email = $i . '@' . $i . '.' . $i;
+                $fio = $this->names[$random2] . ' ' . $this->surnames[$random3];
                 $password = $i;
                 $rights = ['ROLE_USER'];
-                $user = $this->registrationService->registerWithoutEmailVerification($email, $fio, $password, $rights, $date);
+                $user = $this->userService->registerWithoutVerification($email, $fio, $password, $rights, $date);
                 if (!$user) {
                     $this->errors[] = 'User with email = ' . $email . ' not created';
                     continue;
@@ -169,10 +165,10 @@ class StabCommand extends Command
                 $section1->overwrite('Created user with email - ' . $email);
                 $userId = $user->getId();
                 /* Here I add post with info and tags */
-                $title = $this->titles1[$random1].' '.$this->titles2[$random2];
-                $content = $this->texts[$random3].' 
-                    '.$this->texts[$random2].' 
-                    '.$this->texts[$random1]
+                $title = $this->titles1[$random1] . ' ' . $this->titles2[$random2];
+                $content = $this->texts[$random3] . ' 
+                    ' . $this->texts[$random2]. ' 
+                    ' . $this->texts[$random1]
                 ;
                 $post = $this->postService->create($user, $title, $content, $date);
                 if (!$post) {

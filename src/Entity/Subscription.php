@@ -13,11 +13,11 @@ class Subscription
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'subscriptions')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'subscriptions', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $userSubscribed;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'mySubscriptions')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'mySubscriptions', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
