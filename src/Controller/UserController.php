@@ -80,6 +80,8 @@ class UserController extends AbstractController
             $canSubscribe = $isSubscribe = false;
         }
         $numberOfResults = 10;
+        $posts = $this->postService->getPostsByUserId($user->getId(), $numberOfResults);
+        $comments = $this->commentService->getCommentsByUserId($user->getId(), $numberOfResults);
         $likedPosts = $this->postService->getLikedPostsByUserId($user->getId(), $numberOfResults);
         $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId(), $numberOfResults);
 
@@ -88,6 +90,8 @@ class UserController extends AbstractController
             'can_subscribe' => $canSubscribe,
             'is_subscribe' => $isSubscribe,
             'number_of_results' => $numberOfResults,
+            'posts' => $posts,
+            'comments' => $comments,
             'likedPosts' => $likedPosts,
             'likedComments' => $likedComments,
         ]);

@@ -19,13 +19,6 @@ class PostRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
-        $config = new \Doctrine\ORM\Configuration();
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries', 3600);
-        $config->setQueryCache($cache);
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_results', 3600);
-        $config->setResultCache($cache);
-        $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 3600);
-        $config->setMetadataCache($cache);
     }
 
     /**
@@ -52,9 +45,7 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
+    /*
     public function getLastPosts(int $numberOfPosts)
     {
         return $this->createQueryBuilder('p')
@@ -70,6 +61,25 @@ class PostRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+    */
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function getLastPosts(int $numberOfPosts)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p, u')
+            ->join('p.user', 'u')
+            ->groupBy('p')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($numberOfPosts)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(3600)
+            ->getResult()
+        ;
+    }
    
     /**
      * @return Post[] Returns an array of Post objects
@@ -77,18 +87,37 @@ class PostRepository extends ServiceEntityRepository
     public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
-            ->select('p, u, COUNT(c.id) as countComments, COUNT(r.id) as countRatings')
+            ->select('p, u')
             ->join('p.user', 'u')
-            ->join('p.ratingPosts', 'r')
             ->join('App\Entity\Comment', 'c', 'WITH', 'c.post = p')
             ->where('c.dateTime > :time')
             ->setParameter('time', $timeWeekAgo)
-            ->groupBy('p.id')
+            ->groupBy('p')
             ->orderBy('c.post', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
+        ;
+    }
+
+    /**
+     * @return Post Returns a Post object
+     */
+    public function getPostById(int $postId)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p, u, c, t')
+            ->join('p.user', 'u')
+            ->join('p.comments', 'c')
+            ->join('p.postTags', 't')
+            ->where('p = :id')
+            ->setParameter(':id', $postId)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(3600)
+            ->getOneOrNullResult()
         ;
     }
        
@@ -98,14 +127,13 @@ class PostRepository extends ServiceEntityRepository
     public function getPosts(int $numberOfPosts, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('p')
-            ->select('p, u, c, r')
-            ->join('p.user.fio', 'u')
-            ->join('p.comments.count', 'c')
-            ->join('p.ratingPosts.count', 'r')
+            ->select('p, u')
+            ->join('p.user', 'u')
             ->orderBy('p.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
         ;
@@ -117,16 +145,15 @@ class PostRepository extends ServiceEntityRepository
     public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
     {
         return $this->createQueryBuilder('p')
-            ->select('p')
-            ->join('p.user.fio', 'u')
-            ->join('p.comments.count', 'c')
-            ->join('p.ratingPosts.count', 'r')
-            ->join('p.ratingPosts', 'rp')
-            ->where('rp.user = :val')
-            ->orderBy('p.comments.count', 'DESC')
-            ->setParameter('val', $userId)
+            ->select('p, u')
+            ->join('p.user', 'u')
+            ->join('p.ratingPosts', 'r')
+            ->where('r.user = :user')
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('user', $userId)
             ->setMaxResults($numberOfPosts)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
         ;
@@ -138,7 +165,9 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTag(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->join('App\Entity\PostTag', 't', 'WITH', 't.post = p.id')
+        return $qb->select('p, u')
+            ->join('p.user', 'u')
+            ->join('p.postTags', 't')
             ->where($qb->expr()->like('t.tag', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
@@ -154,7 +183,9 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTitle(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->where($qb->expr()->like('p.title', ':search'))
+        return $qb->select('p, u')
+            ->join('p.user', 'u')
+            ->where($qb->expr()->like('p.title', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)
@@ -169,7 +200,8 @@ class PostRepository extends ServiceEntityRepository
     public function searchByAuthor(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->join('App\Entity\User', 'u', 'WITH', 'p.user = u.id')
+        return $qb->select('p, u')
+            ->join('p.user', 'u')
             ->where($qb->expr()->like('u.fio', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
@@ -185,7 +217,9 @@ class PostRepository extends ServiceEntityRepository
     public function searchByContent(string $search)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->where($qb->expr()->like('p.content', ':search'))
+        return $qb->select('p, u')
+            ->join('p.user', 'u')
+            ->where($qb->expr()->like('p.content', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(20)

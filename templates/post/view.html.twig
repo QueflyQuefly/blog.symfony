@@ -3,6 +3,8 @@
 {% block title %} Пост {{ post.id }} - Просто Блог {% endblock %}
 
 {% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
     <div id='singleposttitle'>
         <p class='singleposttitle'>{{ post.title }}</p>
     </div>
@@ -15,9 +17,6 @@
             {% endif %}
         </p>
         
-        {% if is_user_add_rating %}
-        <p class='singlepostdate'>Оценка принята</p>
-        {% else %}
         <div class="rating-area">
             <form action='{{ path('post_rating', {id: post.id}) }}' method='post'>
                 <label class='star' title="Оценка «1»">&#9734;
@@ -37,7 +36,6 @@
                 </label>
             </form>
         </div>
-        {% endif %}
 
         <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile', {'id': post.user.id}) }}'>{{ post.user.fio }}</a></p>
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
@@ -74,8 +72,6 @@
                 {{ form_row(form.submit, {
                     label: 'Добавить комментарий'
                 }) }}
-                
-                {{ include('_blog_flashes.html.twig') }}
             {{ form_end(form) }}
         </div>
     </div>

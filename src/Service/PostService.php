@@ -133,6 +133,14 @@ class PostService
     }
 
     /**
+     * @return Post Returns a Post object
+     */
+    public function getPostById(int $postId)
+    {
+        return $this->postRepository->getPostById($postId);
+    }
+
+    /**
      * @return Post[] Returns an array of Post objects
      */
     public function getPosts(int $numberOfPosts, int $page)

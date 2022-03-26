@@ -10,38 +10,42 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
     private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private PostService $postService;
+    private CacheInterface $pool;
 
     public function __construct(
-        PostService $postService
+        PostService $postService,
+        CacheInterface $pool
     ) {
         $this->postService = $postService;
+        $this->pool = $pool;
     }
 
     #[Route('', name: 'main')]
     public function main(): Response
     {
-        $numberOfPosts = 10;
-        $numberOfMoreTalkedPosts = 3;
-        $postsMany = $this->postService->getLastPosts($numberOfPosts);
-        foreach ($postsMany as $postOne) {
-            $post = $postOne[0];
-            $post->countComments = $postOne['countComments'];
-            $post->countRatings = $postOne['countRatings'];
-            $posts[] = $post; 
-        }
-        $moreTalkedPostsMany = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
-        foreach ($moreTalkedPostsMany as $postOne) {
-            $post = $postOne[0];
-            $post->countComments = $postOne['countComments'];
-            $post->countRatings = $postOne['countRatings'];
-            $moreTalkedPosts[] = $post; 
-        }
+        $posts = $this->pool->get('last_posts', function (ItemInterface $item) {
+            $item->expiresAfter(1);
+            $numberOfPosts = 10;
+            $computedValue = $this->postService->getLastPosts($numberOfPosts);
+
+            return $computedValue;
+        });
+        $moreTalkedPosts = $this->pool->get('more_talked_posts', function (ItemInterface $item) {
+            $item->expiresAfter(1);
+            $numberOfMoreTalkedPosts = 3;
+            $computedValue = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+
+            return $computedValue;
+        });
+        
         return $this->render('post/home.html.twig', [
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
@@ -62,22 +66,16 @@ class PostController extends AbstractController
     }
 
     #[Route('/{id}', name: 'show', requirements: ['id' => '\b[0-9]+'])]
-    public function showPost(Post $post): Response
+    public function showPost(int $id): Response
     {
-        if (!$post) {
+        if (!$post = $this->postService->getPostById($id)) {
             throw $this->createNotFoundException('Пост не найден');
         }
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
         $form = $this->createForm(CommentFormType::class);
-        $isUserAddRating = false;
-        if ($user) {
-            $isUserAddRating = $this->postService->isUserAddRating($user, $post);
-        }
+
         return $this->renderForm('post/view.html.twig', [
             'post' => $post,
-            'is_user_add_rating' => $isUserAddRating,
-            'form' => $form,
+            'form' => $form
         ]);
     }
 
@@ -116,7 +114,17 @@ class PostController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $user = $this->getUser();
         $rating = (int) $request->request->get('rating');
-        $this->postService->addRating($user, $post, $rating);
+        if ($this->postService->addRating($user, $post, $rating)) {
+            $this->addFlash(
+                'success',
+                'Ваша оценка принята'
+            );
+        } else {
+            $this->addFlash(
+                'error',
+                'Вы уже оставили оценку для этого поста'
+            );
+        }
 
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }

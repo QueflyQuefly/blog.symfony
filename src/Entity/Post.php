@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
+#[ORM\Cache(usage: "READ_WRITE")]
 class Post
 {
     #[ORM\Id]
@@ -15,6 +16,7 @@ class Post
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
@@ -31,12 +33,15 @@ class Post
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
     private $rating;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostTag::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $postTags;
 

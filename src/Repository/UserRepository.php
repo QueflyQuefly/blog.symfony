@@ -69,6 +69,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfUsers)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
         ;

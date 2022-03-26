@@ -6,6 +6,7 @@ use App\Repository\PostTagRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PostTagRepository::class)]
+#[ORM\Cache(usage:"READ_ONLY")]
 class PostTag
 {
     #[ORM\Id]
@@ -13,6 +14,7 @@ class PostTag
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'postTags', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;

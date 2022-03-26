@@ -6,6 +6,7 @@ use App\Repository\RatingPostRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RatingPostRepository::class)]
+#[ORM\Cache(usage:"READ_ONLY")]
 class RatingPost
 {
     #[ORM\Id]
@@ -13,10 +14,12 @@ class RatingPost
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'ratingPosts', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingPosts', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;

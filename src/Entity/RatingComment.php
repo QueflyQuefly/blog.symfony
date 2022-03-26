@@ -6,6 +6,7 @@ use App\Repository\RatingCommentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RatingCommentRepository::class)]
+#[ORM\Cache(usage:"READ_ONLY")]
 class RatingComment
 {
     #[ORM\Id]
@@ -13,10 +14,12 @@ class RatingComment
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'ratingComments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
+    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Comment::class, inversedBy: 'ratingComments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $comment;

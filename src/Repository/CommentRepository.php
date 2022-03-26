@@ -51,10 +51,13 @@ class CommentRepository extends ServiceEntityRepository
     public function getComments(int $numberOfComments, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('c')
+            ->select('c, u')
+            ->join('c.user', 'u')
             ->orderBy('c.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfComments)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
         ;
@@ -66,12 +69,15 @@ class CommentRepository extends ServiceEntityRepository
     public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
     {
         return $this->createQueryBuilder('c')
+            ->select('c, u')
+            ->join('c.user', 'u')
             ->join('App\Entity\RatingComment', 'r', 'WITH', 'r.comment = c.id')
             ->andWhere('r.user = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfComments)
             ->getQuery()
+            ->setCacheable(true)
             ->enableResultCache(3600)
             ->getResult()
         ;
