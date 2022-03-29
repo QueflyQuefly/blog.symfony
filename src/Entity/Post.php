@@ -34,11 +34,11 @@ class Post
     private $rating;
 
     #[ORM\Cache(usage:"READ_ONLY")]
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EAGER')]
     private $comments;
 
     #[ORM\Cache(usage:"READ_ONLY")]
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EAGER')]
     private $ratingPosts;
 
     #[ORM\Cache(usage:"READ_ONLY")]
@@ -50,7 +50,6 @@ class Post
         $this->comments = new ArrayCollection();
         $this->ratingPosts = new ArrayCollection();
         $this->postTags = new ArrayCollection();
-        $this->countComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,6 +125,11 @@ class Post
         return $this->comments;
     }
 
+    public function countComments(): int
+    {
+        return $this->comments->count();
+    }
+
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
@@ -154,6 +158,11 @@ class Post
     public function getRatingPosts(): Collection
     {
         return $this->ratingPosts;
+    }
+
+    public function countRatingPosts(): int
+    {
+        return $this->ratingPosts->count();
     }
 
     public function addRatingPost(RatingPost $ratingPost): self

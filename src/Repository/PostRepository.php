@@ -45,24 +45,6 @@ class PostRepository extends ServiceEntityRepository
         }
     }
 
-    /*
-    public function getLastPosts(int $numberOfPosts)
-    {
-        return $this->createQueryBuilder('p')
-            ->select('p, u, COUNT(c.id) as countComments, COUNT(r.id) as countRatings')
-            ->join('p.user', 'u')
-            ->join('p.comments', 'c')
-            ->join('p.ratingPosts', 'r')
-            ->groupBy('p.id')
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfPosts)
-            ->getQuery()
-            ->enableResultCache(3600)
-            ->getResult()
-        ;
-    }
-    */
-
     /**
      * @return Post[] Returns an array of Post objects
      */
@@ -71,12 +53,11 @@ class PostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
-            ->groupBy('p')
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(30)
             ->getResult()
         ;
     }
@@ -89,15 +70,14 @@ class PostRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
-            ->join('App\Entity\Comment', 'c', 'WITH', 'c.post = p')
+            ->join('p.comments', 'c')
             ->where('c.dateTime > :time')
             ->setParameter('time', $timeWeekAgo)
-            ->groupBy('p')
-            ->orderBy('c.post', 'DESC')
+            ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -116,7 +96,7 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter(':id', $postId)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
             ->getOneOrNullResult()
         ;
     }
@@ -134,7 +114,26 @@ class PostRepository extends ServiceEntityRepository
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function getPostsByUserId(int $userId, int $numberOfPosts)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p, u')
+            ->join('p.user', 'u')
+            ->where('p.user = :user')
+            ->orderBy('p.id', 'DESC')
+            ->setParameter('user', $userId)
+            ->setMaxResults($numberOfPosts)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -154,7 +153,7 @@ class PostRepository extends ServiceEntityRepository
             ->setMaxResults($numberOfPosts)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
             ->getResult()
         ;
     }

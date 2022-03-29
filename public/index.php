@@ -1,21 +1,19 @@
 <?php
 
 use App\Kernel;
-use Symfony\Contracts\Cache\ItemInterface;
 
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 $config = new \Doctrine\ORM\Configuration();
-$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries', 3600);
+$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries', 60);
 $config->setQueryCache($cache);
-$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_results', 3600);
+$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_results', 60);
 $config->setResultCache($cache);
-$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 3600);
+$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 60);
 $config->setMetadataCache($cache);
 
-/** @var \Doctrine\ORM\Cache\RegionsConfiguration $cacheConfig */
+
 /** @var \Psr\Cache\CacheItemPoolInterface $cache */
-/** @var \Doctrine\ORM\Configuration $config */
 
 $cacheConfig = new \Doctrine\ORM\Cache\RegionsConfiguration();
 $factory = new \Doctrine\ORM\Cache\DefaultCacheFactory($cacheConfig, $cache);
@@ -24,10 +22,9 @@ $factory = new \Doctrine\ORM\Cache\DefaultCacheFactory($cacheConfig, $cache);
 $config->setSecondLevelCacheEnabled();
 
 // Cache factory
-$config->getSecondLevelCacheConfiguration()
-    ->setCacheFactory($factory)
-;
 $cacheConfig  =  $config->getSecondLevelCacheConfiguration();
+$cacheConfig->setCacheFactory($factory);
+
 $regionConfig =  $cacheConfig->getRegionsConfiguration();
 
 // Cache Region lifetime

@@ -58,7 +58,26 @@ class CommentRepository extends ServiceEntityRepository
             ->setMaxResults($numberOfComments)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Comment[] Returns an array of Comment objects
+     */
+    public function getCommentsByUserId(int $userId, int $numberOfComments)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c, u')
+            ->join('c.user', 'u')
+            ->where('c.user = :val')
+            ->setParameter('val', $userId)
+            ->orderBy('c.id', 'DESC')
+            ->setMaxResults($numberOfComments)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -71,14 +90,14 @@ class CommentRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
-            ->join('App\Entity\RatingComment', 'r', 'WITH', 'r.comment = c.id')
-            ->andWhere('r.user = :val')
+            ->join('c.ratingComments', 'r')
+            ->where('r.user = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfComments)
             ->getQuery()
             ->setCacheable(true)
-            ->enableResultCache(3600)
+            ->enableResultCache(60)
             ->getResult()
         ;
     }

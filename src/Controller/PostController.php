@@ -32,24 +32,32 @@ class PostController extends AbstractController
     public function main(): Response
     {
         $posts = $this->pool->get('last_posts', function (ItemInterface $item) {
-            $item->expiresAfter(1);
+            $item->expiresAfter(60);
             $numberOfPosts = 10;
             $computedValue = $this->postService->getLastPosts($numberOfPosts);
 
             return $computedValue;
         });
         $moreTalkedPosts = $this->pool->get('more_talked_posts', function (ItemInterface $item) {
-            $item->expiresAfter(1);
+            $item->expiresAfter(60);
             $numberOfMoreTalkedPosts = 3;
             $computedValue = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
 
             return $computedValue;
         });
-        
-        return $this->render('post/home.html.twig', [
+
+        $response = $this->render('post/home.html.twig', [
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
         ]);
+        // cache publicly for 60 seconds
+        $response->setPublic();
+        $response->setMaxAge(60);
+
+        // (optional) set a custom Cache-Control directive
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+
+        return $response;
     }
 
     #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all')]

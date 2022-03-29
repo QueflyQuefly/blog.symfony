@@ -35,9 +35,9 @@
     </h1>
 
         <br><p class='singleposttext'>Посты от автора (последние {{ number_of_results }}) <a class='link' href='{{ path('search_posts', {search: user.fio}) }}'>Посмотреть все</a> &copy; {{ user.fio }}:</p>
-        {% if user.posts %}
+        {% if posts %}
             {% set class = 'viewpost' %}
-            {% for post in user.posts %}
+            {% for post in posts %}
                 {{ include('post/_post.html.twig') }}
             {% endfor %}
         {% else %}
@@ -45,8 +45,8 @@
         {% endif %}
 
         <p class='singleposttext'>Комментарии автора (последние {{ number_of_results }}) &copy; {{ user.fio }}:</p>
-        {% if user.comments.count %}
-            {% for comment in user.comments %}
+        {% if comments %}
+            {% for comment in comments %}
                 {{ include('comment/_comment.html.twig') }}
             {% endfor %}
         {% else %}

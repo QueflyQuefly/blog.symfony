@@ -65,9 +65,10 @@ class UserController extends AbstractController
     }
 
     #[Route('/profile/{id<\b[0-9]+>?}', name: 'show_profile')]
-    public function showProfile(?User $user): Response
+    public function showProfile(?int $id): Response
     {
-        if (!empty($user)) {
+        if (!is_null($id)) {
+            $user = $this->userService->getUserById($id);
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;

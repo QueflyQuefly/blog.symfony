@@ -128,7 +128,7 @@ class PostService
      */
     public function getMoreTalkedPosts(int $amountOfPosts)
     {
-        $timeWeekAgo = time() - 7*24*60*60;
+        $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;
         return $this->postRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
     }
 
