@@ -84,7 +84,7 @@ class PostService
     }
 
     /**
-     * @return bool - Return true if rating added
+     * @return bool Returns true if rating to post added
      */
     public function addRating(User $user, Post $post, int $rating, bool $checkingForUser = true, bool $flush = true)
     {
@@ -114,7 +114,7 @@ class PostService
     }
 
     /**
-     * @return bool
+     * @return bool Returns true if user added rating to this post
      */
     public function isUserAddRating(User $user, Post $post): bool
     {

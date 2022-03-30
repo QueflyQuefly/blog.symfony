@@ -29,7 +29,7 @@ class PostController extends AbstractController
     }
 
     #[Route('', name: 'main')]
-    public function main(Request $request): Response
+    public function main(): Response
     {
         $posts = $this->pool->get('last_posts', function (ItemInterface $item) {
             $item->expiresAfter(60);
@@ -51,10 +51,10 @@ class PostController extends AbstractController
             'moreTalkedPosts' => $moreTalkedPosts
         ]);
 
-        $response->setEtag(md5($response->getContent()));
-        $response->setPublic();
-        $response->isNotModified($request);
-        $response->headers->addCacheControlDirective('must-revalidate', true);
+        // $response->setEtag(md5($response->getContent()));
+        // $response->setPublic();
+        // $response->isNotModified($request);
+        // $response->headers->addCacheControlDirective('must-revalidate', true);
 
         return $response;
     }

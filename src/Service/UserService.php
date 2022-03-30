@@ -7,21 +7,18 @@ use App\Entity\Subscription;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Security\EmailVerifier;
 use Symfony\Component\Mime\Address;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class UserService
 {
-    private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
     private SubscriptionRepository $subscriptionRepository;
     private UserPasswordHasherInterface $userPasswordHasher;
     private EmailVerifier $emailVerifier;
 
     public function __construct(
-        EntityManagerInterface $entityManager, 
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
         UserPasswordHasherInterface $userPasswordHasher,
@@ -29,7 +26,6 @@ class UserService
     ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
-        $this->entityManager = $entityManager;
         $this->userPasswordHasher = $userPasswordHasher;
         $this->emailVerifier = $emailVerifier;
     }
@@ -104,7 +100,7 @@ class UserService
     }
 
     /**
-     * @return int - Returns a max id of table user
+     * @return int Returns a max id of table user
      */
     public function getLastUserId()
     {
@@ -112,7 +108,7 @@ class UserService
     }
 
     /**
-     * @return bool
+     * @return bool Returns true if Subscription created
      */
     public function subscribe(User $userSubscribed, User $user, bool $flush = true)
     {
@@ -131,7 +127,7 @@ class UserService
     }
 
     /**
-     * @return Subscription|bool
+     * @return Subscription|bool Returns an object of Subscription if user subscribed
      */
     public function isSubscribe(int $userIdWantSubscribe, int $userId)
     {
@@ -171,6 +167,9 @@ class UserService
         return $results;
     }
 
+    /**
+     * @return bool Returns true if User updated
+     */
     public function update(User $user, bool $flush = true)
     {
         if ($user->getId()) {

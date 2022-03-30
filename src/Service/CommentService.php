@@ -41,6 +41,9 @@ class CommentService
         return $comment;
     }
 
+    /**
+     * @return bool Returns true if like added
+     */
     public function like(User $user, Comment $comment, $checkingForUser = true, bool $flush = true)
     {
         if ($checkingForUser) {

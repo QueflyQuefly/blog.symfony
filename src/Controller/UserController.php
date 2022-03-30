@@ -67,7 +67,7 @@ class UserController extends AbstractController
     #[Route('/profile/{id<\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $id): Response
     {
-        if (!$id) {
+        if (!is_null($id)) {
             $user = $this->userService->getUserById($id);
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {

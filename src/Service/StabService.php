@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\User;
+use App\Entity\Post;
+use App\Entity\Comment;
 use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
@@ -9,11 +12,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class StabService
 {
-    private $errors = [];
     private UserService $userService;
     private PostService $postService;
-    private CommentService $commentService;    
-    private EntityManagerInterface $entityManager;    
+    private CommentService $commentService;
+    private EntityManagerInterface $entityManager;
+    private $errors = [];
     private $names = [
         0  => 'Василий',
         1  => 'Даниил',
@@ -103,87 +106,121 @@ class StabService
     }
 
     /**
-     * @return bool
+     * @return User Returns an object of User
+     */
+    private function createRandomUser(int $number, bool $flush = true)
+    {
+        $randomName = mt_rand(0, 12);
+        $randomSurname = mt_rand(0, 12);
+        $time = time() - mt_rand(1000000, 2000000);
+        $email = $number . '@' . $number . '.' . $number;
+        $fio = $this->names[$randomName] . ' ' . $this->surnames[$randomSurname];
+        $password = $number;
+        $rights = ['ROLE_USER'];
+
+        return $this->userService->registerWithoutVerification($email, $fio, $password, $rights, $time, $flush);
+    }
+
+    /**
+     * @return Post Returns an object of Post
+     */
+    private function createRandomPost(User $user, bool $flush = true)
+    {
+        $randomText1 = mt_rand(0, 12);
+        $randomText2 = mt_rand(0, 12);
+        $randomText3 = mt_rand(0, 12);
+        $time = time() - mt_rand(100000, 1000000);
+        $title = $this->titles1[$randomText1] . ' ' . $this->titles2[$randomText2];
+        $content = $this->texts[$randomText3] . ' 
+            
+            ' . $this->texts[$randomText2]. '
+            
+            ' . $this->texts[$randomText1]
+        ;
+        return $this->postService->create($user, $title, $content, $time, $flush);
+    }
+
+    /**
+     * @return bool Returns true if rating added, false if not
+     */
+    private function createRandomRating(User $user, Post $post, bool $checkingForUser = true, bool $flush = true)
+    {
+        $randomRating = mt_rand(1, 5);
+
+        return $this->postService->addRating($user, $post, $randomRating, $checkingForUser, $flush);
+    }
+
+    /**
+     * @return Comment Returns an object of Comment
+     */
+    private function createRandomComment(User $user, Post $post, bool $withLike, bool $checkingForUser = true, bool $flush = true)
+    {
+        $randomText = mt_rand(0, 12);
+        $dateOfComment = time() - mt_rand(10000, 100000);
+        $commentContent = $this->texts[$randomText];
+        $randomLike = mt_rand(0, 1000);
+
+        $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment, $flush);
+        if ($withLike) {
+            $this->commentService->like($user, $comment, $checkingForUser, $flush);
+        }
+
+        return $comment;
+    }
+
+    /**
+     * @return bool Returns false if there are errors
      */
     public function toStabDb(int $numberOfIterations)
     {
-        try {
-            if ($numberOfIterations > 0) {
-                $min = $this->userService->getLastUserId() + 1;
-                if (!$min) {
-                    throw new \Exception('Invalid result of function getLastUserId() = ' . $min);
+        if ($numberOfIterations > 0) {
+            try {
+                if (!$min = $this->userService->getLastUserId() + 1) {
+                    throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
                 }
                 $flush = false;
                 $checkingForUser = false;
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
-                    $random1 = mt_rand(0, 12);
-                    $random2 = mt_rand(0, 12);
-                    $random3 = mt_rand(0, 12);
-                    $random4 = mt_rand(1, 5);
-                    $date = time() - mt_rand(100000, 2628000);
-
-                    $email = $i . '@' . $i . '.' . $i;
-                    $fio = $this->names[$random2] . ' ' . $this->surnames[$random3];
-                    $password = $i;
-                    $rights = ['ROLE_USER'];
-                    $user = $this->userService->registerWithoutVerification($email, $fio, $password, $rights, $date, $flush);
+                    $user = $this->createRandomUser($i, $flush);
                     if (!$user) {
-                        $this->errors[] = 'User with email = ' . $email . ' not created';
+                        $this->errors[] = sprintf('User with id = %s not created', $i);
                         continue;
                     }
-                    /* Here I add post with info and tags */
-                    $title = $this->titles1[$random1] . ' ' . $this->titles2[$random2];
-                    $content = $this->texts[$random3] . ' 
-                        
-                        ' . $this->texts[$random2]. ' 
-                        
-                        ' . $this->texts[$random1]
-                    ;
-                    $post = $this->postService->create($user, $title, $content, $date, $flush);
+                    $post = $this->createRandomPost($user, $flush);
                     if (!$post) {
-                        $this->errors[] = 'Post by user with id = ' . $i . ' not created';
+                        $this->errors[] = sprintf('Post by user with id = %s not created', $i);
                         continue;
                     }
-                    if (!$this->postService->addRating($user, $post, $random4, $checkingForUser, $flush)) {
-                        $this->errors[] = 'Rating ' . $random4 . ' to post № ' . $i . 
-                            ' by user with id = ' . $i . ' not created';
+                    if (!$this->createRandomRating($user, $post, $checkingForUser, $flush)) {
+                        $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
                         continue;
                     }
-                    /* Here I add ratings and comments with likes to post */
-                    for ($m = 0; $m <= $random3; $m++) {
-                        // $random4 = mt_rand(0, $numberOfIterations - 1);
-                        // $randomUser = $random4.'@gmail.com';
-                        // $randomUser = $this->userService->getUserIdByEmail($randomUser);
-                        // if (is_null($randomUser)) {
-                        //     continue;
-                        // }
-                        // $this->postService->addRating($userId, $postId, $random5);
-                        $random6 = mt_rand(0, 12);
-                        $dateOfComment = mt_rand($date, time());
-                        $commentContent = $this->texts[$random6];
-                        $randomLike = mt_rand(0, 1000);
-                        $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment, $flush);
+                    $numberOfComments = mt_rand(0, 10);
+                    $withLike = true;
+                    for ($m = 0; $m < $numberOfComments; $m++) {
+                        $comment = $this->createRandomComment($user, $post, $withLike, $checkingForUser, $flush);
                         if (!$comment) {
-                            $this->errors[] = 'Comment to post №' . $i . ' by user with id = ' . $i . ' not created';
-                            continue;
+                            $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
+                            break;
                         }
-                        $this->commentService->like($user, $comment, $checkingForUser, $flush);
                     }
                 }
                 $this->entityManager->flush();
-            }
-        } catch (\Exception $e) {
-            $this->errors[] = $e->getMessage();
+            } catch (\Exception $e) {
+                $this->errors[] = $e->getMessage();
 
-            return false;
+                return false;
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
-     * @return [] - an array of errors
+     * @return [] Returns an array of errors
      */
-    public function getErrors() {
+    public function getErrors()
+    {
         return $this->errors;
     }
 }
