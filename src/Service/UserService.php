@@ -104,7 +104,7 @@ class UserService
     }
 
     /**
-     * @return int - Returns an id of User object
+     * @return int - Returns a max id of table user
      */
     public function getLastUserId()
     {

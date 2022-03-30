@@ -48,14 +48,14 @@ class CommentRepository extends ServiceEntityRepository
     /**
      * @return Comment[] Returns an array of Comment objects
      */
-    public function getComments(int $numberOfComments, int $lessThanMaxId)
+    public function getComments(int $numberOfResults, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->orderBy('c.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
-            ->setMaxResults($numberOfComments)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -66,7 +66,7 @@ class CommentRepository extends ServiceEntityRepository
     /**
      * @return Comment[] Returns an array of Comment objects
      */
-    public function getCommentsByUserId(int $userId, int $numberOfComments)
+    public function getCommentsByUserId(int $userId, int $numberOfResults)
     {
         return $this->createQueryBuilder('c')
             ->select('c, u')
@@ -74,7 +74,7 @@ class CommentRepository extends ServiceEntityRepository
             ->where('c.user = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
-            ->setMaxResults($numberOfComments)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -85,7 +85,7 @@ class CommentRepository extends ServiceEntityRepository
     /**
      * @return Comment[] Returns an array of Comment objects
      */
-    public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
+    public function getLikedCommentsByUserId(int $userId, int $numberOfResults)
     {
         return $this->createQueryBuilder('c')
             ->select('c, u')
@@ -94,7 +94,7 @@ class CommentRepository extends ServiceEntityRepository
             ->where('r.user = :val')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
-            ->setMaxResults($numberOfComments)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)

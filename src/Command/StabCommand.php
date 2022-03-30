@@ -141,6 +141,7 @@ class StabCommand extends Command
         $section4 = $output->section();
         try {
             $flush = false;
+            $checkingForUser = false;
             $output->writeln('Number of cycle iterations = ' . $this->numberOfIterations . '. Transaction started.');
             $min = $this->userService->getLastUserId() + 1;
             $counter = 0;
@@ -162,7 +163,6 @@ class StabCommand extends Command
                     continue;
                 }
                 $section1->overwrite('Created user with email - ' . $email);
-                $userId = $user->getId();
                 /* Here I add post with info and tags */
                 $title = $this->titles1[$random1] . ' ' . $this->titles2[$random2];
                 $content = $this->texts[$random3] . ' 
@@ -173,16 +173,16 @@ class StabCommand extends Command
                 ;
                 $post = $this->postService->create($user, $title, $content, $date, $flush);
                 if (!$post) {
-                    $this->errors[] = 'Post by user with id = ' . $userId . ' not created';
+                    $this->errors[] = 'Post by user with id = ' . $i . ' not created';
                     continue;
                 }
-                $section2->overwrite('Created post by user with id = ' . $userId);
-                if (!$this->postService->addRating($user, $post, $random4, $flush)) {
+                $section2->overwrite('Created post by user with id = ' . $i);
+                if (!$this->postService->addRating($user, $post, $random4, $checkingForUser, $flush)) {
                     $this->errors[] = 'Rating ' . $random4 . ' to post №' . $post->getId() . 
-                        ' by user with id = ' . $userId . ' not created';
+                        ' by user with id = ' . $i . ' not created';
                     continue;
                 }
-                $section3->overwrite('Created rating ' . $random4 . ' to post №' . $post->getId() . ' by user with id = ' . $userId);
+                $section3->overwrite('Created rating ' . $random4 . ' to post №' . $i . ' by user with id = ' . $i);
                 $counter++;
                 /* Here I add ratings and comments with likes to post */
                 for ($m = 0; $m <= $random3; $m++) {
@@ -198,17 +198,15 @@ class StabCommand extends Command
                     $commentContent = $this->texts[$random6];
                     $randomLike = mt_rand(0, 1000);
                     $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment, $flush);
-                    $commentId = $comment->getId();
-                    if (!$commentId) {
-                        $this->errors[] = 'Comment to post №' . $post->getId() . ' by user with id = ' . $userId . ' not created';
+                    if (!$comment) {
+                        $this->errors[] = 'Comment to post by user with id = ' . $i . ' not created';
                         continue;
                     }
-                    $this->commentService->like($user, $comment, $flush);
+                    $this->commentService->like($user, $comment, $checkingForUser, $flush);
                     $counterComments++;
                 }
                 $section4->overwrite(
-                    'Created ' . $random3 + 1 . ' comments with likes to post №' . 
-                    $post->getId() . ' by user with id = ' . $userId
+                    'Created ' . $random3 + 1 . ' comments with likes by user with id = ' . $i
                 );
             }
             $this->entityManager->flush();

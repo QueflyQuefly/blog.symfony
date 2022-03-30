@@ -41,17 +41,19 @@ class CommentService
         return $comment;
     }
 
-    public function like(User $user, Comment $comment, bool $flush = true)
+    public function like(User $user, Comment $comment, $checkingForUser = true, bool $flush = true)
     {
-        $ratingComment = $this->ratingCommentRepository->findOneBy([
-            'user' => $user, 
-            'comment' => $comment
-        ]);
-        if ($ratingComment) {
-            $comment->setRating($comment->getRating() - 1);
-            $this->ratingCommentRepository->remove($ratingComment, $flush);
+        if ($checkingForUser) {
+            $ratingComment = $this->ratingCommentRepository->findOneBy([
+                'user' => $user, 
+                'comment' => $comment
+            ]);
+            if ($ratingComment) {
+                $comment->setRating($comment->getRating() - 1);
+                $this->ratingCommentRepository->remove($ratingComment, $flush);
 
-            return false;
+                return false;
+            }
         }
         $ratingComment = new RatingComment();
         $ratingComment->setUser($user);

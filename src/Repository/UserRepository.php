@@ -62,12 +62,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return Users[] Returns an array of Users objects
      */
-    public function getUsers(int $numberOfUsers, int $lessThanMaxId)
+    public function getUsers(int $numberOfResults, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('u')
             ->orderBy('u.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
-            ->setMaxResults($numberOfUsers)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -78,13 +78,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return int Returns an id
      */
-    public function getLastUserId()
+    public function getLastUserId(): ?int
     {
-        return $this->createQueryBuilder('u')
+        $maxUserId = $this->createQueryBuilder('u')
             ->select('MAX(u.id) as max_id')
             ->getQuery()
             ->getOneOrNullResult()['max_id']
         ;
+        if (is_array($maxUserId) && in_array('max_id', $maxUserId)) {
+            return (int) $maxUserId['max_id'];
+        }
+        return $maxUserId;
     }
 
     /**

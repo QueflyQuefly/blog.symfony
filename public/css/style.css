@@ -640,8 +640,8 @@ form ul{
     text-decoration: 1px underline;
 }
 .center{
-    margin-left: 10%;
-    font-size: 13pt;
+    text-align: center;
+    font-size: 14pt;
 }
 .nodisplay{
     display: none;

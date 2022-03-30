@@ -20,7 +20,7 @@
     {% endif %}
 
     {% if moreTalkedPosts %}
-        <p style='text-align:center; font-size:16pt; margin-top:5%'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
+        <p class='center' style='font-size: 16pt; margin-top: 5%;'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
         {% set class = 'viewpost' %}
         {% for post in moreTalkedPosts %}
             {{ include('post/_post.html.twig') }}

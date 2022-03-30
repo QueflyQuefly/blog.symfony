@@ -84,11 +84,22 @@ class PostService
     }
 
     /**
-     * @return bool
+     * @return bool - Return true if rating added
      */
-    public function addRating(User $user, Post $post, int $rating, bool $flush = true)
+    public function addRating(User $user, Post $post, int $rating, bool $checkingForUser = true, bool $flush = true)
     {
-        if(!$this->isUserAddRating($user, $post)) {
+        if ($checkingForUser) {
+            if(!$this->isUserAddRating($user, $post)) {
+                $ratingPost = new RatingPost();
+                $ratingPost->setPost($post);
+                $ratingPost->setUser($user);
+                $ratingPost->setRating($rating);
+                $post->setRating((string) $this->countRating($post, $rating));
+                $this->ratingPostRepository->add($ratingPost, $flush);
+
+                return true;
+            }
+        } else {
             $ratingPost = new RatingPost();
             $ratingPost->setPost($post);
             $ratingPost->setUser($user);
@@ -98,6 +109,7 @@ class PostService
 
             return true;
         }
+        
         return false;
     }
 
@@ -168,18 +180,15 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function searchPosts(string $searchWords)
+    public function searchPosts(string $searchWords, int $numberOfResults)
     {
-        $searchWords = '%'.$searchWords.'%';
-        if (strpos($searchWords, '#') === 1) {
-            $searchWords = str_replace('#', '', $searchWords);
-            $results = $this->postRepository->searchByTag($searchWords);
-        } else {
-            $posts = $this->postRepository->searchByTitle($searchWords);
-            $posts1 = $this->postRepository->searchByAuthor($searchWords);
-            $posts2 = $this->postRepository->searchByContent($searchWords);
-            $results = array_merge($posts, $posts1, $posts2);
-        }
+        $numberOfResults = $numberOfResults / 4;
+        $searchWords = '%' . $searchWords . '%';
+
+        $posts = $this->postRepository->searchByTitle($searchWords, $numberOfResults);
+        $posts1 = $this->postRepository->searchByAuthor($searchWords, $numberOfResults);
+        $posts2 = $this->postRepository->searchByContent($searchWords, $numberOfResults);
+        $results = array_merge($posts, $posts1, $posts2);
         return $results;
     }
 

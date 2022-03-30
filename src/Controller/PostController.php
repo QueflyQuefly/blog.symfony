@@ -29,7 +29,7 @@ class PostController extends AbstractController
     }
 
     #[Route('', name: 'main')]
-    public function main(): Response
+    public function main(Request $request): Response
     {
         $posts = $this->pool->get('last_posts', function (ItemInterface $item) {
             $item->expiresAfter(60);
@@ -50,11 +50,10 @@ class PostController extends AbstractController
             'posts' => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
         ]);
-        // cache publicly for 60 seconds
-        $response->setPublic();
-        $response->setMaxAge(60);
 
-        // (optional) set a custom Cache-Control directive
+        $response->setEtag(md5($response->getContent()));
+        $response->setPublic();
+        $response->isNotModified($request);
         $response->headers->addCacheControlDirective('must-revalidate', true);
 
         return $response;
@@ -77,7 +76,7 @@ class PostController extends AbstractController
     public function showPost(int $id): Response
     {
         if (!$post = $this->postService->getPostById($id)) {
-            throw $this->createNotFoundException('Пост не найден');
+            throw $this->createNotFoundException('Пост не найден. Вероятно запрашиваемая информация была удалена');
         }
         $form = $this->createForm(CommentFormType::class);
 

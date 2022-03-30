@@ -48,13 +48,13 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLastPosts(int $numberOfPosts)
+    public function getLastPosts(int $numberOfResults)
     {
         return $this->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(30)
@@ -65,7 +65,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
+    public function getMoreTalkedPosts(int $numberOfResults, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
             ->select('DISTINCT p, u')
@@ -74,7 +74,7 @@ class PostRepository extends ServiceEntityRepository
             ->where('c.dateTime > :time')
             ->setParameter('time', $timeWeekAgo)
             ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -102,14 +102,14 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getPosts(int $numberOfPosts, int $lessThanMaxId)
+    public function getPosts(int $numberOfResults, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->orderBy('p.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -120,7 +120,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getPostsByUserId(int $userId, int $numberOfPosts)
+    public function getPostsByUserId(int $userId, int $numberOfResults)
     {
         return $this->createQueryBuilder('p')
             ->select('p, u')
@@ -128,7 +128,7 @@ class PostRepository extends ServiceEntityRepository
             ->where('p.user = :user')
             ->orderBy('p.id', 'DESC')
             ->setParameter('user', $userId)
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -139,7 +139,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
+    public function getLikedPostsByUserId(int $userId, int $numberOfResults)
     {
         return $this->createQueryBuilder('p')
             ->select('p, u')
@@ -148,7 +148,7 @@ class PostRepository extends ServiceEntityRepository
             ->where('r.user = :user')
             ->orderBy('p.id', 'DESC')
             ->setParameter('user', $userId)
-            ->setMaxResults($numberOfPosts)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -156,10 +156,10 @@ class PostRepository extends ServiceEntityRepository
         ;
     }
 
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
-    public function searchByTag(string $search)
+    // /**
+    //  * @return Post[] Returns an array of Post objects
+    //  */
+    /* public function searchByTag(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select('p, u')
@@ -168,16 +168,16 @@ class PostRepository extends ServiceEntityRepository
             ->where($qb->expr()->like('t.tag', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
-            ->setMaxResults(20)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->getResult()
         ;
-    }
+    } */
 
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function searchByTitle(string $search)
+    public function searchByTitle(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select('p, u')
@@ -185,7 +185,7 @@ class PostRepository extends ServiceEntityRepository
             ->where($qb->expr()->like('p.title', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
-            ->setMaxResults(20)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->getResult()
         ;
@@ -194,7 +194,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function searchByAuthor(string $search)
+    public function searchByAuthor(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select('p, u')
@@ -202,7 +202,7 @@ class PostRepository extends ServiceEntityRepository
             ->where($qb->expr()->like('u.fio', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
-            ->setMaxResults(20)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->getResult()
         ;
@@ -211,7 +211,7 @@ class PostRepository extends ServiceEntityRepository
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function searchByContent(string $search)
+    public function searchByContent(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
         return $qb->select('p, u')
@@ -219,7 +219,7 @@ class PostRepository extends ServiceEntityRepository
             ->where($qb->expr()->like('p.content', ':search'))
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
-            ->setMaxResults(20)
+            ->setMaxResults($numberOfResults)
             ->getQuery()
             ->getResult()
         ;

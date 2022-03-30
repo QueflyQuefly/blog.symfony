@@ -67,7 +67,7 @@ class UserController extends AbstractController
     #[Route('/profile/{id<\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $id): Response
     {
-        if (!is_null($id)) {
+        if (!$id) {
             $user = $this->userService->getUserById($id);
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
@@ -80,7 +80,7 @@ class UserController extends AbstractController
             $user = $this->getUser();
             $canSubscribe = $isSubscribe = false;
         }
-        $numberOfResults = 10;
+        $numberOfResults = 5;
         $posts = $this->postService->getPostsByUserId($user->getId(), $numberOfResults);
         $comments = $this->commentService->getCommentsByUserId($user->getId(), $numberOfResults);
         $likedPosts = $this->postService->getLikedPostsByUserId($user->getId(), $numberOfResults);

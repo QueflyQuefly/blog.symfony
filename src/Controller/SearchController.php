@@ -32,7 +32,8 @@ class SearchController extends AbstractController
         }
         $searchWords = trim(strip_tags($search));
         if('' !== $searchWords) {
-            $posts = $this->postService->searchPosts($searchWords);
+            $numberOfResults = 80;
+            $posts = $this->postService->searchPosts($searchWords, $numberOfResults);
         }
         return $this->render('search/searchposts.html.twig', [
             'search' => $search,

@@ -110,7 +110,11 @@ class StabService
         try {
             if ($numberOfIterations > 0) {
                 $min = $this->userService->getLastUserId() + 1;
+                if (!$min) {
+                    throw new \Exception('Invalid result of function getLastUserId() = ' . $min);
+                }
                 $flush = false;
+                $checkingForUser = false;
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
                     $random1 = mt_rand(0, 12);
                     $random2 = mt_rand(0, 12);
@@ -140,7 +144,7 @@ class StabService
                         $this->errors[] = 'Post by user with id = ' . $i . ' not created';
                         continue;
                     }
-                    if (!$this->postService->addRating($user, $post, $random4, $flush)) {
+                    if (!$this->postService->addRating($user, $post, $random4, $checkingForUser, $flush)) {
                         $this->errors[] = 'Rating ' . $random4 . ' to post № ' . $i . 
                             ' by user with id = ' . $i . ' not created';
                         continue;
@@ -163,7 +167,7 @@ class StabService
                             $this->errors[] = 'Comment to post №' . $i . ' by user with id = ' . $i . ' not created';
                             continue;
                         }
-                        $this->commentService->like($user, $comment, $flush);
+                        $this->commentService->like($user, $comment, $checkingForUser, $flush);
                     }
                 }
                 $this->entityManager->flush();
