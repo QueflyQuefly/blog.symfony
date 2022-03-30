@@ -10,10 +10,10 @@
     </div>
     <div id='singlepostauthor'>
         <p class='singlepostdate'>
-            {% if post.ratingPosts.count %}
-                Рейтинг: {{ post.rating }}, оценок: {{ post.ratingPosts.count }}, комментариев: {{ post.comments.count }}
+            {% if post.countRatingPosts == 0 %}
+                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
             {% else %}
-                Нет оценок. Будьте первым! Kомментариев: {{ post.comments.count }}
+                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatingPosts }}, комментариев: {{ post.countComments }}
             {% endif %}
         </p>
         
@@ -37,7 +37,11 @@
             </form>
         </div>
 
-        <p class='singlepostauthor'><a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile', {'id': post.user.id}) }}'>{{ post.user.fio }}</a></p>
+        <p class='singlepostauthor'>
+            <a class='menuLink' title='Перейти в профиль пользвателя' href='{{ path('user_show_profile', {'id': post.user.id}) }}'>
+                {{ post.user.fio }}
+            </a>
+        </p>
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
@@ -53,12 +57,12 @@
         {% endif %}
 
         <p class='singlepostcontent'> Тэги: 
-            {% if post.postTags.count %}
+            {% if post.postTags.count == 0 %}
+                Нет тэгов
+            {% else %}
                 {% for tag in post.postTags %}
                     <a class='link' href='{{ path('search_posts', {search: tag.tag}) }}'>{{ tag.tag }}</a>
                 {% endfor %}
-            {% else %}
-                Нет тэгов
             {% endif %}
         </p>
     </div>
@@ -76,11 +80,11 @@
         </div>
     </div>
 
-    {% if post.comments %}
+    {% if post.countComments == 0 %}
+        <p class='center'>Никто не имел чести оставить комментарий. Будьте первым!</p>
+    {% else %}
         {% for comment in post.comments %}
             {{ include('comment/_comment.html.twig') }}
         {% endfor %}
-    {% else %}
-        <p class='center'>Никто не имел чести оставить комментарий. Будьте первым!</p>
     {% endif %}
 {% endblock %}

@@ -68,7 +68,7 @@ class PostRepository extends ServiceEntityRepository
     public function getMoreTalkedPosts(int $numberOfPosts, int $timeWeekAgo)
     {
         return $this->createQueryBuilder('p')
-            ->select('p, u')
+            ->select('DISTINCT p, u')
             ->join('p.user', 'u')
             ->join('p.comments', 'c')
             ->where('c.dateTime > :time')
@@ -88,11 +88,9 @@ class PostRepository extends ServiceEntityRepository
     public function getPostById(int $postId)
     {
         return $this->createQueryBuilder('p')
-            ->select('p, u, c, t')
+            ->select('p, u')
             ->join('p.user', 'u')
-            ->join('p.comments', 'c')
-            ->join('p.postTags', 't')
-            ->where('p = :id')
+            ->where('p.id = :id')
             ->setParameter(':id', $postId)
             ->getQuery()
             ->setCacheable(true)
