@@ -156,24 +156,6 @@ class PostRepository extends ServiceEntityRepository
         ;
     }
 
-    // /**
-    //  * @return Post[] Returns an array of Post objects
-    //  */
-    /* public function searchByTag(string $search, int $numberOfResults)
-    {
-        $qb = $this->createQueryBuilder('p');
-        return $qb->select('p, u')
-            ->join('p.user', 'u')
-            ->join('p.postTags', 't')
-            ->where($qb->expr()->like('t.tag', ':search'))
-            ->orderBy('p.id', 'DESC')
-            ->setParameter('search', $search)
-            ->setMaxResults($numberOfResults)
-            ->getQuery()
-            ->getResult()
-        ;
-    } */
-
     /**
      * @return Post[] Returns an array of Post objects
      */

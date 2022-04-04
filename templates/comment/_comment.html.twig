@@ -5,14 +5,12 @@
         <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
     </p>
     <div class='commentcontent'>
-        <p class='commentcontent'>{{ comment.content }}</p> 
-        <p class='commentcontent'>
-            {% if is_granted('ROLE_ADMIN') %}
-                <a href='{{ path('comment_delete', {id: comment.id}) }}' class='link'>
-                    Удалить комментарий
-                </a>
-            {% endif %}
-        </p> 
+        <p>{{ comment.content }}</p>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a href='{{ path('comment_delete', {id: comment.id}) }}' class='link'>
+                Удалить комментарий
+            </a>
+        {% endif %} 
     </div>
     <div>
         <a class='like' title='Нравится' href='{{ path('comment_like', {id: comment.id, postId: comment.post.id}) }}'>

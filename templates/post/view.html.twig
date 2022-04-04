@@ -48,23 +48,18 @@
         <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
     </div>
     <div class='singleposttext'>
-        <p class='singlepostcontent'>{{ post.content|nl2br }}</p>
+        {% dump post.content %}
+        <p class='singlepostcontent'>
+            {% autoescape %}
+                {{ post.content|raw|nl2br }}
+            {% endautoescape %}
+        </p>
 
         {% if is_granted('ROLE_ADMIN') %}
             <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
                 <input type='submit' value='Удалить этот пост' class='link' style='font-size: 14pt'>
             </form>
         {% endif %}
-
-        <p class='singlepostcontent'> Тэги: 
-            {% if post.postTags.count == 0 %}
-                Нет тэгов
-            {% else %}
-                {% for tag in post.postTags %}
-                    <a class='link' href='{{ path('search_posts', {search: tag.tag}) }}'>{{ tag.tag }}</a>
-                {% endfor %}
-            {% endif %}
-        </p>
     </div>
 
     <div class='addcomments' id='addcomment'>

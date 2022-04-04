@@ -4,26 +4,21 @@ namespace App\Service;
 
 use App\Entity\Post;
 use App\Entity\User;
-use App\Entity\PostTag;
 use App\Entity\RatingPost;
 use App\Repository\PostRepository;
 use App\Repository\RatingPostRepository;
-use App\Repository\PostTagRepository;
 
 class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
-    private PostTagRepository $postTagRepository;
 
     public function __construct(
         PostRepository $postRepository,
-        RatingPostRepository $ratingPostRepository,
-        PostTagRepository $postTagRepository
+        RatingPostRepository $ratingPostRepository
     ) {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
-        $this->postTagRepository = $postTagRepository;
     }
 
     /**
@@ -37,35 +32,23 @@ class PostService
         $post = new Post();
         $post->setTitle($title);
         $post->setUser($user);
+        $regex = '/#(\w+)/um';
+        $content = preg_replace($regex, "<a class='link' href='/search/%23$1'>$0</a>", $content);
         $post->setContent($content);
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
 
-        $allText = $title . ' ' . $content;
-        if (strpos($allText, '#') !== false) {
+        /* if (strpos($allText, '#') !== false) {
             $regex = '/#\w+/um';
             preg_match_all($regex, $allText, $tags);
             $tags = $tags[0];
             foreach ($tags as $tag) {
                 $this->createTag($tag, $post);
             }
-        }
+        } */
         $this->postRepository->add($post, $flush);
         
         return $post;
-    }
-
-    /**
-     * @return PostTag Returns an object of PostTag
-     */
-    private function createTag(string $tag, Post $post, bool $flush = false)
-    {
-        $tagPost = new PostTag();
-        $tagPost->setPost($post);
-        $tagPost->setTag($tag);
-        $this->postTagRepository->add($tagPost, $flush);
-
-        return $tagPost;
     }
 
     /**

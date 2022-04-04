@@ -283,7 +283,7 @@ h1{
     padding: 1% 5%;
     font-size: 16pt;
 }
-.singleposttext::first-letter {
+.singleposttext .singlepostcontent::first-letter {
     float: left;
     padding: 0.25em 0.02em 0.25em 0;
     font-size: 4.5em;
@@ -349,9 +349,9 @@ h1{
 .commentcontent{
     text-overflow: ellipsis;
     overflow: hidden;
-    margin: 3% auto;
+    margin: 1% auto;
     font-size: 13pt;
-    width: 92%;
+    width: 85%;
     text-indent: 2%;
 }
 

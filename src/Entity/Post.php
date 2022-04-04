@@ -41,15 +41,10 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EAGER')]
     private $ratingPosts;
 
-    #[ORM\Cache(usage:"READ_ONLY")]
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostTag::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
-    private $postTags;
-
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->ratingPosts = new ArrayCollection();
-        $this->postTags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -181,36 +176,6 @@ class Post
             // set the owning side to null (unless already changed)
             if ($ratingPost->getPost() === $this) {
                 $ratingPost->setPost(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, PostTag>
-     */
-    public function getPostTags(): Collection
-    {
-        return $this->postTags;
-    }
-
-    public function addPostTag(PostTag $postTag): self
-    {
-        if (!$this->postTags->contains($postTag)) {
-            $this->postTags[] = $postTag;
-            $postTag->setPost($this);
-        }
-
-        return $this;
-    }
-
-    public function removePostTag(PostTag $postTag): self
-    {
-        if ($this->postTags->removeElement($postTag)) {
-            // set the owning side to null (unless already changed)
-            if ($postTag->getPost() === $this) {
-                $postTag->setPost(null);
             }
         }
 
