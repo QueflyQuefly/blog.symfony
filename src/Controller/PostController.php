@@ -60,7 +60,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all')]
-    public function showAll(?int $numberOfPosts, ?int $page): Response
+    public function showAll(int $numberOfPosts, int $page): Response
     {
         $posts = $this->postService->getPosts($numberOfPosts, $page);
 

@@ -7,67 +7,27 @@ use App\Entity\Subscription;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use App\Security\EmailVerifier;
-use Symfony\Component\Mime\Address;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class UserService
 {
     private UserRepository $userRepository;
     private SubscriptionRepository $subscriptionRepository;
     private UserPasswordHasherInterface $userPasswordHasher;
-    private EmailVerifier $emailVerifier;
 
     public function __construct(
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
-        UserPasswordHasherInterface $userPasswordHasher,
-        EmailVerifier $emailVerifier
+        UserPasswordHasherInterface $userPasswordHasher
     ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->userPasswordHasher = $userPasswordHasher;
-        $this->emailVerifier = $emailVerifier;
     }
 
     /**
      * @return User Returns an User object
      */
     public function register(
-        string $email,
-        string $fio,
-        string $password,
-        array $rights,
-        $dateTime = false,
-        bool $flush = true
-    ) {
-        if (!$dateTime) {
-            $dateTime = time();
-        }
-        $user = new User();
-        $user->setEmail($email);
-        $user->setFio($fio);
-        $user->setPassword(
-            $this->userPasswordHasher->hashPassword($user, $password)
-        );
-        $user->setDateTime($dateTime);
-        $user->setRoles($rights);
-        $this->userRepository->add($user, $flush);
-        // generate a signed url and email it to the user
-        $this->emailVerifier->sendEmailConfirmation('user_verify_email', $user,
-        (new TemplatedEmail())
-            ->from(new Address('prostoblog.local@gmail.com', 'Prosto Blog'))
-            ->to($user->getEmail())
-            ->subject('Просто Блог - Пожалуйста, подтвердите ваш email')
-            ->htmlTemplate('user/confirmation_email.html.twig')
-        );
-        return $user;
-    }
-
-    /**
-     * @return User Returns an User object
-     */
-    public function registerWithoutVerification(
         string $email,
         string $fio,
         string $password,

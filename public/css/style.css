@@ -282,7 +282,12 @@ h1{
     text-align: left;
     padding: 1% 5%;
     font-size: 16pt;
-    text-indent: 20px;
+}
+.singleposttext::first-letter {
+    float: left;
+    padding: 0.25em 0.02em 0.25em 0;
+    font-size: 4.5em;
+    line-height: 0.3em;
 }
 /* addcomments */
 .addcomments{

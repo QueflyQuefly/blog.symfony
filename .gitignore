@@ -7,9 +7,6 @@
 /public/bundles/
 /var/
 /vendor/
-/blog.local/
-/templates/layouts/
-/test/
 ###< symfony/framework-bundle ###
 
 ###> symfony/webpack-encore-bundle ###
@@ -18,3 +15,5 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+/test/

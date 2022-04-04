@@ -8,7 +8,6 @@ use App\Service\PostService;
 use App\Service\CommentService;
 use App\Form\RegistrationFormType;
 use App\Form\LoginFormType;
-use App\Security\EmailVerifier;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,20 +23,17 @@ class UserController extends AbstractController
     private UserService $userService;
     private PostService $postService;
     private CommentService $commentService;
-    private EmailVerifier $emailVerifier;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
         UserService $userService,
         PostService $postService,
-        CommentService $commentService,
-        EmailVerifier $emailVerifier
+        CommentService $commentService
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
-        $this->emailVerifier = $emailVerifier;
     }
 
     #[Route('/register', name: 'register')]
@@ -139,23 +135,6 @@ class UserController extends AbstractController
             );
         }
         return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
-    }
-
-    #[Route('/verify/email', name: 'verify_email')]
-    public function verifyUserEmail(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        // validate email confirmation link, sets User::isVerified=true and persists
-        try {
-            $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
-        } catch (VerifyEmailExceptionInterface $exception) {
-            $this->addFlash('error', 'Произошла ошибка при проверке email');
-
-            return $this->redirectToRoute('user_register');
-        }
-        $this->addFlash('success', 'Ваш email верифицирован. Войдите');
-
-        return $this->redirectToRoute('user_login');
     }
 
     #[Route('/login', name: 'login')]

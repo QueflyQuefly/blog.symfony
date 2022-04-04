@@ -118,7 +118,7 @@ class StabService
         $password = $number;
         $rights = ['ROLE_USER'];
 
-        return $this->userService->registerWithoutVerification($email, $fio, $password, $rights, $time, $flush);
+        return $this->userService->register($email, $fio, $password, $rights, $time, $flush);
     }
 
     /**
