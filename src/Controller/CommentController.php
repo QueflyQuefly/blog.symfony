@@ -22,7 +22,7 @@ class CommentController extends AbstractController
         $this->commentService = $commentService;
     }
 
-    #[Route('/add/{id}', name: 'add', requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/add/{id}', name: 'add', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function create(Post $post, Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -41,7 +41,7 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
-    #[Route('/like/{postId}/{id}', name: 'like', requirements: ['postId' => '\b[0-9]+', 'commentId' => '\b[0-9]+'])]
+    #[Route('/like/{postId<(?!0)\b[0-9]+>}/{id<(?!0)\b[0-9]+>}', name: 'like')]
     public function like(int $postId, Comment $comment): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -51,7 +51,7 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
     
-    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteComment(Comment $comment): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');

@@ -12,7 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
-use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
@@ -27,34 +26,28 @@ class PostController extends AbstractController
     ) {
         $this->postService = $postService;
         $this->pool = $pool;
-        /* $client = RedisAdapter::createConnection(
-            'redis://localhost',
-            [
-                'persistent'     => 0,
-                'persistent_id'  => null,
-                'timeout'        => 30,
-                'read_timeout'   => 0,
-                'retry_interval' => 0,
-            ]
-        ); */
     }
 
     #[Route('', name: 'main')]
     public function main(): Response
     {
-        $posts = $this->pool->get('last_posts', function (ItemInterface $item) {
-            $item->expiresAfter(60);
-            $numberOfPosts = 10;
-            $computedValue = $this->postService->getLastPosts($numberOfPosts);
+        $numberOfPosts = 10;
+        $numberOfMoreTalkedPosts = 3;
 
-            return $computedValue;
+        $posts = $this->pool->get('last_posts', 
+            function (ItemInterface $item) use ($numberOfPosts) {
+                $item->expiresAfter(60);
+                $computedValue = $this->postService->getLastPosts($numberOfPosts);
+
+                return $computedValue;
         });
-        $moreTalkedPosts = $this->pool->get('more_talked_posts', function (ItemInterface $item) {
-            $item->expiresAfter(60);
-            $numberOfMoreTalkedPosts = 3;
-            $computedValue = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
 
-            return $computedValue;
+        $moreTalkedPosts = $this->pool->get('more_talked_posts', 
+            function (ItemInterface $item) use ($numberOfMoreTalkedPosts) {
+                $item->expiresAfter(60);
+                $computedValue = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+
+                return $computedValue;
         });
 
         $response = $this->render('post/home.html.twig', [
@@ -70,23 +63,16 @@ class PostController extends AbstractController
         return $response;
     }
 
-    #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all')]
+    #[Route('/all/{numberOfPosts<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'show_all')]
     public function showAll(int $numberOfPosts, int $page): Response
     {
-        if ($numberOfPosts === 0 || $page === 0) {
-            throw $this->createNotFoundException('Кол-во постов или страница не может быть равна 0');
-        }
-        $posts = $this->postService->getPosts($numberOfPosts, $page);
+        $posts = $this->pool->get(sprintf('all_posts_%s_%s', $numberOfPosts, $page),
+            function (ItemInterface $item) use ($numberOfPosts, $page) {
+                $item->expiresAfter(60);
+                $computedValue = $this->postService->getPosts($numberOfPosts, $page);
 
-        /* $posts = $this->pool->get("all_posts_$numberOfPosts-$page" , function (ItemInterface $item) {
-            $item->expiresAfter(60);
-            if ($GLOBALS['page'] !== 1) {
-                $item->expiresAfter(3600);
-            }
-            $computedValue = $this->postService->getPosts($GLOBALS['numberOfPosts'], $GLOBALS['page']);
-
-            return $computedValue;
-        }); */
+                return $computedValue;
+        });
 
         return $this->render('post/allposts.html.twig', [
             'nameOfPath' => 'post_show_all',
@@ -96,12 +82,20 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'show', requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/{id}', name: 'show', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function showPost(int $id): Response
     {
-        if (!$post = $this->postService->getPostById($id)) {
-            throw $this->createNotFoundException('Пост не найден. Вероятно запрашиваемая информация была удалена');
+        $post = $this->pool->get(sprintf('post_%s', $id), function (ItemInterface $item) use ($id) {
+            $item->expiresAfter(60);
+            $computedValue = $this->postService->getPostById($id);
+
+            return $computedValue;
+        });
+
+        if (!$post) {
+            throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
+
         $form = $this->createForm(CommentFormType::class);
 
         return $this->renderForm('post/view.html.twig', [
@@ -139,7 +133,7 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/rating/{id}', name: 'rating', methods: ['POST'], requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/rating/{id}', name: 'rating', methods: ['POST'], requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function addRating(Post $post, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -160,7 +154,7 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
-    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '\b[0-9]+'])]
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deletePost(Post $post): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');

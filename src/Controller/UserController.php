@@ -14,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
@@ -23,17 +24,20 @@ class UserController extends AbstractController
     private UserService $userService;
     private PostService $postService;
     private CommentService $commentService;
+    private CacheInterface $pool;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
         UserService $userService,
         PostService $postService,
-        CommentService $commentService
+        CommentService $commentService,
+        CacheInterface $pool
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
+        $this->pool = $pool;
     }
 
     #[Route('/register', name: 'register')]
@@ -60,11 +64,14 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/profile/{id<\b[0-9]+>?}', name: 'show_profile')]
+    #[Route('/profile/{id<(?!0)\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $id): Response
     {
         if (!is_null($id)) {
-            $user = $this->userService->getUserById($id);
+            $user = $this->pool->get("user_$id", function (ItemInterface $item) use ($id) {
+                $item->expiresAfter(3600);
+                $this->userService->getUserById($id);
+            });
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;
@@ -77,10 +84,36 @@ class UserController extends AbstractController
             $canSubscribe = $isSubscribe = false;
         }
         $numberOfResults = 5;
-        $posts = $this->postService->getPostsByUserId($user->getId(), $numberOfResults);
-        $comments = $this->commentService->getCommentsByUserId($user->getId(), $numberOfResults);
-        $likedPosts = $this->postService->getLikedPostsByUserId($user->getId(), $numberOfResults);
-        $likedComments = $this->commentService->getLikedCommentsByUserId($user->getId(), $numberOfResults);
+        $userId = $user->getId();
+
+        $posts = $this->pool->get(sprintf('posts_by_user_%s', $userId), 
+            function (ItemInterface $item) use ($userId, $numberOfResults) {
+                $item->expiresAfter(60);
+                $computedValue = $this->postService->getPostsByUserId($userId, $numberOfResults);
+
+                return $computedValue;
+        });
+        $comments = $this->pool->get(sprintf('comments_by_user_%s', $userId), 
+            function (ItemInterface $item) use ($userId, $numberOfResults) {
+                $item->expiresAfter(60);
+                $computedValue = $this->commentService->getCommentsByUserId($userId, $numberOfResults);
+
+                return $computedValue;
+        });
+        $likedPosts = $this->pool->get(sprintf('liked_posts_by_user_%s', $userId),  
+            function (ItemInterface $item) use ($userId, $numberOfResults) {
+                $item->expiresAfter(3600);
+                $computedValue = $this->postService->getLikedPostsByUserId($userId, $numberOfResults);
+
+                return $computedValue;
+        });
+        $likedComments = $this->pool->get(sprintf('liked_comments_by_user_%s', $userId), 
+            function (ItemInterface $item) use ($userId, $numberOfResults) {
+                $item->expiresAfter(3600);
+                $computedValue = $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
+
+                return $computedValue;
+        });
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
@@ -104,6 +137,7 @@ class UserController extends AbstractController
             'email' => $user->getEmail(),
             'fio' => $user->getFio()
         ]);
+
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $form->getData();
@@ -117,7 +151,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/profile/subscribe/{id<\b[0-9]+>}', name: 'subscribe')]
+    #[Route('/profile/subscribe/{id<(?!0)\b[0-9]+>}', name: 'subscribe')]
     public function subscribe(User $user): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -134,22 +168,22 @@ class UserController extends AbstractController
                 'Подписка отменена'
             );
         }
+
         return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
     }
 
     #[Route('/login', name: 'login')]
     public function login(FormFactoryInterface $formFactory): Response
     {
-        // get the login error if there is one
-        $error = $this->authenticationUtils->getLastAuthenticationError();
-        if ($error) {
+        if ($error = $this->authenticationUtils->getLastAuthenticationError()) {
             $error = 'Неверная почта или пароль';
         }
-        // last username entered by the user
         $lastUsername = $this->authenticationUtils->getLastUsername();
+
         $form = $formFactory->createNamed('', LoginFormType::class, null, [
             'last_username' => $lastUsername
         ]);
+
         return $this->renderForm('user/login.html.twig', [
             'form' => $form,
             'error' => $error
@@ -159,7 +193,6 @@ class UserController extends AbstractController
     #[Route('/logout', name: 'logout')]
     public function logout()
     {
-        // controller can be blank: it will never be called!
-        throw new \Exception("Don't forget to activate logout in security.yaml");
+        throw $this->createNotFoundException("Don't forget to activate logout");
     }
 }
