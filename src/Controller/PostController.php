@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
@@ -26,6 +27,16 @@ class PostController extends AbstractController
     ) {
         $this->postService = $postService;
         $this->pool = $pool;
+        /* $client = RedisAdapter::createConnection(
+            'redis://localhost',
+            [
+                'persistent'     => 0,
+                'persistent_id'  => null,
+                'timeout'        => 30,
+                'read_timeout'   => 0,
+                'retry_interval' => 0,
+            ]
+        ); */
     }
 
     #[Route('', name: 'main')]
@@ -62,7 +73,20 @@ class PostController extends AbstractController
     #[Route('/all/{numberOfPosts<\b[0-9]+>?25}/{page<\b[0-9]+>?1}', name: 'show_all')]
     public function showAll(int $numberOfPosts, int $page): Response
     {
+        if ($numberOfPosts === 0 || $page === 0) {
+            throw $this->createNotFoundException('Кол-во постов или страница не может быть равна 0');
+        }
         $posts = $this->postService->getPosts($numberOfPosts, $page);
+
+        /* $posts = $this->pool->get("all_posts_$numberOfPosts-$page" , function (ItemInterface $item) {
+            $item->expiresAfter(60);
+            if ($GLOBALS['page'] !== 1) {
+                $item->expiresAfter(3600);
+            }
+            $computedValue = $this->postService->getPosts($GLOBALS['numberOfPosts'], $GLOBALS['page']);
+
+            return $computedValue;
+        }); */
 
         return $this->render('post/allposts.html.twig', [
             'nameOfPath' => 'post_show_all',
