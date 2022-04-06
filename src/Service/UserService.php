@@ -101,6 +101,14 @@ class UserService
     }
 
     /**
+     * @return [] Returns an array of emails, which subscribed on user
+     */
+    public function getSubscribedUsersEmails(User $user)
+    {
+        return $this->userRepository->getSubscribedUsersEmails($user->getId());
+    }
+
+    /**
      * @return User[] Returns an array of User objects
      */
     public function getUsers(int $numberOfUsers, int $page)

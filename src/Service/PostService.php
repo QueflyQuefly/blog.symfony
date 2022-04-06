@@ -7,18 +7,26 @@ use App\Entity\User;
 use App\Entity\RatingPost;
 use App\Repository\PostRepository;
 use App\Repository\RatingPostRepository;
+use App\Service\MailerService;
+use App\Service\UserService;
 
 class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
+    private MailerService $mailer;
+    private UserService $userService;
 
     public function __construct(
         PostRepository $postRepository,
-        RatingPostRepository $ratingPostRepository
+        RatingPostRepository $ratingPostRepository,
+        MailerService $mailer,
+        UserService $userService
     ) {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
+        $this->mailer = $mailer;
+        $this->userService = $userService;
     }
 
     /**
@@ -37,16 +45,16 @@ class PostService
         $post->setContent($content);
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
-
-        /* if (strpos($allText, '#') !== false) {
-            $regex = '/#\w+/um';
-            preg_match_all($regex, $allText, $tags);
-            $tags = $tags[0];
-            foreach ($tags as $tag) {
-                $this->createTag($tag, $post);
-            }
-        } */
         $this->postRepository->add($post, $flush);
+
+        if ($flush) {
+            $toAddresses = [0 => ['email' => 'drotovmihailo@gmail.com']]; // $this->userService->getSubscribedUsersEmails($user);
+            //if (!empty($toAddresses)) {
+                if(!$this->mailer->sendMailsToSubscribers($toAddresses, $user, $post->getId())) {
+                    return false;
+                //}
+            }
+        }
         
         return $post;
     }

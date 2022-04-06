@@ -21,6 +21,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     {
         parent::__construct($registry, User::class);
     }
+    
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function add(User $entity, bool $flush = true): void
+    {
+        $this->_em->persist($entity);
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
 
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
@@ -36,30 +48,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function add(User $entity, bool $flush = true): void
-    {
-        $this->_em->persist($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
-    }
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function remove(User $entity, bool $flush = true): void
-    {
-        $this->_em->remove($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
-    }
-
-    /**
      * @return Users[] Returns an array of Users objects
      */
     public function getUsers(int $numberOfResults, int $lessThanMaxId)
@@ -68,6 +56,21 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->orderBy('u.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
+            ->getResult()
+        ;
+    }
+
+    public function getSubscribedUsersEmails(int $userId)
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.email')
+            ->join('App\Entity\Subscription', 's', 'WITH', 's.userSubscribed = u.id')
+            ->where('s.user = :id')
+            ->setParameter(':id', $userId)
+            ->orderBy('u.id', 'DESC')
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(60)
@@ -104,5 +107,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function remove(User $entity, bool $flush = true): void
+    {
+        $this->_em->remove($entity);
+        if ($flush) {
+            $this->_em->flush();
+        }
     }
 }

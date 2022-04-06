@@ -48,7 +48,6 @@
         <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
     </div>
     <div class='singleposttext'>
-        {% dump post.content %}
         <p class='singlepostcontent'>
             {% autoescape %}
                 {{ post.content|raw|nl2br }}

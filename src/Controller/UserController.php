@@ -17,6 +17,10 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
+
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
@@ -68,14 +72,19 @@ class UserController extends AbstractController
     public function showProfile(?int $id): Response
     {
         if (!is_null($id)) {
-            $user = $this->pool->get("user_$id", function (ItemInterface $item) use ($id) {
-                $item->expiresAfter(3600);
-                $this->userService->getUserById($id);
-            });
+            // $user = $this->pool->get("user_$id", function (ItemInterface $item) use ($id) {
+               // $item->expiresAfter(60);
+                $user = $this->userService->getUserById($id);
+
+               // return $computedValue;
+            // });
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;
-                $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $user->getId());
+                $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $id);
+            }
+            if (!$user) {
+                throw $this->createNotFoundException(sprintf('Пользователь с id = %s не найден', $id));
             }
         } else {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
@@ -170,6 +179,24 @@ class UserController extends AbstractController
         }
 
         return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
+    }
+
+    #[Route('/email')]
+    public function sendEmail(MailerInterface $mailer): Response
+    {
+        $email = (new TemplatedEmail())
+            ->from('prostobloglocal@gmail.com')
+            ->to('drotovmihailo@gmail.com')
+            ->subject('New Post')
+            ->htmlTemplate('emails/toSubscribers.html.twig')
+            ->context([
+                'user' => $this->getUser(),
+                'postId' => 10
+            ]);
+
+        $mailer->send($email);
+
+        return $this->render('blog_base.html.twig');
     }
 
     #[Route('/login', name: 'login')]

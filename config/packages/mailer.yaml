@@ -1,3 +1,11 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+
+        envelope:
+            sender: 'prostobloglocal@gmail.com'
+            recipients: ['drotovmihailo@gmail.com']
+
+        headers:
+            From: 'ProstoBlog <prostobloglocal@gmail.com>'
+            X-Auto-Response-Suppress: 'OOF, DR, RN, NRN, AutoReply'
