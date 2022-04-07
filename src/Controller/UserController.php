@@ -184,6 +184,7 @@ class UserController extends AbstractController
     #[Route('/email')]
     public function sendEmail(MailerInterface $mailer): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $email = (new TemplatedEmail())
             ->from('prostobloglocal@gmail.com')
             ->to('drotovmihailo@gmail.com')

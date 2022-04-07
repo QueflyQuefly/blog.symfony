@@ -58,7 +58,7 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->setCacheable(true)
             ->enableResultCache(30)
-            ->getResult()
+            ->getArrayResult()
         ;
     }
    

@@ -41,10 +41,15 @@ class Post
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EAGER')]
     private $ratingPosts;
 
+    private $countRatingPosts;
+    private $countComments;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->ratingPosts = new ArrayCollection();
+        $this->countRatingPosts = $this->countRatingPosts();
+        $this->countComments = $this->countComments();
     }
 
     public function getId(): ?int

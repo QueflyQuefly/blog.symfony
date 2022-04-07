@@ -2,48 +2,60 @@
 
 namespace App\Service;
 
-use \Redis;
+use App\Service\PostService;
+use Redis;
+// use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-class RedisService { //implements CacheItemInterface {
+
+class RedisService {
 
     /** @var Redis $redis */
     private $redis;
+    private $port;
+    private $host;
+    private PostService $postService;
 
-    public function __construct()
+    public function __construct(PostService $postService)
     {
         $this->redis = new Redis();
+        $this->host = '127.0.0.1';
+        $this->port = 6379;
         $this->redis->connect($this->host, $this->port);
+
+        $this->postService = $postService;
     }
 
-    public function set($value) 
+    public function getLastPosts($numberOfPosts, $ttl = 60)
     {
-        $this->redis->doSave();
+        $this->connect();
+
+        if (empty($posts = json_decode($this->get('last_posts'), true))) {
+            $posts = $this->postService->getLastPosts($numberOfPosts);
+            $this->set('last_posts', json_encode($posts), $ttl);
+        }
+        
+        return $posts;
+    }
+
+    public function set($key, $value, int $ttl = 60) 
+    {
+        $this->connect();
+
+        $this->redis->setex($key, $ttl, $value);
         return $this;
     }
 
     public function get($key)
     {
+        $this->connect();
 
+        return $this->redis->get($key);
     }
 
-    public function getKey($value)
+    private function connect()
     {
-
-    }
-
-    public function isHit($key)
-    {
-
-    }
-
-    public function expiresAt(?\DateTimeInterface $expiration)
-    {
-        return $this;
-    }
-
-    public function expiresAfter(int $time)
-    {
-        return $this;
+        if ($this->redis->ping() !== 'PONG') {
+            $this->redis->connect($this->host, $this->port);
+        }
     }
 }
-$ff = new RedisService();

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Service\PostService;
+use App\Service\RedisService;
 use App\Form\PostFormType;
 use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,9 +23,11 @@ class PostController extends AbstractController
 
     public function __construct(
         PostService $postService,
-        CacheInterface $pool
+        CacheInterface $pool,
+        RedisService $redisService
     ) {
         $this->postService = $postService;
+        $this->redisService = $redisService;
         $this->pool = $pool;
     }
 
@@ -34,13 +37,7 @@ class PostController extends AbstractController
         $numberOfPosts = 10;
         $numberOfMoreTalkedPosts = 3;
 
-        $posts = $this->pool->get('last_posts', 
-            function (ItemInterface $item) use ($numberOfPosts) {
-                $item->expiresAfter(60);
-                $computedValue = $this->postService->getLastPosts($numberOfPosts);
-
-                return $computedValue;
-        });
+        $posts = $this->redisService->getLastPosts($numberOfPosts, 10);
 
         $moreTalkedPosts = $this->pool->get('more_talked_posts', 
             function (ItemInterface $item) use ($numberOfMoreTalkedPosts) {
