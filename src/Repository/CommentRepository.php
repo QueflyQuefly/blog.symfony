@@ -66,6 +66,25 @@ class CommentRepository extends ServiceEntityRepository
     /**
      * @return Comment[] Returns an array of Comment objects
      */
+    public function getCommentsByPostId($postId, $numberOfResults = 50)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c, u')
+            ->join('c.user', 'u')
+            ->where('c.post = :id')
+            ->setParameter('id', $postId)
+            ->orderBy('c.id', 'DESC')
+            ->setMaxResults($numberOfResults)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Comment[] Returns an array of Comment objects
+     */
     public function getCommentsByUserId(int $userId, int $numberOfResults)
     {
         return $this->createQueryBuilder('c')

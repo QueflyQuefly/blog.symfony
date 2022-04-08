@@ -8,25 +8,21 @@ use App\Entity\RatingPost;
 use App\Repository\PostRepository;
 use App\Repository\RatingPostRepository;
 use App\Service\MailerService;
-use App\Service\UserService;
 
 class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
     private MailerService $mailer;
-    private UserService $userService;
 
     public function __construct(
         PostRepository $postRepository,
         RatingPostRepository $ratingPostRepository,
-        MailerService $mailer,
-        UserService $userService
+        MailerService $mailer
     ) {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
         $this->mailer = $mailer;
-        $this->userService = $userService;
     }
 
     /**

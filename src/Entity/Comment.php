@@ -6,6 +6,8 @@ use App\Repository\CommentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\Cache(usage:"READ_WRITE")]
@@ -16,6 +18,7 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[MaxDepth(2)]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
@@ -29,11 +32,13 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $rating;
 
+    #[MaxDepth(1)]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
+    #[Ignore]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
@@ -46,6 +51,13 @@ class Comment
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getUser(): ?User

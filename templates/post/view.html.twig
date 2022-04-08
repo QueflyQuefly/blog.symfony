@@ -5,6 +5,7 @@
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
+    {% dump post %}
     <div id='singleposttitle'>
         <p class='singleposttitle'>{{ post.title }}</p>
     </div>
@@ -74,11 +75,11 @@
         </div>
     </div>
 
-    {% if post.countComments == 0 %}
-        <p class='center'>Никто не имел чести оставить комментарий. Будьте первым!</p>
-    {% else %}
-        {% for comment in post.comments %}
+    {% if comments %}
+        {% for comment in comments %}
             {{ include('comment/_comment.html.twig') }}
         {% endfor %}
+    {% else %}
+        <p class='center'>Никто не имел чести оставить комментарий. Будьте первым!</p>
     {% endif %}
 {% endblock %}

@@ -3,32 +3,33 @@
 namespace App\Controller;
 
 use App\Entity\Post;
+use App\Entity\Comment;
 use App\Service\PostService;
-use App\Service\RedisService;
+use App\Service\CommentService;
+use App\Service\RedisCacheService;
 use App\Form\PostFormType;
 use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/post', name: 'post_')]
 class PostController extends AbstractController
 {
     private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private PostService $postService;
-    private CacheInterface $pool;
+    private CommentService $commentService;
+    private RedisCacheService $cacheService;
 
     public function __construct(
         PostService $postService,
-        CacheInterface $pool,
-        RedisService $redisService
+        CommentService $commentService,
+        RedisCacheService $cacheService
     ) {
         $this->postService = $postService;
-        $this->redisService = $redisService;
-        $this->pool = $pool;
+        $this->commentService = $commentService;
+        $this->cacheService = $cacheService;
     }
 
     #[Route('', name: 'main')]
@@ -37,15 +38,17 @@ class PostController extends AbstractController
         $numberOfPosts = 10;
         $numberOfMoreTalkedPosts = 3;
 
-        $posts = $this->redisService->getLastPosts($numberOfPosts, 10);
+        $posts = $this->cacheService->get('last_posts', 10, sprintf('%s[]', Post::class),
+            function () use ($numberOfPosts) {
+                return $this->postService->getLastPosts($numberOfPosts);
+            }
+        ); 
 
-        $moreTalkedPosts = $this->pool->get('more_talked_posts', 
-            function (ItemInterface $item) use ($numberOfMoreTalkedPosts) {
-                $item->expiresAfter(60);
-                $computedValue = $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
-
-                return $computedValue;
-        });
+        $moreTalkedPosts = $this->cacheService->get('more_talked_posts', 10, sprintf('%s[]', Post::class),
+            function () use ($numberOfMoreTalkedPosts) {
+                return $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
+            }
+        );
 
         $response = $this->render('post/home.html.twig', [
             'posts' => $posts,
@@ -63,12 +66,9 @@ class PostController extends AbstractController
     #[Route('/all/{numberOfPosts<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'show_all')]
     public function showAll(int $numberOfPosts, int $page): Response
     {
-        $posts = $this->pool->get(sprintf('all_posts_%s_%s', $numberOfPosts, $page),
-            function (ItemInterface $item) use ($numberOfPosts, $page) {
-                $item->expiresAfter(60);
-                $computedValue = $this->postService->getPosts($numberOfPosts, $page);
-
-                return $computedValue;
+        $posts = $this->cacheService->get(sprintf('all_posts_%s_%s', $numberOfPosts, $page), 10, sprintf('%s[]', Post::class),
+            function () use ($numberOfPosts, $page) {
+                return $this->postService->getPosts($numberOfPosts, $page);
         });
 
         return $this->render('post/allposts.html.twig', [
@@ -82,21 +82,26 @@ class PostController extends AbstractController
     #[Route('/{id}', name: 'show', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function showPost(int $id): Response
     {
-        $post = $this->pool->get(sprintf('post_%s', $id), function (ItemInterface $item) use ($id) {
-            $item->expiresAfter(60);
-            $computedValue = $this->postService->getPostById($id);
-
-            return $computedValue;
-        });
+        $post = $this->cacheService->get(sprintf('post_%s', $id), 10, Post::class,
+            function () use ($id) {
+                return $this->postService->getPostById($id);
+            }
+        );
 
         if (!$post) {
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
+        $comments = $this->cacheService->get(sprintf('comments_post_%s', $id), 10, sprintf('%s[]', Comment::class),
+            function () use ($id) {
+                return $this->commentService->getCommentsByPostId($id);
+            }
+        );
 
         $form = $this->createForm(CommentFormType::class);
 
         return $this->renderForm('post/view.html.twig', [
             'post' => $post,
+            'comments' => $comments,
             'form' => $form
         ]);
     }

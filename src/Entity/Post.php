@@ -6,6 +6,8 @@ use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Cache(usage: "READ_WRITE")]
@@ -16,6 +18,7 @@ class Post
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[MaxDepth(2)]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
@@ -33,12 +36,14 @@ class Post
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
     private $rating;
 
+    #[Ignore]
     #[ORM\Cache(usage:"READ_ONLY")]
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EAGER')]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
+    #[Ignore]
     #[ORM\Cache(usage:"READ_ONLY")]
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EAGER')]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
     private $countRatingPosts;
@@ -48,8 +53,8 @@ class Post
     {
         $this->comments = new ArrayCollection();
         $this->ratingPosts = new ArrayCollection();
-        $this->countRatingPosts = $this->countRatingPosts();
-        $this->countComments = $this->countComments();
+        $this->countRatingPosts = $this->getCountRatingPosts();
+        $this->countComments = $this->getCountComments();
     }
 
     public function getId(): ?int
@@ -57,12 +62,19 @@ class Post
         return $this->id;
     }
 
-    public function getUser(): ?user
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUser(?user $user): self
+    public function setUser(?User $user): self
     {
         $this->user = $user;
 
@@ -125,11 +137,6 @@ class Post
         return $this->comments;
     }
 
-    public function countComments(): int
-    {
-        return $this->comments->count();
-    }
-
     public function addComment(Comment $comment): self
     {
         if (!$this->comments->contains($comment)) {
@@ -160,11 +167,6 @@ class Post
         return $this->ratingPosts;
     }
 
-    public function countRatingPosts(): int
-    {
-        return $this->ratingPosts->count();
-    }
-
     public function addRatingPost(RatingPost $ratingPost): self
     {
         if (!$this->ratingPosts->contains($ratingPost)) {
@@ -183,6 +185,38 @@ class Post
                 $ratingPost->setPost(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCountComments(): int
+    {
+        if (is_null($this->countComments)) {
+            $this->countComments = $this->comments->count();
+        }
+
+        return $this->countComments;
+    }
+
+    public function setCountComments(int $countComments): self
+    {
+        $this->countComments = $countComments;
+
+        return $this;
+    }
+
+    public function getCountRatingPosts(): int
+    {
+        if (is_null($this->countRatingPosts)) {
+            $this->countRatingPosts = $this->comments->count();
+        }
+
+        return $this->countRatingPosts;
+    }
+
+    public function setCountRatingPosts(int $countRatingPosts): self
+    {
+        $this->countRatingPosts = $countRatingPosts;
 
         return $this;
     }

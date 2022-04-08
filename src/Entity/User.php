@@ -10,11 +10,9 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
-
-/**
- * @UniqueEntity(fields={"email"}, message="Уже есть аккаунт с таким email. Войдите")
- */
+#[UniqueEntity(fields: ["email"], message: "Уже есть аккаунт с таким email. Войдите")]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Cache(usage: "NONSTRICT_READ_WRITE")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -24,17 +22,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     * @Assert\Email(
-     *     message = "'{{ value }}' не является настоящим адресом email"
-     * )
-     */
+    #[Assert\Email(message: "'{{ value }}' не является настоящим адресом email")]
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     private $email;
 
     #[ORM\Column(type: 'json')]
     private $roles = [];
 
+    #[Ignore]
     #[ORM\Column(type: 'string')]
     private $password;
 
@@ -44,26 +39,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 50)]
     private $fio;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
+    #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $posts;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'userSubscribed', targetEntity: Subscription::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $subscriptions;
 
+    #[Ignore]
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Subscription::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $mySubscriptions;
 
@@ -80,6 +79,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -105,7 +111,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @deprecated since Symfony 5.3, use getUserentifier instead
+     * @deprecated since Symfony 5.3, use getUserIdentifier instead
      */
     public function getUsername(): string
     {
