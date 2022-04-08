@@ -208,7 +208,7 @@ class Post
     public function getCountRatingPosts(): int
     {
         if (is_null($this->countRatingPosts)) {
-            $this->countRatingPosts = $this->comments->count();
+            $this->countRatingPosts = $this->ratingPosts->count();
         }
 
         return $this->countRatingPosts;

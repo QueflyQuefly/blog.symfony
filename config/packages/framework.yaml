@@ -22,9 +22,9 @@ when@dev:
     framework:
         http_cache: false
 
-        # serializer:
-        #     default_context:
-        #         enable_max_depth: true
+        serializer:
+            default_context:
+                enable_max_depth: true
 
 when@test:
     framework:

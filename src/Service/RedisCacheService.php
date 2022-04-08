@@ -24,7 +24,7 @@ class RedisCacheService {
     {
         if (empty($value = $this->redisRepository->get($key))) {
             $value = $function();
-            $this->redisRepository->set($key, $ttl, $this->serializer->serialize($value, 'json', [
+            $serializableValue = $this->serializer->serialize($value, 'json', [
                 AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
                 AbstractObjectNormalizer::MAX_DEPTH_HANDLER => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []) {
                     return $innerObject->getId();
@@ -32,7 +32,8 @@ class RedisCacheService {
                 AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
                     return $object->getId();
                 }
-            ]));
+            ]);
+            $this->redisRepository->set($key, $serializableValue, $ttl);
         } else {
             $value = $this->serializer->deserialize($value, $type, 'json' , [
                 AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,

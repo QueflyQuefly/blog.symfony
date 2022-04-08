@@ -19,7 +19,7 @@ class RedisRepository {
         $this->redis->connect($this->host, $this->port);
     }
 
-    public function set(string $key, int $ttl = 60, mixed $value) 
+    public function set(string $key, mixed $value, int $ttl = 60) 
     {
         $this->redis->setex($key, $ttl, $value);
         return $this;

@@ -5,16 +5,17 @@
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
-    {% dump post %}
+    {#% dump post %#}
+
     <div id='singleposttitle'>
         <p class='singleposttitle'>{{ post.title }}</p>
     </div>
     <div id='singlepostauthor'>
         <p class='singlepostdate'>
-            {% if post.countRatingPosts == 0 %}
-                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
-            {% else %}
+            {% if post.countRatingPosts %}
                 Рейтинг: {{ post.rating }}, оценок: {{ post.countRatingPosts }}, комментариев: {{ post.countComments }}
+            {% else %}
+                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
             {% endif %}
         </p>
         
