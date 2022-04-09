@@ -28,19 +28,26 @@ class PostService
     /**
      * @return Post Returns an object of Post
      */
-    public function create(User $user, string $title, string $content, $dateTime = false, bool $flush = true)
-    {
+    public function create(
+        User $user,
+        string $title,
+        string $content,
+        int $approve = 0,
+        $dateTime = false,
+        bool $flush = true
+    ) {
         if (!$dateTime) {
             $dateTime = time();
         }
         $post = new Post();
         $post->setTitle($title);
         $post->setUser($user);
-        $regex = '/#(\w+)/umg';
+        $regex = '/#(\w+)/um';
         $content = preg_replace($regex, "<a class='link' href='/search/%23$1'>$0</a>", $content);
         $post->setContent($content);
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
+        $post->setApprove($approve);
         $this->postRepository->add($post, $flush);
 
         if ($flush) {
@@ -146,6 +153,15 @@ class PostService
     {
         $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
         return $this->postRepository->getPosts($numberOfPosts, $lessThanMaxId);
+    }
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function getNotApprovedPosts(int $numberOfPosts, int $page)
+    {
+        $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
+        return $this->postRepository->getNotApprovedPosts($numberOfPosts, $lessThanMaxId);
     }
 
     /**

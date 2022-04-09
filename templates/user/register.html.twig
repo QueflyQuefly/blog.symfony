@@ -20,9 +20,15 @@
                 label: 'Соглашаюсь с правилами сайта'
             }) }}
 
-            {% if is_granted('ROLE_ADMIN') %}
+            {% if is_granted('ROLE_SUPER_ADMIN') %}
                 {{ form_row(form.addAdmin, {
-                    label: 'Добавить администратора'
+                    label: 'Добавить администратора (есть права модератора)'
+                }) }}
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') %}
+                {{ form_row(form.addModerator, {
+                    label: 'Добавить модератора'
                 }) }}
             {% endif %}
 

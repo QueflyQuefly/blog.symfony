@@ -16,9 +16,8 @@ class CommentController extends AbstractController
 {
     private CommentService $commentService;
 
-    public function __construct(
-        CommentService $commentService
-    ) {
+    public function __construct(CommentService $commentService)
+    {
         $this->commentService = $commentService;
     }
 

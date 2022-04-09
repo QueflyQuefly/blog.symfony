@@ -93,7 +93,7 @@ class UserService
     {
         if ($subscription = $this->subscriptionRepository->findOneBy([
             'userSubscribed' => $userIdWantSubscribe,
-            'user' => $userId
+            'user'           => $userId
         ])) {
             return $subscription;
         }

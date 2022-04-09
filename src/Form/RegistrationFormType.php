@@ -93,6 +93,10 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'required' => false
             ])
+            ->add('addModerator', CheckboxType::class, [
+                'mapped' => false,
+                'required' => false
+            ])
         ;
     }
 

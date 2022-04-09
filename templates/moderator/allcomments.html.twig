@@ -1,0 +1,19 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Все комментарии - Просто Блог {% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <h1>Управление комментариями</h1>
+
+    {{ include('_blog_pagination.html.twig') }}
+
+    {% if comments %}
+        {% for comment in comments %}
+            {{ include('comment/_comment.html.twig') }}
+        {% endfor %}
+    {% else %}
+        <p class='center'>Нет информации для отображения</p>
+    {% endif %}
+{% endblock %}

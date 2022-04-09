@@ -35,9 +35,10 @@ class SearchController extends AbstractController
             $numberOfResults = 80;
             $posts = $this->postService->searchPosts($searchWords, $numberOfResults);
         }
+
         return $this->render('search/searchposts.html.twig', [
             'search' => $search,
-            'posts' => $posts
+            'posts'  => $posts
         ]);
     }
 
@@ -52,9 +53,10 @@ class SearchController extends AbstractController
         if('' !== $searchWords) {
             $users = $this->userService->searchUsers($searchWords);
         }
+
         return $this->render('search/searchusers.html.twig', [
             'search' => $search,
-            'users' => $users
+            'users'  => $users
         ]);
     }
 }

@@ -25,8 +25,15 @@ class CommentService
     /**
      * @return Comment Returns an object of Comment
      */
-    public function create(User $user, Post $post, string $content, int $rating = 0, $dateTime = false, bool $flush = true)
-    {
+    public function create(
+        User $user,
+        Post $post,
+        string $content,
+        int $approve = 0,
+        int $rating = 0,
+        $dateTime = false,
+        bool $flush = true
+    ) {
         if (!$dateTime) {
             $dateTime = time();
         }
@@ -36,6 +43,7 @@ class CommentService
         $comment->setDateTime($dateTime);
         $comment->setContent($content);
         $comment->setRating($rating);
+        $comment->setApprove($approve);
         $this->commentRepository->add($comment, $flush);
         
         return $comment;
@@ -48,7 +56,7 @@ class CommentService
     {
         if ($checkingForUser) {
             $ratingComment = $this->ratingCommentRepository->findOneBy([
-                'user' => $user, 
+                'user'    => $user, 
                 'comment' => $comment
             ]);
             if ($ratingComment) {
@@ -76,7 +84,17 @@ class CommentService
 
         return $this->commentRepository->getComments($numberOfComments, $lessThanMaxId);
     }
-    
+
+    /**
+     * @return Comment[] Returns an array of Comment objects
+     */
+    public function getNotApprovedComments(int $numberOfComments, int $page)
+    {
+        $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
+
+        return $this->commentRepository->getNotApprovedComments($numberOfComments, $lessThanMaxId);
+    }
+
     /**
      * @return Comment[] Returns an array of Comment objects
      */

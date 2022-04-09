@@ -53,6 +53,26 @@ class CommentRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
+            ->where('c.approve = 1')
+            ->orderBy('c.id', 'DESC')
+            ->setFirstResult($lessThanMaxId)
+            ->setMaxResults($numberOfResults)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Comment[] Returns an array of Comment objects
+     */
+    public function getNotApprovedComments(int $numberOfResults, int $lessThanMaxId)
+    {
+        return $this->createQueryBuilder('c')
+            ->select('c, u')
+            ->join('c.user', 'u')
+            ->where('c.approve = 0')
             ->orderBy('c.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
@@ -72,6 +92,7 @@ class CommentRepository extends ServiceEntityRepository
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.post = :id')
+            ->andWhere('c.approve = true')
             ->setParameter('id', $postId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
@@ -91,6 +112,7 @@ class CommentRepository extends ServiceEntityRepository
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.user = :val')
+            ->andWhere('c.approve = true')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
@@ -111,6 +133,7 @@ class CommentRepository extends ServiceEntityRepository
             ->join('c.user', 'u')
             ->join('c.ratingComments', 'r')
             ->where('r.user = :val')
+            ->andWhere('c.approve = true')
             ->setParameter('val', $userId)
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)

@@ -36,6 +36,9 @@ class Post
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
     private $rating;
 
+    #[ORM\Column(type: 'smallint')]
+    private $approve;
+
     #[Ignore]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
@@ -217,6 +220,18 @@ class Post
     public function setCountRatingPosts(int $countRatingPosts): self
     {
         $this->countRatingPosts = $countRatingPosts;
+
+        return $this;
+    }
+
+    public function getApprove(): ?int
+    {
+        return $this->approve;
+    }
+
+    public function setApprove(int $approve): self
+    {
+        $this->approve = $approve;
 
         return $this;
     }

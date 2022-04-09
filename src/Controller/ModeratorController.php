@@ -14,10 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/post', name: 'post_')]
-class PostController extends AbstractController
+#[Route('/moderator', name: 'moderator_')]
+class ModeratorController extends AbstractController
 {
-    const MAX_SIZE_OF_IMAGE = 4194304; // 4 megabytes (4*1024*1024 bytes)
+    private int $maxSizeOfUploadImage = 4194304; // 4 megabytes (4*1024*1024 bytes)
     private PostService $postService;
     private CommentService $commentService;
     private RedisCacheService $cacheService;
@@ -31,55 +31,45 @@ class PostController extends AbstractController
         $this->commentService = $commentService;
         $this->cacheService = $cacheService;
     }
-
     #[Route('', name: 'main')]
     public function main(): Response
     {
-        $numberOfPosts = 10;
-        $numberOfMoreTalkedPosts = 3;
-
-        $posts = $this->cacheService->get('last_posts', 10, sprintf('%s[]', Post::class),
-            function () use ($numberOfPosts) {
-                return $this->postService->getLastPosts($numberOfPosts);
-            }
-        ); 
-
-        $moreTalkedPosts = $this->cacheService->get('more_talked_posts', 10, sprintf('%s[]', Post::class),
-            function () use ($numberOfMoreTalkedPosts) {
-                return $this->postService->getMoreTalkedPosts($numberOfMoreTalkedPosts);
-            }
-        );
-
-        $response = $this->render('post/home.html.twig', [
-            'posts'           => $posts,
-            'moreTalkedPosts' => $moreTalkedPosts
-        ]);
-
-        // $response->setEtag(md5($response->getContent()));
-        // $response->setPublic();
-        // $response->isNotModified($request);
-        // $response->headers->addCacheControlDirective('must-revalidate', true);
-
-        return $response;
+        return $this->render('moderator/moderator.html.twig');
     }
 
-    #[Route('/all/{numberOfPosts<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'show_all')]
-    public function showAll(int $numberOfPosts, int $page): Response
+    #[Route('/posts/{numberOfPosts<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'posts')]
+    public function showNotApprovedPosts(int $numberOfPosts, int $page): Response
     {
         $posts = $this->cacheService->get(sprintf('all_posts_%s_%s', $numberOfPosts, $page), 10, sprintf('%s[]', Post::class),
             function () use ($numberOfPosts, $page) {
-                return $this->postService->getPosts($numberOfPosts, $page);
+                return $this->postService->getNotApprovedPosts($numberOfPosts, $page);
         });
 
-        return $this->render('post/allposts.html.twig', [
-            'nameOfPath' => 'post_show_all',
+        return $this->render('moderator/allposts.html.twig', [
+            'nameOfPath' => 'moderator_posts',
             'number'     => $numberOfPosts,
             'page'       => $page,
             'posts'      => $posts
         ]);
     }
 
-    #[Route('/{id}', name: 'show', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    #[Route('/comments/{numberOfComments<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'comments')]
+    public function showNotApprovedComments(int $numberOfComments, int $page): Response
+    {
+        $comments = $this->cacheService->get(sprintf('admin_comments_%s_%s', $numberOfComments, $page), 60, sprintf('%s[]', Comment::class),
+            function() use ($numberOfComments, $page) {
+                return $this->commentService->getNotApprovedComments($numberOfComments, $page);
+        });
+
+        return $this->render('moderator/allcomments.html.twig', [
+            'nameOfPath' => 'moderator_comments',
+            'number'     => $numberOfComments,
+            'page'       => $page,
+            'comments'   => $comments
+        ]);
+    }
+
+    #[Route('/post/{id}', name: 'show', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function showPost(int $id): Response
     {
         $post = $this->cacheService->get(sprintf('post_%s', $id), 10, Post::class,
@@ -91,18 +81,11 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
-        $comments = $this->cacheService->get(sprintf('comments_post_%s', $id), 10, sprintf('%s[]', Comment::class),
-            function () use ($id) {
-                return $this->commentService->getCommentsByPostId($id);
-            }
-        );
-
-        $form = $this->createForm(CommentFormType::class);
 
         return $this->renderForm('post/view.html.twig', [
             'post'     => $post,
-            'comments' => $comments,
-            'form'     => $form
+            'comments' => false,
+            'form'     => false
         ]);
     }
 
@@ -131,7 +114,7 @@ class PostController extends AbstractController
         }
         return $this->renderForm('post/add.html.twig', [
             'form'                     => $form,
-            'max_size_of_upload_image' => $this::MAX_SIZE_OF_IMAGE
+            'max_size_of_upload_image' => $this->maxSizeOfUploadImage
         ]);
     }
 
@@ -165,7 +148,6 @@ class PostController extends AbstractController
             'success',
             'Пост удален'
         );
-
         return $this->redirectToRoute('post_main');
     }
 }

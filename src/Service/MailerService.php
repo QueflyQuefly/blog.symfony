@@ -49,7 +49,7 @@ class MailerService
         $this->mailer->isHTML(true);
         $this->mailer->Subject = 'Новый Пост - Просто Блог';
         $content = $this->twig->render('emails/toSubscribers.html.twig', [
-            'user' => $user,
+            'user'   => $user,
             'postId' => $postId
         ]);
         $this->mailer->msgHTML($content);

@@ -1,0 +1,16 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Модерация - Просто Блог {% endblock %}
+
+{% block content %}
+    <div class='formentry'>
+        <p class='formname'>Модерация</p>
+        <div class='formleft'>
+            <ul style='list-style-type: disc; color: gray;'>
+                <li><a class='link' title='Перейти' href='{{ path('moderator_posts') }}'>Модерация постов</a></li>
+                <li><a class='link' title='Перейти' href='{{ path('moderator_comments') }}'>Модерация комментариев</a></li>
+            </ul>
+        </div>
+        {{ include('_blog_flashes.html.twig') }}
+    </div>
+{% endblock %}

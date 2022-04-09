@@ -124,7 +124,7 @@ class StabService
     /**
      * @return Post Returns an object of Post
      */
-    private function createRandomPost(User $user, bool $flush = true)
+    private function createRandomPost(User $user, int $approve = 0, bool $flush = true)
     {
         $randomText1 = mt_rand(0, 12);
         $randomText2 = mt_rand(0, 12);
@@ -137,14 +137,18 @@ class StabService
             
             ' . $this->texts[$randomText1]
         ;
-        return $this->postService->create($user, $title, $content, $time, $flush);
+        return $this->postService->create($user, $title, $content, $approve, $time, $flush);
     }
 
     /**
      * @return bool Returns true if rating added, false if not
      */
-    private function createRandomRating(User $user, Post $post, bool $checkingForUser = true, bool $flush = true)
-    {
+    private function createRandomRating(
+        User $user,
+        Post $post,
+        bool $checkingForUser = true,
+        bool $flush = true
+    ) {
         $randomRating = mt_rand(1, 5);
 
         return $this->postService->addRating($user, $post, $randomRating, $checkingForUser, $flush);
@@ -153,14 +157,20 @@ class StabService
     /**
      * @return Comment Returns an object of Comment
      */
-    private function createRandomComment(User $user, Post $post, bool $withLike, bool $checkingForUser = true, bool $flush = true)
-    {
+    private function createRandomComment(
+        User $user,
+        Post $post,
+        int $approve = 0,
+        bool $withLike = false,
+        bool $checkingForUser = true,
+        bool $flush = true
+    ) {
         $randomText = mt_rand(0, 12);
         $dateOfComment = time() - mt_rand(10000, 100000);
         $commentContent = $this->texts[$randomText];
         $randomLike = mt_rand(0, 1000);
 
-        $comment = $this->commentService->create($user, $post, $commentContent, $randomLike, $dateOfComment, $flush);
+        $comment = $this->commentService->create($user, $post, $commentContent, $approve, $randomLike, $dateOfComment, $flush);
         if ($withLike) {
             $this->commentService->like($user, $comment, $checkingForUser, $flush);
         }
@@ -179,6 +189,7 @@ class StabService
                     throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
                 }
                 $flush = false;
+                $approve = 0;
                 $checkingForUser = false;
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
                     $user = $this->createRandomUser($i, $flush);
@@ -186,7 +197,7 @@ class StabService
                         $this->errors[] = sprintf('User with id = %s not created', $i);
                         continue;
                     }
-                    $post = $this->createRandomPost($user, $flush);
+                    $post = $this->createRandomPost($user, $approve, $flush);
                     if (!$post) {
                         $this->errors[] = sprintf('Post by user with id = %s not created', $i);
                         continue;
@@ -198,7 +209,7 @@ class StabService
                     $numberOfComments = mt_rand(0, 10);
                     $withLike = true;
                     for ($m = 0; $m < $numberOfComments; $m++) {
-                        $comment = $this->createRandomComment($user, $post, $withLike, $checkingForUser, $flush);
+                        $comment = $this->createRandomComment($user, $post, $approve, $withLike, $checkingForUser, $flush);
                         if (!$comment) {
                             $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
                             break;

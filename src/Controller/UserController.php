@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\User;
 use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
+use App\Service\RedisCacheService;
 use App\Form\RegistrationFormType;
 use App\Form\LoginFormType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,8 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
 
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
@@ -24,20 +24,20 @@ class UserController extends AbstractController
     private UserService $userService;
     private PostService $postService;
     private CommentService $commentService;
-    private CacheInterface $pool;
+    private RedisCacheService $cacheService;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
         UserService $userService,
         PostService $postService,
         CommentService $commentService,
-        CacheInterface $pool
+        RedisCacheService $cacheService
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
-        $this->pool = $pool;
+        $this->cacheService = $cacheService;
     }
 
     #[Route('/register', name: 'register')]
@@ -51,11 +51,16 @@ class UserController extends AbstractController
             $fio = $form->get('fio')->getData();
             $password = $form->get('plainPassword')->getData();
             $rights = ['ROLE_USER'];
-            if ($form->get('addAdmin')->getData()) {
+            if ($form->get('addModerator')->getData()) {
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
+                $rights = ['ROLE_MODERATOR'];
+            }
+            if ($form->get('addAdmin')->getData()) {
+                $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
                 $rights = ['ROLE_ADMIN'];
             }
             $this->userService->register($email, $fio, $password, $rights);
+
             return $this->redirectToRoute('user_login');
         }
 
@@ -68,12 +73,10 @@ class UserController extends AbstractController
     public function showProfile(?int $id): Response
     {
         if (!is_null($id)) {
-            // $user = $this->pool->get("user_$id", function (ItemInterface $item) use ($id) {
-               // $item->expiresAfter(60);
-                $user = $this->userService->getUserById($id);
-
-               // return $computedValue;
-            // });
+            $user = $this->cacheService->get(sprintf('user_%s', $id), 60, User::class, 
+                function () use ($id) {
+                    return $this->userService->getUserById($id);
+            });
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
                 $canSubscribe = true;
@@ -83,7 +86,7 @@ class UserController extends AbstractController
                 throw $this->createNotFoundException(sprintf('Пользователь с id = %s не найден', $id));
             }
         } else {
-            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+            $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
             $canSubscribe = $isSubscribe = false;
@@ -91,44 +94,32 @@ class UserController extends AbstractController
         $numberOfResults = 5;
         $userId = $user->getId();
 
-        $posts = $this->pool->get(sprintf('posts_by_user_%s', $userId), 
-            function (ItemInterface $item) use ($userId, $numberOfResults) {
-                $item->expiresAfter(60);
-                $computedValue = $this->postService->getPostsByUserId($userId, $numberOfResults);
-
-                return $computedValue;
+        $posts = $this->cacheService->get(sprintf('posts_by_user_%s', $userId), 60, sprintf('%s[]', Post::class),
+            function () use ($userId, $numberOfResults) {
+                return $this->postService->getPostsByUserId($userId, $numberOfResults);
         });
-        $comments = $this->pool->get(sprintf('comments_by_user_%s', $userId), 
-            function (ItemInterface $item) use ($userId, $numberOfResults) {
-                $item->expiresAfter(60);
-                $computedValue = $this->commentService->getCommentsByUserId($userId, $numberOfResults);
-
-                return $computedValue;
+        $comments = $this->cacheService->get(sprintf('comments_by_user_%s', $userId), 60, sprintf('%s[]', Comment::class),
+            function () use ($userId, $numberOfResults) {
+                return $this->commentService->getCommentsByUserId($userId, $numberOfResults);
         });
-        $likedPosts = $this->pool->get(sprintf('liked_posts_by_user_%s', $userId),  
-            function (ItemInterface $item) use ($userId, $numberOfResults) {
-                $item->expiresAfter(3600);
-                $computedValue = $this->postService->getLikedPostsByUserId($userId, $numberOfResults);
-
-                return $computedValue;
+        $likedPosts = $this->cacheService->get(sprintf('liked_posts_by_user_%s', $userId), 60, sprintf('%s[]', Post::class),
+            function () use ($userId, $numberOfResults) {
+                return $this->postService->getLikedPostsByUserId($userId, $numberOfResults);
         });
-        $likedComments = $this->pool->get(sprintf('liked_comments_by_user_%s', $userId), 
-            function (ItemInterface $item) use ($userId, $numberOfResults) {
-                $item->expiresAfter(3600);
-                $computedValue = $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
-
-                return $computedValue;
+        $likedComments = $this->cacheService->get(sprintf('liked_comments_by_user_%s', $userId), 60, sprintf('%s[]', Comment::class),
+            function () use ($userId, $numberOfResults) {
+                return $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
         });
 
         return $this->render('user/profile.html.twig', [
-            'user' => $user,
-            'can_subscribe' => $canSubscribe,
-            'is_subscribe' => $isSubscribe,
+            'user'              => $user,
+            'can_subscribe'     => $canSubscribe,
+            'is_subscribe'      => $isSubscribe,
             'number_of_results' => $numberOfResults,
-            'posts' => $posts,
-            'comments' => $comments,
-            'likedPosts' => $likedPosts,
-            'likedComments' => $likedComments,
+            'posts'             => $posts,
+            'comments'          => $comments,
+            'likedPosts'        => $likedPosts,
+            'likedComments'     => $likedComments,
         ]);
     }
 
@@ -140,7 +131,7 @@ class UserController extends AbstractController
         $user = $this->getUser();
         $form = $this->createForm(RegistrationFormType::class, $user, [
             'email' => $user->getEmail(),
-            'fio' => $user->getFio()
+            'fio'   => $user->getFio()
         ]);
 
         $form->handleRequest($request);
@@ -190,7 +181,7 @@ class UserController extends AbstractController
         ]);
 
         return $this->renderForm('user/login.html.twig', [
-            'form' => $form,
+            'form'  => $form,
             'error' => $error
         ]);
     }

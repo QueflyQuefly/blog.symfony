@@ -43,9 +43,14 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         # - { path: ^/profile, roles: ROLE_USER }
-
         # require ROLE_ADMIN for /admin*
         - { path: '^/admin', roles: ROLE_ADMIN }
+        - { path: '^/moderator', roles: ROLE_MODERATOR }
+
+    role_hierarchy:
+        ROLE_MODERATOR: ROLE_USER
+        ROLE_ADMIN: [ROLE_MODERATOR, ROLE_USER]
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_MODERATOR, ROLE_USER]
 
 when@test:
     security:

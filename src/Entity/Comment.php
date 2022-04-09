@@ -32,6 +32,9 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $rating;
 
+    #[ORM\Column(type: 'smallint')]
+    private $approve;
+
     #[MaxDepth(1)]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
@@ -146,6 +149,18 @@ class Comment
                 $ratingComment->setComment(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getApprove(): ?int
+    {
+        return $this->approve;
+    }
+
+    public function setApprove(int $approve): self
+    {
+        $this->approve = $approve;
 
         return $this;
     }
