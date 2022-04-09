@@ -17,10 +17,6 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
-
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
@@ -179,25 +175,6 @@ class UserController extends AbstractController
         }
 
         return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
-    }
-
-    #[Route('/email')]
-    public function sendEmail(MailerInterface $mailer): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $email = (new TemplatedEmail())
-            ->from('prostobloglocal@gmail.com')
-            ->to('drotovmihailo@gmail.com')
-            ->subject('New Post')
-            ->htmlTemplate('emails/toSubscribers.html.twig')
-            ->context([
-                'user' => $this->getUser(),
-                'postId' => 10
-            ]);
-
-        $mailer->send($email);
-
-        return $this->render('blog_base.html.twig');
     }
 
     #[Route('/login', name: 'login')]

@@ -2,13 +2,11 @@
 
 <p>
     Пользователь {{ user.fio }} опубликовал новый пост. 
-    Перейти можно по <a href='{{ path('post_show', {'id' : postId }) }}'>ссылке</a>
+    Перейти можно по <a href='{{ absolute_url(path('post_show', {'id' : postId })) }}'>ссылке</a>
 </p>
 
-<pre>
-    Вы получили это письмо, потому что подписаны на {{ user.fio }} <br>
-    Отписаться можно по <a href='{{ path('user_show_profile', {'id' : user.id}) }}'>ссылке</a>
-</pre>
+<pre>Вы получили это письмо, потому что подписаны на {{ user.fio }}
+Отписаться можно по <a href='{{ absolute_url(path('user_show_profile', {'id' : user.id})) }}'>ссылке</a></pre>
 
 <p style='text-align: center;'>
     Просто Блог 2021-{{ date()|date('Y') }}

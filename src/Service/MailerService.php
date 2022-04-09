@@ -3,26 +3,37 @@
 namespace App\Service;
 
 use App\Entity\User;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use Twig\Environment;
 
 class MailerService
 {
-    private MailerInterface $mailer;
+    private PHPMailer $mailer;
+    private Environment $twig;
     private $errors = [];
 
-    public function __construct(
-        MailerInterface $mailer
-    ) {
-        $this->mailer = $mailer;
+    public function __construct(Environment $twig) {
+        $this->twig = $twig;
+        $this->mailer = new PHPMailer();
+        $this->mailer->isSMTP();
+        $this->mailer->Mailer = 'smtp';
+        $this->mailer->SMTPDebug = 0;
+        $this->mailer->SMTPAuth = true;
+        $this->mailer->SMTPSecure = 'tls';
+        $this->mailer->Port = 465;
+        $this->mailer->Host = 'ssl://smtp.mail.ru';
+        $this->mailer->Username = 'blogsymfony@mail.ru';
+        $this->mailer->Password = 'w5rs8YNVmk2NBLTqHyWi';
+        $this->mailer->setFrom('blogsymfony@mail.ru', 'Prosto Blog');
+        $this->mailer->addReplyTo('blogsymfony@mail.ru', 'Prosto Blog');
     }
 
-    public function sendMail($email): bool
+    public function sendMail(): bool
     {
         try {
-           $this->mailer->send($email);
-        } catch (TransportExceptionInterface $e) {
+           $this->mailer->send();
+        } catch (Exception $e) {
             $this->errors[] = $e->getMessage();
             throw new \Exception($e->getMessage());
             return false;
@@ -35,20 +46,19 @@ class MailerService
         if (empty($toAddresses)) {
             return false;
         }
-        $email = (new TemplatedEmail())
-            ->from('prostobloglocal@gmail.com')
-            ->to('drotovmihailo@gmail.com')
-            ->subject('New Post - Prosto Blog')
-            ->htmlTemplate('emails/toSubscribers.html.twig')
-            ->context([
-                'user' => $user,
-                'postId' => $postId
-            ])
-        ;
+        $this->mailer->isHTML(true);
+        $this->mailer->Subject = 'Новый Пост - Просто Блог';
+        $content = $this->twig->render('emails/toSubscribers.html.twig', [
+            'user' => $user,
+            'postId' => $postId
+        ]);
+        $this->mailer->msgHTML($content);
+
         foreach ($toAddresses as $address) {
-            $email->addTo($address['email']);
+            $this->mailer->addAddress($address['email'], 'Dear Subscriber');
         }
-        if (!$this->sendMail($email)) {
+
+        if (!$this->sendMail()) {
             return false;
         }
         return true;

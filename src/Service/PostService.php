@@ -36,7 +36,7 @@ class PostService
         $post = new Post();
         $post->setTitle($title);
         $post->setUser($user);
-        $regex = '/#(\w+)/um';
+        $regex = '/#(\w+)/umg';
         $content = preg_replace($regex, "<a class='link' href='/search/%23$1'>$0</a>", $content);
         $post->setContent($content);
         $post->setDateTime($dateTime);
@@ -44,11 +44,11 @@ class PostService
         $this->postRepository->add($post, $flush);
 
         if ($flush) {
-            $toAddresses = [0 => ['email' => 'drotovmihailo@gmail.com']]; // $this->userService->getSubscribedUsersEmails($user);
-            //if (!empty($toAddresses)) {
+            $toAddresses = $this->userService->getSubscribedUsersEmails($user);
+            if (!empty($toAddresses)) {
                 if(!$this->mailer->sendMailsToSubscribers($toAddresses, $user, $post->getId())) {
                     return false;
-                //}
+                }
             }
         }
         
