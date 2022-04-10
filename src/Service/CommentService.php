@@ -29,12 +29,12 @@ class CommentService
         User $user,
         Post $post,
         string $content,
-        int $approve = 0,
+        bool $approve = false,
         int $rating = 0,
-        $dateTime = false,
+        ?int $dateTime = null,
         bool $flush = true
     ) {
-        if (!$dateTime) {
+        if (empty($dateTime)) {
             $dateTime = time();
         }
         $comment = new Comment();
@@ -47,6 +47,11 @@ class CommentService
         $this->commentRepository->add($comment, $flush);
         
         return $comment;
+    }
+
+    public function approve(Comment $comment, bool $flush = true)
+    {
+        $this->commentRepository->approve($comment, $flush);
     }
 
     /**

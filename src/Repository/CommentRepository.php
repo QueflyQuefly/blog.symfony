@@ -37,6 +37,18 @@ class CommentRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
+    public function approve(Comment $entity, bool $flush = true): void
+    {
+        $entity->setApprove(true);
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function remove(Comment $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);
@@ -77,8 +89,6 @@ class CommentRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }

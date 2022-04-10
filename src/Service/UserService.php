@@ -3,9 +3,11 @@
 namespace App\Service;
 
 use App\Entity\User;
+use App\Entity\Post;
 use App\Entity\Subscription;
 use App\Repository\UserRepository;
 use App\Repository\SubscriptionRepository;
+use App\Service\MailerService;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService
@@ -13,15 +15,18 @@ class UserService
     private UserRepository $userRepository;
     private SubscriptionRepository $subscriptionRepository;
     private UserPasswordHasherInterface $userPasswordHasher;
+    private MailerService $mailer;
 
     public function __construct(
         UserRepository $userRepository,
         SubscriptionRepository $subscriptionRepository,
-        UserPasswordHasherInterface $userPasswordHasher
+        UserPasswordHasherInterface $userPasswordHasher,
+        MailerService $mailer
     ) {
         $this->userRepository = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
         $this->userPasswordHasher = $userPasswordHasher;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -49,6 +54,16 @@ class UserService
         $this->userRepository->add($user, $flush);
         
         return $user;
+    }
+
+    public function sendMailsToSubscribers(Post $post)
+    {
+        $toAddresses = $this->getSubscribedUsersEmails($post->getUser());
+        if (!empty($toAddresses)) {
+            if(!$this->mailer->sendMailsToSubscribers($toAddresses, $post->getUser(), $post->getId())) {
+                return false;
+            }
+        }
     }
 
     /**

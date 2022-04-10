@@ -7,22 +7,22 @@ use App\Entity\User;
 use App\Entity\RatingPost;
 use App\Repository\PostRepository;
 use App\Repository\RatingPostRepository;
-use App\Service\MailerService;
+use App\Service\UserService;
 
 class PostService
 {
     private PostRepository $postRepository;
     private RatingPostRepository $ratingPostRepository;
-    private MailerService $mailer;
+    private UserService $userService;
 
     public function __construct(
         PostRepository $postRepository,
         RatingPostRepository $ratingPostRepository,
-        MailerService $mailer
+        UserService $userService
     ) {
         $this->postRepository = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
-        $this->mailer = $mailer;
+        $this->userService = $userService;
     }
 
     /**
@@ -32,11 +32,11 @@ class PostService
         User $user,
         string $title,
         string $content,
-        int $approve = 0,
-        $dateTime = false,
+        bool $approve = false,
+        ?int $dateTime = null,
         bool $flush = true
     ) {
-        if (!$dateTime) {
+        if (empty($dateTime)) {
             $dateTime = time();
         }
         $post = new Post();
@@ -49,17 +49,17 @@ class PostService
         $post->setRating('0.0');
         $post->setApprove($approve);
         $this->postRepository->add($post, $flush);
-
-        if ($flush) {
-            $toAddresses = $this->userService->getSubscribedUsersEmails($user);
-            if (!empty($toAddresses)) {
-                if(!$this->mailer->sendMailsToSubscribers($toAddresses, $user, $post->getId())) {
-                    return false;
-                }
-            }
-        }
         
         return $post;
+    }
+
+    public function approve(Post $post, bool $flush = true)
+    {
+        $this->postRepository->approve($post, $flush);
+
+        if ($flush) {
+            $this->userService->sendMailsToSubscribers($post);
+        }
     }
 
     /**
@@ -144,6 +144,14 @@ class PostService
     public function getPostById(int $postId)
     {
         return $this->postRepository->getPostById($postId);
+    }
+
+    /**
+     * @return Post Returns a Post object
+     */
+    public function getNotApprovedPostById(int $postId)
+    {
+        return $this->postRepository->getNotApprovedPostById($postId);
     }
 
     /**

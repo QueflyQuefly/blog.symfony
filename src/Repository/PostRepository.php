@@ -37,6 +37,18 @@ class PostRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
+    public function approve(Post $entity, bool $flush = true): void
+    {
+        $entity->setApprove(true);
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function remove(Post $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);
@@ -101,6 +113,22 @@ class PostRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+        /**
+     * @return Post Returns a Post object
+     */
+    public function getNotApprovedPostById(int $postId)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p, u')
+            ->join('p.user', 'u')
+            ->where('p.id = :id')
+            ->andWhere('p.approve = 0')
+            ->setParameter(':id', $postId)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
        
     /**
      * @return Post[] Returns an array of Post objects
@@ -134,8 +162,6 @@ class PostRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }

@@ -10,8 +10,8 @@ $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_queries'
 $config->setQueryCache($cache);
 $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_results', 60);
 $config->setResultCache($cache);
-$cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 60);
-$config->setMetadataCache($cache);
+/* $cache = new \Symfony\Component\Cache\Adapter\PhpFilesAdapter('doctrine_metadata', 60);
+$config->setMetadataCache($cache); */
 
 
 /** @var \Psr\Cache\CacheItemPoolInterface $cache */

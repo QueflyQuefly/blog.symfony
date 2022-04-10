@@ -27,10 +27,19 @@ class CommentController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
+
+        if (!$post->getApprove()) {
+            throw $this->createNotFoundException('Невозможно добавить комментарий к неодобренному посту');
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
             $content = $form->get('content')->getData();
             $this->commentService->create($user, $post, $content);
+            $this->addFlash(
+                'success',
+                'Ваш комментарий отправлен на модерацию'
+            );
         } else {
             $this->addFlash(
                 'error',
@@ -44,6 +53,9 @@ class CommentController extends AbstractController
     public function like(int $postId, Comment $comment): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        if (!$comment->getApprove()) {
+            throw $this->createNotFoundException('Невозможно поставить лайк неодобренному комментарию');
+        }
         $user = $this->getUser();
         $this->commentService->like($user, $comment);
 

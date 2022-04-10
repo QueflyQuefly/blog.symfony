@@ -36,9 +36,6 @@ class Post
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
     private $rating;
 
-    #[ORM\Column(type: 'smallint')]
-    private $approve;
-
     #[Ignore]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
@@ -51,6 +48,9 @@ class Post
 
     private $countRatingPosts;
     private $countComments;
+
+    #[ORM\Column(type: 'boolean')]
+    private $approve = false;
 
     public function __construct()
     {
@@ -224,12 +224,12 @@ class Post
         return $this;
     }
 
-    public function getApprove(): ?int
+    public function getApprove(): ?bool
     {
         return $this->approve;
     }
 
-    public function setApprove(int $approve): self
+    public function setApprove(bool $approve): self
     {
         $this->approve = $approve;
 

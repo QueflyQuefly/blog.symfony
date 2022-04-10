@@ -16,8 +16,13 @@ class StabService
     private PostService $postService;
     private CommentService $commentService;
     private EntityManagerInterface $entityManager;
-    private $errors = [];
-    private $names = [
+    private array $errors = [];
+    private bool $flush = false;
+    private bool $approve = true;
+    private bool $checkingForUser = false;
+    private int $maxNumberOfComments = 10;
+    private bool $commentsWithLike = true;
+    private array $names = [
         0  => 'Василий',
         1  => 'Даниил',
         2  => 'Иван',
@@ -32,7 +37,7 @@ class StabService
         11 => 'Григорий',
         12 => 'Георгий'
     ];
-    private $surnames = [
+    private array $surnames = [
         0  => 'Бродский',
         1  => 'Васильев',
         2  => 'Пугачев',
@@ -47,7 +52,7 @@ class StabService
         11 => 'Григорьев',
         12 => 'Георгиевский'
     ];
-    private $titles1 = [
+    private array $titles1 = [
         0  => 'Пушкиногорье -',
         1  => 'Полуостров Крым -',
         2  => 'Ночная Россия -',
@@ -62,7 +67,7 @@ class StabService
         11 => 'Солнечный Белиз -',
         12 => 'Таиланд удивил -',
     ]; 
-    private $titles2 = [
+    private array $titles2 = [
         0  => 'это не только памятник историко-литературный',
         1  => 'это своеобразный ботанический и зоологический сад',
         2  => 'это замечательный памятник природы, хотя львов здесь нет',
@@ -77,7 +82,7 @@ class StabService
         11 => 'это худшее путешествие. Впустую потраченные деньги',
         12 => 'это моя рекомендация. Место обязательно к посещению',
     ];  
-    private $texts = [
+    private array $texts = [
         0  => 'Путешествие - это как попадание в сказку, где всё необычно и нереально. Я люблю путешествовать, узнавать другие страны и города. Залог хорошего путешествия, это грамотная подготовка. Когда я куда-нибудь приезжаю, то стараюсь посмотреть все местные достопримечательности или просто красивые места. Всё это я подготавливаю заранее. Надо знать, что смотреть в первую очередь, как добраться до них, когда они открыты и т.д. Если подготовиться хорошо, то посмотреть и узнать можно гораздо больше и дешевле.',
         1  => 'Путешествовать должны все люди. Без путешествий жизнь становится скучной и серой. Я не понимаю тех людей, кто не хочет и не любит смотреть мир. Я ещё мало где был, но уверен, что успею за свою жизнь посмотреть много красивых стран и городов. Больше всего мне нравится путешествовать на автомобиле. Мы семьёй съездили уже в Крым, Великий Новгород, Псков, Карелию и Ярославль. Сейчас мы собираемся на Онежское озеро. #Россия',
         2  => 'Что может быть лучше путешествия? Я даже не могу себе представить такого. Я очень люблю путешествовать. Без разницы куда ездить, главное познавать не виденные ранее места. Когда я путешествую, то получаю потрясающие эмоции, заряжаюсь энергией, а также борюсь со скукой и рутиной. Кроме этого, путешествия позволяют мне развивать кругозор, узнавать много чего нового. #2022',
@@ -105,6 +110,20 @@ class StabService
         $this->entityManager = $entityManager;
     }
 
+    public function setConfiguration(
+        bool $flush = false,
+        bool $approve = true,
+        bool $checkingForUser = false,
+        int $maxNumberOfComments = 10,
+        bool $commentsWithLike = true
+    ) {
+        $this->flush = $flush;
+        $this->approve = $approve;
+        $this->checkingForUser = $checkingForUser;
+        $this->maxNumberOfComments = $maxNumberOfComments;
+        $this->commentsWithLike = $commentsWithLike;
+    }
+
     /**
      * @return User Returns an object of User
      */
@@ -124,7 +143,7 @@ class StabService
     /**
      * @return Post Returns an object of Post
      */
-    private function createRandomPost(User $user, int $approve = 0, bool $flush = true)
+    private function createRandomPost(User $user, bool $approve = false, bool $flush = true)
     {
         $randomText1 = mt_rand(0, 12);
         $randomText2 = mt_rand(0, 12);
@@ -137,6 +156,7 @@ class StabService
             
             ' . $this->texts[$randomText1]
         ;
+
         return $this->postService->create($user, $title, $content, $approve, $time, $flush);
     }
 
@@ -149,9 +169,13 @@ class StabService
         bool $checkingForUser = true,
         bool $flush = true
     ) {
-        $randomRating = mt_rand(1, 5);
+        if ($post->getApprove()) {
+            $randomRating = mt_rand(1, 5);
 
-        return $this->postService->addRating($user, $post, $randomRating, $checkingForUser, $flush);
+            return $this->postService->addRating($user, $post, $randomRating, $checkingForUser, $flush);
+        }
+
+        return false;
     }
 
     /**
@@ -160,22 +184,34 @@ class StabService
     private function createRandomComment(
         User $user,
         Post $post,
-        int $approve = 0,
+        bool $approve = false,
         bool $withLike = false,
         bool $checkingForUser = true,
         bool $flush = true
     ) {
-        $randomText = mt_rand(0, 12);
-        $dateOfComment = time() - mt_rand(10000, 100000);
-        $commentContent = $this->texts[$randomText];
-        $randomLike = mt_rand(0, 1000);
+        if ($post->getApprove()) {
+            $randomText = mt_rand(0, 12);
+            $dateOfComment = time() - mt_rand(10000, 100000);
+            $commentContent = $this->texts[$randomText];
+            $randomLike = mt_rand(0, 1000);
 
-        $comment = $this->commentService->create($user, $post, $commentContent, $approve, $randomLike, $dateOfComment, $flush);
-        if ($withLike) {
-            $this->commentService->like($user, $comment, $checkingForUser, $flush);
+            $comment = $this->commentService->create(
+                $user, 
+                $post, 
+                $commentContent, 
+                $approve, 
+                $randomLike, 
+                $dateOfComment, 
+                $flush
+            );
+            if ($withLike && $approve) {
+                $this->commentService->like($user, $comment, $checkingForUser, $flush);
+            }
+
+            return $comment;
         }
 
-        return $comment;
+        return false;
     }
 
     /**
@@ -188,31 +224,40 @@ class StabService
                 if (!$min = $this->userService->getLastUserId() + 1) {
                     throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
                 }
-                $flush = false;
-                $approve = 0;
-                $checkingForUser = false;
+                $this->approve = (bool) mt_rand(0, 1);
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
-                    $user = $this->createRandomUser($i, $flush);
+
+                    $user = $this->createRandomUser($i, $this->flush);
                     if (!$user) {
                         $this->errors[] = sprintf('User with id = %s not created', $i);
                         continue;
                     }
-                    $post = $this->createRandomPost($user, $approve, $flush);
+
+                    $post = $this->createRandomPost($user, $this->approve, $this->flush);
                     if (!$post) {
                         $this->errors[] = sprintf('Post by user with id = %s not created', $i);
                         continue;
                     }
-                    if (!$this->createRandomRating($user, $post, $checkingForUser, $flush)) {
-                        $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
-                        continue;
-                    }
-                    $numberOfComments = mt_rand(0, 10);
-                    $withLike = true;
-                    for ($m = 0; $m < $numberOfComments; $m++) {
-                        $comment = $this->createRandomComment($user, $post, $approve, $withLike, $checkingForUser, $flush);
-                        if (!$comment) {
-                            $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
-                            break;
+
+                    if ($this->approve) {
+                        if (!$this->createRandomRating($user, $post, $this->checkingForUser, $this->flush)) {
+                            $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
+                            continue;
+                        }
+
+                        for ($m = 0; $m < $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments); $m++) {
+                            $comment = $this->createRandomComment(
+                                $user,
+                                $post,
+                                $this->approve,
+                                $this->commentsWithLike,
+                                $this->checkingForUser,
+                                $this->flush
+                            );
+                            if (!$comment) {
+                                $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
+                                break;
+                            }
                         }
                     }
                 }

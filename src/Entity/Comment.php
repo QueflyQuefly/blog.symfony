@@ -32,9 +32,6 @@ class Comment
     #[ORM\Column(type: 'integer')]
     private $rating;
 
-    #[ORM\Column(type: 'smallint')]
-    private $approve;
-
     #[MaxDepth(1)]
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
@@ -45,6 +42,9 @@ class Comment
     #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
+
+    #[ORM\Column(type: 'boolean')]
+    private $approve = false;
 
     public function __construct()
     {
@@ -153,12 +153,12 @@ class Comment
         return $this;
     }
 
-    public function getApprove(): ?int
+    public function getApprove(): ?bool
     {
         return $this->approve;
     }
 
-    public function setApprove(int $approve): self
+    public function setApprove(bool $approve): self
     {
         $this->approve = $approve;
 

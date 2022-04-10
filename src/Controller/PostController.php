@@ -119,7 +119,7 @@ class PostController extends AbstractController
             if ($this->postService->create($user, $title, $content)) {
                 $this->addFlash(
                     'success',
-                    'Пост добавлен'
+                    'Пост отправлен на модерацию'
                 );
             } else {
                 $this->addFlash(
@@ -127,8 +127,10 @@ class PostController extends AbstractController
                     'При добавлении поста произошла ошибка'
                 );
             }
+
             return $this->redirectToRoute('post_main');
         }
+
         return $this->renderForm('post/add.html.twig', [
             'form'                     => $form,
             'max_size_of_upload_image' => $this::MAX_SIZE_OF_IMAGE
@@ -139,6 +141,11 @@ class PostController extends AbstractController
     public function addRating(Post $post, Request $request)
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+
+        if (!$post->getApprove()) {
+            throw $this->createNotFoundException('Невозможно добавить рейтинг неодобренному посту');
+        }
+        
         $user = $this->getUser();
         $rating = (int) $request->request->get('rating');
         if ($this->postService->addRating($user, $post, $rating)) {

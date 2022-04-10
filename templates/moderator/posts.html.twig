@@ -1,21 +1,21 @@
 {% extends 'blog_base.html.twig' %}
 
-{% block title %} Все посты - Просто Блог {% endblock %}
+{% block title %}Модерация постов - Просто Блог {% endblock %}
 
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
-    <h1>Наилучший источник информации по теме "Путешествия"</h1>
+    <h1>Модерация постов</h1>
 
     {{ include('_blog_pagination.html.twig') }}
 
     {% if posts %}
         {% set class = 'generalpost' %}
         {% for post in posts %}
-            {{ include('post/_post.html.twig') }}
+            {{ include('moderator/_post.html.twig') }}
             {% set class = 'viewpost' %}
         {% endfor %}
     {% else %}
-        <p class='center'>Нет информации для отображения</p>
+        <p class='center'>Все посты прошли проверку</p>
     {% endif %}
 {% endblock %}

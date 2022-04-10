@@ -1,0 +1,22 @@
+{#% dump comment %#}
+<div class='viewcomment' id='comment{{ comment.id }}'>
+    <a class='postLink' href='{{ path("post_show", {id: comment.post.id}) }}#comment{{ comment.id }}'>
+    <p class='commentauthor'>
+        <object><a class='menuLink' href='{{ path("user_show_profile", {'id' : comment.user.id}) }}'>{{ comment.user.fio }}</a></object>
+        <div class='commentdate'>{{ comment.dateTime|date('d.m.Y в H:i') }}</div>
+    </p>
+    <div class='commentcontent'>
+        <p>{{ comment.content }}</p>
+        {% if is_granted('ROLE_MODERATOR') %}
+            <a href='{{ path('moderator_comment_delete', {id: comment.id}) }}' class='link'>
+                Удалить комментарий
+            </a>
+
+            <a href='{{ path('moderator_comment_approve', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
+                Одобрить комментарий
+            </a>
+        {% endif %} 
+    </div>
+    <hr>
+    </a>
+</div>

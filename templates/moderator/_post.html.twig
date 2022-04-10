@@ -1,0 +1,22 @@
+
+<div class='{{ class }}'>
+    <a class='postLink' href='{{ path('moderator_post_show', {id: post.id}) }}'>
+        <div class='posttext'>
+            <p class='posttitle'>{{ post.title }}</p>
+            <p class='postcontent'>{{ post.content|striptags }}</p>
+            <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
+
+            {% if is_granted('ROLE_MODERATOR') %}
+                <div class='submitunder'>
+                    <a href='{{ path('moderator_post_delete', {id: post.id}) }}' class='link'>
+                        Удалить пост с ID = {{ post.id }}
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+        <div class='postimage'>
+            <img src='{{ asset('images/PostImgId' ~ post.id ~ '.jpg') }}' alt='Картинка'>
+        </div>
+    </a>
+</div>
