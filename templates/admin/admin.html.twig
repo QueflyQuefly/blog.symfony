@@ -17,9 +17,9 @@
 
                 <li><a class='link' title='Перейти' href='{{ path('post_show_all') }}'>К управлению постами</a></li>
                 <li><a class='link' title='Перейти' href='{{ path('admin_show_comments') }}'>К управлению комментариями</a></li>
+                <li><a class='link' title='Перейти' href='{{ path('admin_show_users') }}'>К управлению пользователями</a></li>
 
                 {% if is_granted('ROLE_SUPER_ADMIN') %}
-                    <li><a class='link' title='Перейти' href='{{ path('admin_show_users') }}'>К управлению пользователями</a></li>
                     <li><a class='link' title='Перейти' href='{{ path('admin_show_stab') }}'>К стабу базы данных</a></li>
                 {% endif %}
 

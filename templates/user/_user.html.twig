@@ -7,11 +7,11 @@
             {% if is_granted('ROLE_SUPER_ADMIN') %}
                 <p class='posttitle'> Права: 
                     {% for role in user.roles %}
-                        {{ role }}
+                        {{ role|lower|u.camel.title }}
                     {% endfor %}
                 </p>
                 <p class='postdate'>
-                    <a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link'>
+                    <a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link' style='font-size: 14pt;'>
                         Удалить {{ user.email }}
                     </a>
                 </p>

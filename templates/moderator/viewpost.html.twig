@@ -19,7 +19,7 @@
         <p class='singlepostdate'>{{ post.dateTime|date('d.m.Y в H:i') }}</p>
     </div>
     <div class='singlepostimage'>
-        <img src='/public/images/PostImgId{{ post.id }}.jpg' alt='Картинка' class='singlepostimg'>
+        <img src='{{ asset('images/PostImgId' ~ post.id ~ '.jpg') }}' alt='Картинка' class='singlepostimg'>
     </div>
     <div class='singleposttext'>
         <p class='singlepostcontent'>

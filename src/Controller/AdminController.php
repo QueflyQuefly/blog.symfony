@@ -78,6 +78,7 @@ class AdminController extends AbstractController
     #[Route('/stab', name: 'show_stab')]
     public function showStab(Request $request): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         if ($this->env !== 'dev') {
             throw $this->createNotFoundException('Page not found');
         }
@@ -94,6 +95,7 @@ class AdminController extends AbstractController
     #[Route('/users/delete/{id}', name: 'delete_user', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteUser(User $user): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         $this->userService->delete($user);
         $this->addFlash(
             'success',

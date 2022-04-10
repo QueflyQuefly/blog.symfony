@@ -110,7 +110,6 @@ class ModeratorController extends AbstractController
     #[Route('/post/delete/{id}', name: 'post_delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deletePost(Post $post): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
         $postId = $post->getId();
         $this->postService->delete($post);
         $this->addFlash(
@@ -124,7 +123,6 @@ class ModeratorController extends AbstractController
     #[Route('/comment/delete/{id}', name: 'comment_delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteComment(Comment $comment): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
         $commentId = $comment->getId();
         $this->commentService->delete($comment);
         $this->addFlash(
