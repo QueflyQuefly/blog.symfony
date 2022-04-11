@@ -2,21 +2,20 @@
 
 namespace App\Form;
 
-use App\Entity\User;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class LoginFormType extends AbstractType
+class RecoveryFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('_username', EmailType::class, [
+            ->add('email', EmailType::class, [
                 'attr' => [
                     'class' => 'formtext',
                     'placeholder' => 'Ваш email',
@@ -38,24 +37,23 @@ class LoginFormType extends AbstractType
                     ])
                 ]
             ])
-            ->add('_password', PasswordType::class, [
+            ->add('fio', TextType::class, [
                 'attr' => [
                     'class' => 'formtext',
-                    'placeholder' => 'Ваш пароль',
+                    'placeholder' => 'Введите ФИО или псевдоним',
                     'minlength' => '1',
-                    'maxlength' => '40',
-                    'autocomplete' => 'off'
+                    'maxlength' => '40'
                 ],
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Пожалуйста, введите пароль'
+                        'message' => 'Пожалуйста, введите ФИО или псевдоним',
                     ]),
                     new Length([
                         'min' => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
                         'max' => 50,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
-                    ])
+                    ]),
                 ]
             ])
         ;
@@ -64,7 +62,7 @@ class LoginFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
+            'data_class' => null,
             'last_username' => ''
         ]);
     }

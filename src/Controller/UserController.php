@@ -8,8 +8,10 @@ use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use App\Service\RedisCacheService;
+use App\Service\MailerService;
 use App\Form\RegistrationFormType;
 use App\Form\LoginFormType;
+use App\Form\RecoveryFormType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,19 +27,25 @@ class UserController extends AbstractController
     private PostService $postService;
     private CommentService $commentService;
     private RedisCacheService $cacheService;
+    private MailerService $mailer;
+    private FormFactoryInterface $formFactory;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
         UserService $userService,
         PostService $postService,
         CommentService $commentService,
-        RedisCacheService $cacheService
+        RedisCacheService $cacheService,
+        MailerService $mailer,
+        FormFactoryInterface $formFactory
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->cacheService = $cacheService;
+        $this->mailer = $mailer;
+        $this->formFactory = $formFactory;
     }
 
     #[Route('/register', name: 'register')]
@@ -137,12 +145,13 @@ class UserController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $form->getData();
-            $this->userService->update($user);
+            $password = $form->get('plainPassword')->getData();
+            $this->userService->update($user, $password);
+
             return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
         }
 
         return $this->renderForm('user/update.html.twig', [
-            'user' => $user,
             'form' => $form
         ]);
     }
@@ -169,14 +178,14 @@ class UserController extends AbstractController
     }
 
     #[Route('/login', name: 'login')]
-    public function login(FormFactoryInterface $formFactory): Response
+    public function login(): Response
     {
         if ($error = $this->authenticationUtils->getLastAuthenticationError()) {
             $error = 'Неверная почта или пароль';
         }
         $lastUsername = $this->authenticationUtils->getLastUsername();
 
-        $form = $formFactory->createNamed('', LoginFormType::class, null, [
+        $form = $this->formFactory->createNamed('', LoginFormType::class, null, [
             'last_username' => $lastUsername
         ]);
 
@@ -186,9 +195,71 @@ class UserController extends AbstractController
         ]);
     }
 
+    #[Route('/recovery', name: 'show_recovery')]
+    public function showRecovery(Request $request): Response
+    {
+        $error = '';
+        $lastUsername = $this->authenticationUtils->getLastUsername();
+
+        $form = $this->createForm(RecoveryFormType::class, null, [
+            'last_username' => $lastUsername
+        ]);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = $form->get('email')->getData();
+            $fio = $form->get('fio')->getData();
+            if ($user = $this->userService->isUserExists($email, $fio)) {
+                $parameters = $this->userService->getRecoveryParameters($user);
+                if ($this->mailer->sendMailToRecoveryPassword($email, $fio, $parameters)) {
+                    $description = 'Ожидайте письмо по введенному вами e-mail адресу';
+                } else {
+                    $description = 'Произошла ошибка при отправке письма. Возможно введен неверный e-mail адрес';
+                }
+
+                return $this->render('blog_message.html.twig', [
+                    'description' => $description
+                ]);
+            }
+            $error = 'Такого пользователя не существует';
+        }
+
+        return $this->renderForm('user/recovery.html.twig', [
+            'form'  => $form,
+            'error' => $error
+        ]);
+    }
+
+    #[Route('/recovery/{secretCipher}', name: 'recovery')]
+    public function recovery(string $secretCipher, Request $request): Response
+    {
+
+        if (!$user = $this->userService->getUserBySecretCipher($secretCipher)) {
+            throw $this->createNotFoundException('Something went wrong');
+        }
+
+        $form = $this->createForm(RegistrationFormType::class, $user, [
+            'email' => $user->getEmail(),
+            'fio'   => $user->getFio()
+        ]);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $form->getData();
+            $password = $form->get('plainPassword')->getData();
+            $this->userService->update($user, $password);
+
+            return $this->redirectToRoute('user_login');
+        }
+
+        return $this->renderForm('user/update.html.twig', [
+            'form' => $form
+        ]);
+    }
+
     #[Route('/logout', name: 'logout')]
     public function logout()
     {
-        throw $this->createNotFoundException("Don't forget to activate logout");
+        throw $this->createNotFoundException('Don\'t forget to activate logout');
     }
 }

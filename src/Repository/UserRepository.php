@@ -50,6 +50,28 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return Users[] Returns an array of Users objects
      */
+    public function isUserExists(string $email, string $fio, ?int $dateTime = null)
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if (!empty($dateTime)) {
+            $qb->andWhere('u.dateTime = :date')->setParameter('date', $dateTime);
+        }
+        
+        return $qb->andWhere('u.email = :email')
+            ->andWhere('u.fio = :fio')
+            ->setParameter('email', $email)
+            ->setParameter('fio', $fio)
+            ->getQuery()
+            ->setCacheable(true)
+            ->enableResultCache(60)
+            ->getOneOrNullResult()
+        ;
+    }
+
+    /**
+     * @return Users[] Returns an array of Users objects
+     */
     public function getUsers(int $numberOfResults, int $lessThanMaxId)
     {
         return $this->createQueryBuilder('u')

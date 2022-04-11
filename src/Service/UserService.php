@@ -37,10 +37,10 @@ class UserService
         string $fio,
         string $password,
         array $rights,
-        $dateTime = false,
+        ?int $dateTime = null,
         bool $flush = true
     ) {
-        if (!$dateTime){
+        if (empty($dateTime)){
             $dateTime = time();
         }
         $user = new User();
@@ -64,6 +64,50 @@ class UserService
                 return false;
             }
         }
+    }
+
+    /**
+     * @return User Returns User if exists
+     */
+    public function isUserExists(string $email, string $fio, ?int $dateTime = null)
+    {
+        return $this->userRepository->isUserExists($email, $fio, $dateTime);
+    }
+
+    /**
+     * @return array Parameters - string url and int expiresAt for recovery password
+     */
+    public function getRecoveryParameters(User $user)
+    {
+        $parameters = [];
+        $parameters['expiresAt'] = time() + 3600;
+        $array = [
+            // 'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'fio' => $user->getFio(),
+            'dateTime' => $user->getDateTime(),
+            'expiresAt' => $parameters['expiresAt']
+        ];
+        $parameters['url'] = base64_encode(json_encode($array));
+        return $parameters;
+    }
+
+    /**
+     * @return User Returns an User object
+     */
+    public function getUserBySecretCipher(string $secretCipher)
+    {
+        $array = json_decode(base64_decode($secretCipher), true);
+        $email = $array['email'] ?? false;
+        $fio = $array['fio'] ?? false;
+        $dateTime = $array['dateTime'] ?? false;
+        $expiresAt = $array['expiresAt'] ?? false;
+        if ($email && $fio && $dateTime && $expiresAt && $expiresAt > time()) {
+            if ($user = $this->isUserExists($email, $fio, $dateTime)) {
+                return $user;
+            }
+        }
+        return false;
     }
 
     /**
@@ -153,10 +197,11 @@ class UserService
     /**
      * @return bool Returns true if User updated
      */
-    public function update(User $user, bool $flush = true)
+    public function update(User $user, string $password)
     {
-        if ($user->getId()) {
-            $this->userRepository->add($user, $flush);
+        if ($password) {
+            $newHashedPassword = $this->userPasswordHasher->hashPassword($user, $password);
+            $this->userRepository->upgradePassword($user, $newHashedPassword);
 
             return true;
         }

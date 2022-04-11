@@ -29,13 +29,30 @@ class MailerService
         $this->mailer->addReplyTo('blogsymfony@mail.ru', 'Prosto Blog');
     }
 
-    public function sendMail(): bool
+    private function sendMail(): bool
     {
         try {
            $this->mailer->send();
         } catch (Exception $e) {
             $this->errors[] = $e->getMessage();
             throw new \Exception($e->getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public function sendMailToRecoveryPassword(string $toAddress, string $fio, array $parameters)
+    {
+        $this->mailer->isHTML(true);
+        $this->mailer->addAddress($toAddress, $fio);
+        $this->mailer->Subject = 'Prosto Blog - recovery password';
+        $content = $this->twig->render('emails/recovery_email.html.twig', [
+            'url'       => $parameters['url'],
+            'expiresAt' => $parameters['expiresAt']
+        ]);
+        $this->mailer->msgHTML($content);
+
+        if (!$this->sendMail()) {
             return false;
         }
         return true;
@@ -48,14 +65,14 @@ class MailerService
         }
         $this->mailer->isHTML(true);
         $this->mailer->Subject = 'Новый Пост - Просто Блог';
-        $content = $this->twig->render('emails/toSubscribers.html.twig', [
+        $content = $this->twig->render('emails/to_subscribers_email.html.twig', [
             'user'   => $user,
             'postId' => $postId
         ]);
         $this->mailer->msgHTML($content);
 
         foreach ($toAddresses as $address) {
-            $this->mailer->addAddress($address['email'], 'Dear Subscriber');
+            $this->mailer->addAddress($address['email'], 'Subscriber');
         }
 
         if (!$this->sendMail()) {

@@ -1,0 +1,32 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %}Восстановление пароля - Просто Блог{% endblock %}
+
+{% block content %}
+<div class='formentry'>
+    <p class='formname'>Восстановление пароля <br> Введите данные, введенные при регистрации</p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.email, {
+            label: 'Введите е-mail:'
+        }) }}
+        {{ form_row(form.fio, {
+            label: 'Введите ФИО:'
+        }) }}
+
+        <input type='hidden' name='_target_path' value='{{ path('user_login') }}'/>
+
+        {% if error %}
+            <div class='formmsg'>
+                <p class='error'>{{ error }}</p>
+            </div>
+        {% endif %}
+
+        <div id='left'><a class='formbutton' href='{{ path('user_login') }}'>Перейти ко входу</a></div>
+        <div id='right'><button type='submit' class='formsubmit'>Отправить</button></div>
+
+        {{ form_row(form._token) }}
+
+    {{ form_end(form, {render_rest: false}) }}
+</div>
+{% endblock %}
