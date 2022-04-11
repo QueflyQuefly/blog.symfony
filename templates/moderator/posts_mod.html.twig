@@ -10,10 +10,9 @@
     {{ include('_blog_pagination.html.twig') }}
 
     {% if posts %}
-        {% set class = 'generalpost' %}
+        {% set class = 'viewpost' %}
         {% for post in posts %}
-            {{ include('moderator/_post.html.twig') }}
-            {% set class = 'viewpost' %}
+            {{ include('moderator/_post_mod.html.twig') }}
         {% endfor %}
     {% else %}
         <p class='center'>Все посты прошли проверку</p>

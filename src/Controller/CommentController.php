@@ -65,13 +65,41 @@ class CommentController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteComment(Comment $comment): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
         $postId = ($comment->getPost())->getId();
-        $this->commentService->delete($comment);
-        $this->addFlash(
-            'success',
-            'Комментарий удален'
-        );
-        return $this->redirectToRoute('post_show', ['id' => $postId]);
+        $commentId = $comment->getId();
+        
+        if ($this->isGranted('ROLE_ADMIN')) {
+            
+            $this->commentService->delete($comment);
+            $this->addFlash(
+                'success',
+                sprintf('Комментарий №%s удален', $commentId)
+            );
+
+            return $this->redirectToRoute('post_show', ['id' => $postId]);
+        } elseif ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove()) {
+            $this->commentService->delete($comment);
+            $this->addFlash(
+                'success',
+                sprintf('Комментарий №%s удален', $commentId)
+            );
+
+            return $this->redirectToRoute('moderator_comments');
+        } elseif ($user->getId() === ($comment->getUser())->getId()) {
+            $this->commentService->delete($comment);
+            $this->addFlash(
+                'success',
+                sprintf('Комментарий №%s удален', $commentId)
+            );
+
+            return $this->redirectToRoute('user_show_profile', [
+                'id' => $user->getId()
+            ]);
+        } else {
+            throw $this->createNotFoundException('Something went wrong');
+        }
     }
 }

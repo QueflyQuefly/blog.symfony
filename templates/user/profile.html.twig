@@ -71,4 +71,9 @@
         {% else %}
             <p class='center'>Нет комментариев для отображения</p>
         {% endif %}
+
+        <p>
+            <a class='link' href='{{ path('user_delete', {'id': app.user.id }) }}'>Удалить аккаунт</a> <br>
+            Также удалится вся ваша активность (посты, комментарии)
+        </p>
 {% endblock %}

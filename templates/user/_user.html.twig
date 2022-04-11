@@ -11,7 +11,7 @@
                     {% endfor %}
                 </p>
                 <p class='postdate'>
-                    <a href='{{ path('admin_delete_user', {'id': user.id}) }}' class='link' style='font-size: 14pt;'>
+                    <a href='{{ path('user_delete', {'id': user.id}) }}' class='link' style='font-size: 14pt;'>
                         Удалить {{ user.email }}
                     </a>
                 </p>

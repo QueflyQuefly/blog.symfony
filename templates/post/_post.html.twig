@@ -12,7 +12,7 @@
                     Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
                 {% endif %}
             </p>
-            {% if is_granted('ROLE_ADMIN') %}
+            {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == post.user.id) %}
                 <div class='submitunder'>
                     <a href='{{ path('post_delete', {id: post.id}) }}' class='link'>
                         Удалить пост с ID = {{ post.id }}

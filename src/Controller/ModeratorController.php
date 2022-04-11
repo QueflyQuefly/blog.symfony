@@ -34,7 +34,7 @@ class ModeratorController extends AbstractController
     {
         $posts = $this->postService->getNotApprovedPosts($numberOfPosts, $page);
 
-        return $this->render('moderator/posts.html.twig', [
+        return $this->render('moderator/posts_mod.html.twig', [
             'nameOfPath' => 'moderator_posts',
             'number'     => $numberOfPosts,
             'page'       => $page,
@@ -47,7 +47,7 @@ class ModeratorController extends AbstractController
     {
         $comments = $this->commentService->getNotApprovedComments($numberOfComments, $page);
 
-        return $this->render('moderator/comments.html.twig', [
+        return $this->render('moderator/comments_mod.html.twig', [
             'nameOfPath' => 'moderator_comments',
             'number'     => $numberOfComments,
             'page'       => $page,
@@ -64,7 +64,7 @@ class ModeratorController extends AbstractController
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
 
-        return $this->renderForm('moderator/viewpost.html.twig', [
+        return $this->renderForm('moderator/post_mod.html.twig', [
             'post' => $post
         ]);
     }
@@ -103,32 +103,6 @@ class ModeratorController extends AbstractController
                 'Произошла ошибка'
             );
         }
-
-        return $this->redirectToRoute('moderator_comments');
-    }
-
-    #[Route('/post/delete/{id}', name: 'post_delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function deletePost(Post $post): Response
-    {
-        $postId = $post->getId();
-        $this->postService->delete($post);
-        $this->addFlash(
-            'success',
-            sprintf('Пост №%s удален', $postId)
-        );
-
-        return $this->redirectToRoute('moderator_posts');
-    }
-
-    #[Route('/comment/delete/{id}', name: 'comment_delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function deleteComment(Comment $comment): Response
-    {
-        $commentId = $comment->getId();
-        $this->commentService->delete($comment);
-        $this->addFlash(
-            'success',
-            sprintf('Комментарий №%s удален', $commentId)
-        );
 
         return $this->redirectToRoute('moderator_comments');
     }

@@ -71,7 +71,7 @@ class PostController extends AbstractController
                 return $this->postService->getPosts($numberOfPosts, $page);
         });
 
-        return $this->render('post/allposts.html.twig', [
+        return $this->render('post/posts.html.twig', [
             'nameOfPath' => 'post_show_all',
             'number'     => $numberOfPosts,
             'page'       => $page,
@@ -87,10 +87,10 @@ class PostController extends AbstractController
                 return $this->postService->getPostById($id);
             }
         );
-
         if (!$post) {
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
+
         $comments = $this->cacheService->get(sprintf('comments_post_%s', $id), 10, sprintf('%s[]', Comment::class),
             function () use ($id) {
                 return $this->commentService->getCommentsByPostId($id);
@@ -99,7 +99,7 @@ class PostController extends AbstractController
 
         $form = $this->createForm(CommentFormType::class);
 
-        return $this->renderForm('post/view.html.twig', [
+        return $this->renderForm('post/post.html.twig', [
             'post'     => $post,
             'comments' => $comments,
             'form'     => $form
@@ -166,13 +166,39 @@ class PostController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deletePost(Post $post): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $this->postService->delete($post);
-        $this->addFlash(
-            'success',
-            'Пост удален'
-        );
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $postId = $post->getId();
 
-        return $this->redirectToRoute('post_main');
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $this->postService->delete($post);
+            $this->addFlash(
+                'success',
+                sprintf('Пост №%s удален', $postId)
+            );
+    
+            return $this->redirectToRoute('post_main');
+        } elseif ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove()) {
+            $this->postService->delete($post);
+            $this->addFlash(
+                'success',
+                sprintf('Пост №%s удален', $postId)
+            );
+    
+            return $this->redirectToRoute('moderator_posts');
+        } elseif ($user->getId() === ($post->getUser())->getId()) {
+            $this->postService->delete($post);
+            $this->addFlash(
+                'success',
+                sprintf('Пост №%s удален', $postId)
+            );
+
+            return $this->redirectToRoute('user_show_profile', [
+                'id' => $user->getId()
+            ]);
+        } else {
+            throw $this->createNotFoundException('Something went wrong');
+        }
     }
 }

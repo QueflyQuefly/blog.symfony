@@ -91,16 +91,4 @@ class AdminController extends AbstractController
             'numberOfIterations' => $numberOfIterations
         ]);
     }
-
-    #[Route('/users/delete/{id}', name: 'delete_user', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function deleteUser(User $user): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
-        $this->userService->delete($user);
-        $this->addFlash(
-            'success',
-            'Пользователь удален'
-        );
-        return $this->redirectToRoute('admin_show_users');
-    }
 }

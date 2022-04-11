@@ -7,7 +7,7 @@
     </p>
     <div class='commentcontent'>
         <p>{{ comment.content }}</p>
-        {% if is_granted('ROLE_ADMIN') %}
+        {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == comment.user.id) %}
             <a href='{{ path('comment_delete', {id: comment.id}) }}' class='link'>
                 Удалить комментарий
             </a>

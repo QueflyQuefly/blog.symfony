@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Post;
 use App\Entity\Comment;
 use App\Entity\User;
 use App\Service\UserService;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
@@ -29,6 +31,7 @@ class UserController extends AbstractController
     private RedisCacheService $cacheService;
     private MailerService $mailer;
     private FormFactoryInterface $formFactory;
+    private TokenStorageInterface $tokenStorage;
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
@@ -37,7 +40,8 @@ class UserController extends AbstractController
         CommentService $commentService,
         RedisCacheService $cacheService,
         MailerService $mailer,
-        FormFactoryInterface $formFactory
+        FormFactoryInterface $formFactory,
+        TokenStorageInterface $tokenStorage
     ) {
         $this->authenticationUtils = $authenticationUtils;
         $this->userService = $userService;
@@ -46,6 +50,7 @@ class UserController extends AbstractController
         $this->cacheService = $cacheService;
         $this->mailer = $mailer;
         $this->formFactory = $formFactory;
+        $this->tokenStorage = $tokenStorage;
     }
 
     #[Route('/register', name: 'register')]
@@ -80,6 +85,7 @@ class UserController extends AbstractController
     #[Route('/profile/{id<(?!0)\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $id): Response
     {
+        $canSubscribe = $isSubscribe = false;
         if (!is_null($id)) {
             $user = $this->cacheService->get(sprintf('user_%s', $id), 60, User::class, 
                 function () use ($id) {
@@ -87,8 +93,10 @@ class UserController extends AbstractController
             });
             /** @var \App\Entity\User $sessionUser */
             if ($sessionUser = $this->getUser()) {
-                $canSubscribe = true;
-                $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $id);
+                if ($sessionUser->getId() !== $id) {
+                    $canSubscribe = true;
+                    $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $id);
+                }
             }
             if (!$user) {
                 throw $this->createNotFoundException(sprintf('Пользователь с id = %s не найден', $id));
@@ -97,24 +105,23 @@ class UserController extends AbstractController
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
-            $canSubscribe = $isSubscribe = false;
         }
         $numberOfResults = 5;
         $userId = $user->getId();
 
-        $posts = $this->cacheService->get(sprintf('posts_by_user_%s', $userId), 60, sprintf('%s[]', Post::class),
+        $posts = $this->cacheService->get(sprintf('posts_user_%s', $userId), 10, sprintf('%s[]', Post::class),
             function () use ($userId, $numberOfResults) {
                 return $this->postService->getPostsByUserId($userId, $numberOfResults);
         });
-        $comments = $this->cacheService->get(sprintf('comments_by_user_%s', $userId), 60, sprintf('%s[]', Comment::class),
+        $comments = $this->cacheService->get(sprintf('comments_user_%s', $userId), 10, sprintf('%s[]', Comment::class),
             function () use ($userId, $numberOfResults) {
                 return $this->commentService->getCommentsByUserId($userId, $numberOfResults);
         });
-        $likedPosts = $this->cacheService->get(sprintf('liked_posts_by_user_%s', $userId), 60, sprintf('%s[]', Post::class),
+        $likedPosts = $this->cacheService->get(sprintf('liked_posts_user_%s', $userId), 10, sprintf('%s[]', Post::class),
             function () use ($userId, $numberOfResults) {
                 return $this->postService->getLikedPostsByUserId($userId, $numberOfResults);
         });
-        $likedComments = $this->cacheService->get(sprintf('liked_comments_by_user_%s', $userId), 60, sprintf('%s[]', Comment::class),
+        $likedComments = $this->cacheService->get(sprintf('liked_comments_user_%s', $userId), 10, sprintf('%s[]', Comment::class),
             function () use ($userId, $numberOfResults) {
                 return $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
         });
@@ -233,7 +240,6 @@ class UserController extends AbstractController
     #[Route('/recovery/{secretCipher}', name: 'recovery')]
     public function recovery(string $secretCipher, Request $request): Response
     {
-
         if (!$user = $this->userService->getUserBySecretCipher($secretCipher)) {
             throw $this->createNotFoundException('Something went wrong');
         }
@@ -261,5 +267,32 @@ class UserController extends AbstractController
     public function logout()
     {
         throw $this->createNotFoundException('Don\'t forget to activate logout');
+    }
+
+    #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function delete(User $userForDelete, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            $userForDeleteEmail = $userForDelete->getEmail();
+            $this->userService->delete($userForDelete);
+            $this->addFlash(
+                'success',
+                sprintf('Пользователь №%s удален', $userForDeleteEmail)
+            );
+
+            return $this->redirectToRoute('admin_show_users');
+        } elseif ($user->getId() === $userForDelete->getId()) {
+            $this->userService->delete($userForDelete);
+            $request->getSession()->invalidate();
+            $this->tokenStorage->setToken();
+            
+            return $this->redirectToRoute('user_login');
+        } else {
+            throw $this->createNotFoundException('Something went wrong');
+        }
     }
 }
