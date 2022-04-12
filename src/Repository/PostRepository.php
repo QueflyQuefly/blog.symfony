@@ -80,8 +80,6 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(30)
             ->getResult()
         ;
     }
@@ -101,8 +99,6 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -119,8 +115,6 @@ class PostRepository extends ServiceEntityRepository
             ->andWhere('p.approve = 1')
             ->setParameter(':id', $postId)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getOneOrNullResult()
         ;
     }
@@ -154,8 +148,6 @@ class PostRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -191,8 +183,6 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('user', $userId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -212,8 +202,6 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('user', $userId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }

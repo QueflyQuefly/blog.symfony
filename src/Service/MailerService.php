@@ -46,7 +46,7 @@ class MailerService
         $this->mailer->isHTML(true);
         $this->mailer->addAddress($toAddress, $fio);
         $this->mailer->Subject = 'Prosto Blog - recovery password';
-        $content = $this->twig->render('emails/recovery_email.html.twig', [
+        $content = $this->twig->render('email/email_recovery.html.twig', [
             'url'       => $parameters['url'],
             'expiresAt' => $parameters['expiresAt']
         ]);
@@ -65,7 +65,7 @@ class MailerService
         }
         $this->mailer->isHTML(true);
         $this->mailer->Subject = 'Новый Пост - Просто Блог';
-        $content = $this->twig->render('emails/to_subscribers_email.html.twig', [
+        $content = $this->twig->render('email/email_to_subscribers.html.twig', [
             'user'   => $user,
             'postId' => $postId
         ]);

@@ -29,12 +29,12 @@
         </p>
 
         {% if is_granted('ROLE_MODERATOR') %}
-            <a href='{{ path('moderator_post_delete', {id: post.id}) }}' class='link' style='font-size: 14pt; float: left;'>
-                Удалить пост
+            <a href='{{ path('post_delete', {id: post.id}) }}' class='link' style='font-size: 14pt; float: left;'>
+                Удалить пост №{{ post.id }}
             </a>
 
             <a href='{{ path('moderator_post_approve', {id: post.id}) }}' class='link' style='font-size: 14pt; float: right;'>
-                Одобрить пост
+                Одобрить пост №{{ post.id }}
             </a>
         {% endif %}
     </div>

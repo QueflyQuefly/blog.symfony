@@ -36,7 +36,7 @@ class SearchController extends AbstractController
             $posts = $this->postService->searchPosts($searchWords, $numberOfResults);
         }
 
-        return $this->render('search/searchposts.html.twig', [
+        return $this->render('search/search_posts.html.twig', [
             'search' => $search,
             'posts'  => $posts
         ]);
@@ -54,7 +54,7 @@ class SearchController extends AbstractController
             $users = $this->userService->searchUsers($searchWords);
         }
 
-        return $this->render('search/searchusers.html.twig', [
+        return $this->render('search/search_users.html.twig', [
             'search' => $search,
             'users'  => $users
         ]);

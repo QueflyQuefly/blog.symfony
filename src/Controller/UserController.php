@@ -77,7 +77,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_login');
         }
 
-        return $this->renderForm('user/register.html.twig', [
+        return $this->renderForm('user/user_register.html.twig', [
             'form' => $form
         ]);
     }
@@ -126,7 +126,7 @@ class UserController extends AbstractController
                 return $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
         });
 
-        return $this->render('user/profile.html.twig', [
+        return $this->render('user/user_profile.html.twig', [
             'user'              => $user,
             'can_subscribe'     => $canSubscribe,
             'is_subscribe'      => $isSubscribe,
@@ -158,7 +158,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
         }
 
-        return $this->renderForm('user/update.html.twig', [
+        return $this->renderForm('user/user_update.html.twig', [
             'form' => $form
         ]);
     }
@@ -196,7 +196,7 @@ class UserController extends AbstractController
             'last_username' => $lastUsername
         ]);
 
-        return $this->renderForm('user/login.html.twig', [
+        return $this->renderForm('user/user_login.html.twig', [
             'form'  => $form,
             'error' => $error
         ]);
@@ -231,7 +231,7 @@ class UserController extends AbstractController
             $error = 'Такого пользователя не существует';
         }
 
-        return $this->renderForm('user/recovery.html.twig', [
+        return $this->renderForm('user/user_recovery.html.twig', [
             'form'  => $form,
             'error' => $error
         ]);
@@ -258,7 +258,7 @@ class UserController extends AbstractController
             return $this->redirectToRoute('user_login');
         }
 
-        return $this->renderForm('user/update.html.twig', [
+        return $this->renderForm('user/user_update.html.twig', [
             'form' => $form
         ]);
     }

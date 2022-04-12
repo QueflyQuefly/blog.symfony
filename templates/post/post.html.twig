@@ -69,18 +69,7 @@
         </div>
     </div>
 
-    <div class='addcomments' id='addcomment'>
-        <div class='addcomment'>
-            {{ form_start(form, {'action': path('comment_add', {id: post.id})}) }}
-                {{ form_row(form.content, {
-                    label: 'Прокомментируйте пост: '
-                }) }}
-                {{ form_row(form.submit, {
-                    label: 'Добавить комментарий'
-                }) }}
-            {{ form_end(form) }}
-        </div>
-    </div>
+    {{ include('comment/_comment_add.html.twig') }}
 
     {% if comments %}
         {% for comment in comments %}

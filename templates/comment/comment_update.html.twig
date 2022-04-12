@@ -1,0 +1,16 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %}Изменение комментария - Просто Блог{% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <p class='formname'>Форма изменения комментария:</p>
+    <div class='addpostform'>
+        {{ form_start(form) }}
+            {{ form_row(form.content, {
+                label: 'Измените содержание комментария: '
+            }) }}
+        {{ form_end(form) }}   
+    </div>
+{% endblock %}

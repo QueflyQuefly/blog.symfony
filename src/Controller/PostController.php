@@ -50,7 +50,7 @@ class PostController extends AbstractController
             }
         );
 
-        $response = $this->render('post/home.html.twig', [
+        $response = $this->render('post/post_home.html.twig', [
             'posts'           => $posts,
             'moreTalkedPosts' => $moreTalkedPosts
         ]);
@@ -132,7 +132,7 @@ class PostController extends AbstractController
             return $this->redirectToRoute('post_main');
         }
 
-        return $this->renderForm('post/add.html.twig', [
+        return $this->renderForm('post/post_add.html.twig', [
             'form'              => $form,
             'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
         ]);
@@ -151,12 +151,13 @@ class PostController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $post = $form->getData();
+            $post->setApprove(false);
             $this->postService->update($post);
 
             return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
         }
 
-        return $this->renderForm('post/add.html.twig', [
+        return $this->renderForm('post/post_add.html.twig', [
             'form'              => $form,
             'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
         ]);

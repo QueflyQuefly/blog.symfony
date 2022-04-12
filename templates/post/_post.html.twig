@@ -2,7 +2,7 @@
 <div class='{{ class }}'>
     <a class='postLink' href='{{ path('post_show', {id: post.id}) }}'>
         <div class='posttext'>
-            <p class='posttitle'>{{ post.title|u.truncate(200, '...', false) }}</p>
+            <p class='posttitle'>{{ post.title }}</p>
             <p class='postcontent'>{{ post.content|striptags|u.truncate(250, '...', false) }}</p>
             <p class='postdate'>{{ post.dateTime|date('d.m.Y в H:i') }} &copy; {{ post.user.fio }}</p>
             <p class='postrating'>
@@ -15,7 +15,7 @@
             {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == post.user.id) %}
                 <div class='submitunder'>
                     <a href='{{ path('post_delete', {id: post.id}) }}' class='link'>
-                        Удалить пост с ID = {{ post.id }}
+                        Удалить пост №{{ post.id }}
                     </a>
                 </div>
             {% endif %}

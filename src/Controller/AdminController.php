@@ -51,7 +51,7 @@ class AdminController extends AbstractController
                 return $this->userService->getUsers($numberOfUsers, $page);
         });
 
-        return $this->render('admin/allusers.html.twig', [
+        return $this->render('admin/admin_users.html.twig', [
             'nameOfPath' => 'admin_show_users',
             'number'     => $numberOfUsers,
             'page'       => $page,
@@ -67,7 +67,7 @@ class AdminController extends AbstractController
                 return $this->commentService->getComments($numberOfComments, $page);
         });
 
-        return $this->render('admin/allcomments.html.twig', [
+        return $this->render('admin/admin_comments.html.twig', [
             'nameOfPath' => 'admin_show_comments',
             'number'     => $numberOfComments,
             'page'       => $page,
@@ -86,7 +86,7 @@ class AdminController extends AbstractController
         $this->stabService->toStabDb($numberOfIterations);
         $errors = $this->stabService->getErrors() ?? false;
 
-        return $this->render('admin/stab.html.twig', [
+        return $this->render('admin/admin_stab.html.twig', [
             'errors'             => $errors,
             'numberOfIterations' => $numberOfIterations
         ]);

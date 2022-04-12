@@ -1,0 +1,31 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Регистрация - Просто Блог {% endblock %}
+
+{% block content %}
+    <div class='formentry'>
+        <p class='formname'>Регистрация</p>
+
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.fio) }}
+            {{ form_row(form.plainPassword) }}
+            {{ form_row(form.agreeTerms) }}
+
+            {% if is_granted('ROLE_SUPER_ADMIN') %}
+                {{ form_row(form.addAdmin) }}
+            {% endif %}
+
+            {% if is_granted('ROLE_ADMIN') %}
+                {{ form_row(form.addModerator) }}
+            {% endif %}
+
+            {{ form_row(form._token) }}
+            {{ include('_blog_flashes.html.twig') }}
+            <br>
+            <div id='right'>
+                {{ form_row(form.submit) }}
+            </div>
+        {{ form_end(form, {render_rest: false}) }}   
+    </div>
+{% endblock %}

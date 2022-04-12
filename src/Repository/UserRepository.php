@@ -63,8 +63,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('email', $email)
             ->setParameter('fio', $fio)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getOneOrNullResult()
         ;
     }
@@ -79,8 +77,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -94,14 +90,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter(':id', $userId)
             ->orderBy('u.id', 'DESC')
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
 
     /**
-     * @return int Returns an id
+     * @return ?int Returns an id
      */
     public function getLastUserId(): ?int
     {
@@ -112,8 +106,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
         if (is_array($maxUserId) && in_array('max_id', $maxUserId)) {
             return (int) $maxUserId['max_id'];
+        } else {
+            return null;
         }
-        return $maxUserId;
     }
 
     /**

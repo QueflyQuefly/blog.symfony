@@ -17,32 +17,34 @@ class CommentFormType extends AbstractType
     {
         $builder
             ->add('content', TextareaType::class, [
-                'attr' => [
-                    'class' => 'commenttextarea',
-                    'placeholder' => 'Опишите ваши эмоции :-) (до 500 символов)',
-                    'autofocus' => 'on',
-                    'minlength' => '1',
-                    'maxlength' => '500',
+                'label' => 'Прокомментируйте пост: ',
+                'attr'  => [
+                    'class'        => 'commenttextarea',
+                    'placeholder'  => 'Опишите ваши эмоции :-) (до 500 символов)',
+                    'autofocus'    => 'on',
+                    'minlength'    => '1',
+                    'maxlength'    => '500',
                     'autocomplete' => 'on',
-                    'wrap' => 'hard',
-                    'spellcheck' => 'true'
+                    'wrap'         => 'hard',
+                    'spellcheck'   => 'true',
+                    'value'        => $options['content']
                 ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Пожалуйста, введите текст комментария'
                     ]),
                     new Length([
-                        'min' => 1,
+                        'min'        => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 600,
+                        'max'        => 600,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков'
                     ])
                 ]
             ])
             ->add('submit', SubmitType::class, [
-                'attr' => [
-                    'class' => 'formsubmit',
-                    'value' => 'Добавить комментарий',
+                'label' => 'Отправить на модерацию',
+                'attr'  => [
+                    'class' => 'formsubmit'
                 ]
             ])
         ;
@@ -51,7 +53,8 @@ class CommentFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Comment::class
+            'data_class' => Comment::class,
+            'content'    => ''
         ]);
     }
 }

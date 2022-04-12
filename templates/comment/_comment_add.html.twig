@@ -1,0 +1,8 @@
+    <div class='addcomments' id='addcomment'>
+        <div class='addcomment'>
+            {{ form_start(form, {'action': path('comment_add', {id: post.id})}) }}
+                {{ form_row(form.content) }}
+                {{ form_row(form.submit) }}
+            {{ form_end(form) }}
+        </div>
+    </div>

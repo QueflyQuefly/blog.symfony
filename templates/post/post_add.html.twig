@@ -1,0 +1,23 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %} Добавление поста - Просто Блог {% endblock %}
+
+{% block content %}
+    {{ include('_blog_flashes.html.twig') }}
+
+    <p class='formname'>Форма создания/изменения поста:</p>
+    <div class='addpostform'>
+
+        {{ form_start(form) }}
+            {{ form_row(form.title) }}
+
+            <p class='addpostlabel'>
+                Допускается формат (.jpg) до {{ max_size_of_image / 1024 / 1024 }} мегабайт
+            </p>
+            {{ form_row(form.image) }}
+            {{ form_row(form.content) }}
+            {{ form_row(form.submit) }}
+        {{ form_end(form) }}   
+
+    </div>
+{% endblock %}

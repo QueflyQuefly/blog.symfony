@@ -11,7 +11,7 @@
 
     {% if comments %}
         {% for comment in comments %}
-            {{ include('moderator/_comment_mod.html.twig') }}
+            {{ include('moderator/_mod_comment.html.twig') }}
         {% endfor %}
     {% else %}
         <p class='center'>Все комментарии прошли проверку</p>

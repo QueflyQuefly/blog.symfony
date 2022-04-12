@@ -7,12 +7,8 @@
     <p class='formname'>Восстановление пароля <br> Введите данные, введенные при регистрации</p>
 
     {{ form_start(form) }}
-        {{ form_row(form.email, {
-            label: 'Введите е-mail:'
-        }) }}
-        {{ form_row(form.fio, {
-            label: 'Введите ФИО:'
-        }) }}
+        {{ form_row(form.email) }}
+        {{ form_row(form.fio) }}
 
         <input type='hidden' name='_target_path' value='{{ path('user_login') }}'/>
 
@@ -23,7 +19,9 @@
         {% endif %}
 
         <div id='left'><a class='formbutton' href='{{ path('user_login') }}'>Перейти ко входу</a></div>
-        <div id='right'><button type='submit' class='formsubmit'>Отправить</button></div>
+        <div id='right'>
+            {{ form_row(form.submit) }}
+        </div>
 
         {{ form_row(form._token) }}
 

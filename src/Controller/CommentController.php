@@ -61,6 +61,29 @@ class CommentController extends AbstractController
 
         return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
+
+    #[Route('/update/{id}', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function update(Comment $comment, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $postId = ($comment->getPost())->getId();
+        $form = $this->createForm(CommentFormType::class, $comment, [
+            'content' => $comment->getContent(),
+        ]);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $form->getData();
+            $comment->setApprove(false);
+            $this->commentService->update($comment);
+
+            return $this->redirectToRoute('post_show', ['id' => $postId]);
+        }
+
+        return $this->renderForm('comment/comment_update.html.twig', [
+            'form' => $form
+        ]);
+    }
     
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteComment(Comment $comment): Response

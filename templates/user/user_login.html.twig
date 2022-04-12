@@ -7,12 +7,8 @@
     <p class='formname'>Вход в аккаунт</p>
 
     {{ form_start(form) }}
-        {{ form_row(form._username, {
-            label: 'Введите е-mail:'
-        }) }}
-        {{ form_row(form._password, {
-            label: 'Введите пароль:'
-        }) }}
+        {{ form_row(form._username) }}
+        {{ form_row(form._password) }}
 
         <p><a class='link' href='{{ path('user_show_recovery') }}'>Забыли пароль?</a></p>
 
@@ -23,7 +19,9 @@
         {% endif %}
 
         <div id='left'><a class='formbutton' href='{{ path('user_register') }}'>Создать аккаунт</a></div>
-        <div id='right'><button type='submit' class='formsubmit'>Войти</button></div>
+        <div id='right'>
+            {{ form_row(form.submit) }}
+        </div>
 
         {{ form_row(form._token) }}
 

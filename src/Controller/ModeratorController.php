@@ -34,7 +34,7 @@ class ModeratorController extends AbstractController
     {
         $posts = $this->postService->getNotApprovedPosts($numberOfPosts, $page);
 
-        return $this->render('moderator/posts_mod.html.twig', [
+        return $this->render('moderator/mod_posts.html.twig', [
             'nameOfPath' => 'moderator_posts',
             'number'     => $numberOfPosts,
             'page'       => $page,
@@ -47,7 +47,7 @@ class ModeratorController extends AbstractController
     {
         $comments = $this->commentService->getNotApprovedComments($numberOfComments, $page);
 
-        return $this->render('moderator/comments_mod.html.twig', [
+        return $this->render('moderator/mod_comments.html.twig', [
             'nameOfPath' => 'moderator_comments',
             'number'     => $numberOfComments,
             'page'       => $page,
@@ -64,7 +64,7 @@ class ModeratorController extends AbstractController
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
 
-        return $this->renderForm('moderator/post_mod.html.twig', [
+        return $this->renderForm('moderator/mod_post.html.twig', [
             'post' => $post
         ]);
     }

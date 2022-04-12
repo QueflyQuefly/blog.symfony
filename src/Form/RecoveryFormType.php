@@ -5,6 +5,7 @@ namespace App\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
@@ -16,44 +17,52 @@ class RecoveryFormType extends AbstractType
     {
         $builder
             ->add('email', EmailType::class, [
+                'label' => 'Введите е-mail:',
                 'attr' => [
-                    'class' => 'formtext',
-                    'placeholder' => 'Ваш email',
-                    'autofocus' => 'on',
-                    'minlength' => '1',
-                    'maxlength' => '40',
+                    'class'        => 'formtext',
+                    'placeholder'  => 'Ваш email',
+                    'autofocus'    => 'on',
+                    'minlength'    => '1',
+                    'maxlength'    => '40',
                     'autocomplete' => 'on',
-                    'value' => $options['last_username']
+                    'value'        => $options['last_username']
                 ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Пожалуйста, введите email'
                     ]),
                     new Length([
-                        'min' => 1,
+                        'min'        => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 50,
+                        'max'        => 50,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
                     ])
                 ]
             ])
             ->add('fio', TextType::class, [
+                'label' => 'Введите ФИО:',
                 'attr' => [
-                    'class' => 'formtext',
+                    'class'       => 'formtext',
                     'placeholder' => 'Введите ФИО или псевдоним',
-                    'minlength' => '1',
-                    'maxlength' => '40'
+                    'minlength'   => '1',
+                    'maxlength'   => '40'
                 ],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Пожалуйста, введите ФИО или псевдоним',
                     ]),
                     new Length([
-                        'min' => 1,
+                        'min'        => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
-                        'max' => 50,
+                        'max'        => 50,
                         'maxMessage' => 'Необходимо ввести не более {{ limit }} знаков',
                     ]),
+                ]
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Отправить',
+                'attr'  => [
+                    'class' => 'formsubmit',
                 ]
             ])
         ;
@@ -62,7 +71,7 @@ class RecoveryFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => null,
+            'data_class'    => null,
             'last_username' => ''
         ]);
     }

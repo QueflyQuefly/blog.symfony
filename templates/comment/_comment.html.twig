@@ -9,7 +9,11 @@
         <p>{{ comment.content }}</p>
         {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == comment.user.id) %}
             <a href='{{ path('comment_delete', {id: comment.id}) }}' class='link'>
-                Удалить комментарий
+                Удалить комментарий №{{ comment.id }}
+            </a>
+
+            <a href='{{ path('comment_update', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
+                Изменить комментарий №{{ comment.id }}
             </a>
         {% endif %} 
     </div>

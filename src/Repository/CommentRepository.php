@@ -81,8 +81,6 @@ class CommentRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -118,8 +116,6 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -138,8 +134,6 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }
@@ -159,8 +153,6 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->setCacheable(true)
-            ->enableResultCache(60)
             ->getResult()
         ;
     }

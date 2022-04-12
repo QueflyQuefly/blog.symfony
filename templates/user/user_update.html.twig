@@ -1,0 +1,25 @@
+{% extends 'blog_base.html.twig' %}
+
+{% block title %}Редактирование профиля - Просто Блог{% endblock %}
+
+{% block content %}
+    <div class='formentry'>
+        <p class='formname'>Редактирование информации профиля</p>
+
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.fio) }}
+            {{ form_row(form.plainPassword) }}
+            {{ form_row(form.agreeTerms) }}
+            {{ form_row(form._token) }}
+
+            {{ include('_blog_flashes.html.twig') }}
+            <br>
+            <div id='right'>
+                {{ form_row(form.submit, {
+                    label: 'Сохранить'
+                }) }}
+            </div>
+        {{ form_end(form, {render_rest: false}) }}
+    </div>
+{% endblock %}
