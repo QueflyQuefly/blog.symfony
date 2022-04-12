@@ -124,6 +124,20 @@ class CommentService
         return $this->commentRepository->getLikedCommentsByUserId($userId, $numberOfComments);
     }
 
+    /**
+     * @return bool Returns true if Post updated
+     */
+    public function update(Comment $comment, bool $flush = true)
+    {
+        if ($comment->getId() && $flush) {
+            $this->commentRepository->update($flush);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function delete(Comment $comment, bool $flush = true)
     {
         $this->commentRepository->remove($comment, $flush);

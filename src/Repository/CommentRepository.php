@@ -49,6 +49,17 @@ class CommentRepository extends ServiceEntityRepository
      * @throws ORMException
      * @throws OptimisticLockException
      */
+    public function update(bool $flush = true): void
+    {
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
     public function remove(Comment $entity, bool $flush = true): void
     {
         $this->_em->remove($entity);

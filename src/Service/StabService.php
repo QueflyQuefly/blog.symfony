@@ -224,8 +224,10 @@ class StabService
                 if (!$min = $this->userService->getLastUserId() + 1) {
                     throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
                 }
-                $this->approve = (bool) mt_rand(0, 1);
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
+
+                    /* For test, recommend to delete */
+                    $this->approve = (bool) mt_rand(0, 1);
 
                     $user = $this->createRandomUser($i, $this->flush);
                     if (!$user) {
@@ -246,6 +248,12 @@ class StabService
                         }
 
                         for ($m = 0; $m < $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments); $m++) {
+
+                            /* For test, recommend to delete */
+                            if ($this->approve) {
+                                $this->approve = (bool) mt_rand(0, 1);
+                            }
+
                             $comment = $this->createRandomComment(
                                 $user,
                                 $post,

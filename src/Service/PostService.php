@@ -42,8 +42,6 @@ class PostService
         $post = new Post();
         $post->setTitle($title);
         $post->setUser($user);
-        $regex = '/#(\w+)/um';
-        $content = preg_replace($regex, "<a class='link' href='/search/%23$1'>$0</a>", $content);
         $post->setContent($content);
         $post->setDateTime($dateTime);
         $post->setRating('0.0');
@@ -201,6 +199,20 @@ class PostService
         $posts2 = $this->postRepository->searchByContent($searchWords, $numberOfResults);
         $results = array_merge($posts, $posts1, $posts2);
         return $results;
+    }
+
+    /**
+     * @return bool Returns true if Post updated
+     */
+    public function update(Post $post, bool $flush = true)
+    {
+        if ($post->getId() && $flush) {
+            $this->postRepository->update($flush);
+
+            return true;
+        }
+
+        return false;
     }
 
     public function delete($post, bool $flush = true)

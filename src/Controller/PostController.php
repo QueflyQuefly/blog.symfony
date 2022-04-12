@@ -90,17 +90,18 @@ class PostController extends AbstractController
         if (!$post) {
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
-
+        $regex = '/#(\w+)/um';
+        $content = preg_replace($regex, "<a class='link' href='/search/%23$1'>$0</a>", $post->getContent());
         $comments = $this->cacheService->get(sprintf('comments_post_%s', $id), 10, sprintf('%s[]', Comment::class),
             function () use ($id) {
                 return $this->commentService->getCommentsByPostId($id);
             }
         );
-
         $form = $this->createForm(CommentFormType::class);
 
         return $this->renderForm('post/post.html.twig', [
             'post'     => $post,
+            'content'  => $content,
             'comments' => $comments,
             'form'     => $form
         ]);
@@ -132,8 +133,32 @@ class PostController extends AbstractController
         }
 
         return $this->renderForm('post/add.html.twig', [
-            'form'                     => $form,
-            'max_size_of_upload_image' => $this::MAX_SIZE_OF_IMAGE
+            'form'              => $form,
+            'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
+        ]);
+    }
+
+    #[Route('/{id}/update', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function update(Post $post, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $form = $this->createForm(PostFormType::class, $post, [
+            'title' => $post->getTitle(),
+            'content'   => $post->getContent()
+        ]);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $post = $form->getData();
+            $this->postService->update($post);
+
+            return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
+        }
+
+        return $this->renderForm('post/add.html.twig', [
+            'form'              => $form,
+            'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
         ]);
     }
 

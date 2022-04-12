@@ -52,15 +52,21 @@
     <div class='singleposttext'>
         <p class='singlepostcontent'>
             {% autoescape %}
-                {{ post.content|raw|nl2br }}
+                {{ content|raw|nl2br }}
             {% endautoescape %}
         </p>
+        <div style='font-size: 14pt;'>
+        {% if is_granted('ROLE_ADMIN') or (app.user and app.user.id == post.user.id) %}
+        
+            <a href='{{ path('post_delete', {id: post.id}) }}' class='link' style='float: left;'>
+                Удалить этот пост
+            </a>
 
-        {% if is_granted('ROLE_ADMIN') %}
-            <form action='{{ path('post_delete', {id: post.id}) }}' method='post'>
-                <input type='submit' value='Удалить этот пост' class='link' style='font-size: 14pt'>
-            </form>
+            <a href='{{ path('post_update', {id: post.id}) }}' class='link' style='float: right;'>
+                Изменить этот пост
+            </a>
         {% endif %}
+        </div>
     </div>
 
     <div class='addcomments' id='addcomment'>

@@ -23,7 +23,8 @@ class PostFormType extends AbstractType
                     'placeholder' => 'Добавьте заголовок поста. Количество символов: от 20 до 180',
                     'autofocus' => 'on',
                     'minlength' => '1',
-                    'maxlength' => '120'
+                    'maxlength' => '120',
+                    'value' => $options['title']
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -40,7 +41,9 @@ class PostFormType extends AbstractType
             ->add('image', FileType::class, [
                 'mapped' => false, 
                 'required' => false,
-                'attr' => ['class' => 'addpostimg']
+                'attr' => [
+                    'class' => 'addpostimg'
+                ]
             ])
             ->add('content', TextareaType::class, [
                 'attr' => [
@@ -49,7 +52,8 @@ class PostFormType extends AbstractType
                     'minlength' => '1',
                     'maxlength' => '4000',
                     'spellcheck' => 'true',
-                    'wrap' => 'hard'
+                    'wrap' => 'hard',
+                    'value' => $options['content']
                 ],
                 'constraints' => [
                     new NotBlank([
@@ -70,6 +74,8 @@ class PostFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Post::class,
+            'title' => '',
+            'content' => ''
         ]);
     }
 }
