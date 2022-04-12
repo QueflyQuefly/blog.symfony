@@ -24,7 +24,6 @@ class CommentController extends AbstractController
     #[Route('/add/{id}', name: 'add', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function create(Post $post, Request $request): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
 
@@ -35,11 +34,23 @@ class CommentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $user = $this->getUser();
             $content = $form->get('content')->getData();
-            $this->commentService->create($user, $post, $content);
-            $this->addFlash(
-                'success',
-                'Ваш комментарий отправлен на модерацию'
-            );
+            $approve = false;
+            if ($this->isGranted('ROLE_MODERATOR')) {
+                $approve = true;
+            }
+            if ($this->commentService->create($user, $post, $content, $approve)) {
+                if ($approve) {
+                    $this->addFlash(
+                        'success',
+                        'Ваш комментарий добавлен'
+                    );
+                } else {
+                    $this->addFlash(
+                        'success',
+                        'Ваш комментарий отправлен на модерацию'
+                    );
+                }
+            }
         } else {
             $this->addFlash(
                 'error',
@@ -52,7 +63,6 @@ class CommentController extends AbstractController
     #[Route('/like/{postId<(?!0)\b[0-9]+>}/{id<(?!0)\b[0-9]+>}', name: 'like')]
     public function like(int $postId, Comment $comment): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         if (!$comment->getApprove()) {
             throw $this->createNotFoundException('Невозможно поставить лайк неодобренному комментарию');
         }
@@ -66,23 +76,39 @@ class CommentController extends AbstractController
     public function update(Comment $comment, Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
         $postId = ($comment->getPost())->getId();
-        $form = $this->createForm(CommentFormType::class, $comment, [
-            'content' => $comment->getContent(),
-        ]);
 
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $comment = $form->getData();
-            $comment->setApprove(false);
-            $this->commentService->update($comment);
+        if (
+            $this->isGranted('ROLE_ADMIN') 
+            || ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove()) 
+            || $user->getId() === $comment->getUser()->getId()
+        ) {
+            $form = $this->createForm(CommentFormType::class, $comment, [
+                'content' => $comment->getContent(),
+            ]);
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $comment = $form->getData();
+                if ($this->isGranted('ROLE_MODERATOR')) {
+                    $comment->setApprove(true);
+                }
+                $this->commentService->update($comment);
 
-            return $this->redirectToRoute('post_show', ['id' => $postId]);
+                if ($this->isGranted('ROLE_ADMIN') || $user->getId() === $comment->getUser()->getId()) {
+                    return $this->redirectToRoute('post_show', ['id' => $postId]);
+                } else {
+                    return $this->redirectToRoute('moderator_comments');
+                }
+            }
+
+            return $this->renderForm('comment/comment_update.html.twig', [
+                'form' => $form
+            ]);
+        } else {
+            throw $this->createNotFoundException('Something went wrong');
         }
-
-        return $this->renderForm('comment/comment_update.html.twig', [
-            'form' => $form
-        ]);
     }
     
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
@@ -111,7 +137,7 @@ class CommentController extends AbstractController
             );
 
             return $this->redirectToRoute('moderator_comments');
-        } elseif ($user->getId() === ($comment->getUser())->getId()) {
+        } elseif ($user->getId() === $comment->getUser()->getId()) {
             $this->commentService->delete($comment);
             $this->addFlash(
                 'success',

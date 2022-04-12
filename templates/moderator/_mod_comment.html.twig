@@ -12,6 +12,10 @@
                 Удалить комментарий №{{ comment.id }}
             </a>
 
+            <a href='{{ path('comment_update', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
+                Изменить и одобрить комментарий №{{ comment.id }}
+            </a>
+
             <a href='{{ path('moderator_comment_approve', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
                 Одобрить комментарий №{{ comment.id }}
             </a>

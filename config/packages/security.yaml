@@ -46,6 +46,7 @@ security:
         # require ROLE_ADMIN for /admin*
         - { path: '^/admin', roles: ROLE_ADMIN }
         - { path: '^/moderator', roles: ROLE_MODERATOR }
+        - { path: '^/comment', roles: IS_AUTHENTICATED_REMEMBERED }
 
     role_hierarchy:
         ROLE_MODERATOR: ROLE_USER

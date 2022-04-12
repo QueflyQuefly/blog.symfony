@@ -33,6 +33,10 @@
                 Удалить пост №{{ post.id }}
             </a>
 
+            <a href='{{ path('post_update', {id: post.id}) }}' class='link' style='font-size: 14pt; margin-left: 20%;'>
+                Изменить и одобрить пост №{{ post.id }}
+            </a>
+
             <a href='{{ path('moderator_post_approve', {id: post.id}) }}' class='link' style='font-size: 14pt; float: right;'>
                 Одобрить пост №{{ post.id }}
             </a>

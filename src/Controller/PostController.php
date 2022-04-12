@@ -107,62 +107,6 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/add', name: 'add')]
-    public function add(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
-        $form = $this->createForm(PostFormType::class);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->getUser();
-            $title = $form->get('title')->getData();
-            $content = $form->get('content')->getData();
-            if ($this->postService->create($user, $title, $content)) {
-                $this->addFlash(
-                    'success',
-                    'Пост отправлен на модерацию'
-                );
-            } else {
-                $this->addFlash(
-                    'error',
-                    'При добавлении поста произошла ошибка'
-                );
-            }
-
-            return $this->redirectToRoute('post_main');
-        }
-
-        return $this->renderForm('post/post_add.html.twig', [
-            'form'              => $form,
-            'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
-        ]);
-    }
-
-    #[Route('/{id}/update', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function update(Post $post, Request $request): Response
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        $form = $this->createForm(PostFormType::class, $post, [
-            'title' => $post->getTitle(),
-            'content'   => $post->getContent()
-        ]);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $post = $form->getData();
-            $post->setApprove(false);
-            $this->postService->update($post);
-
-            return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
-        }
-
-        return $this->renderForm('post/post_add.html.twig', [
-            'form'              => $form,
-            'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
-        ]);
-    }
-
     #[Route('/rating/{id}', name: 'rating', methods: ['POST'], requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function addRating(Post $post, Request $request)
     {
@@ -189,40 +133,111 @@ class PostController extends AbstractController
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
+    #[Route('/add', name: 'add')]
+    public function add(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        $form = $this->createForm(PostFormType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+            $title = $form->get('title')->getData();
+            $content = $form->get('content')->getData();
+            $approve = false;
+            if ($this->isGranted('ROLE_MODERATOR')) {
+                $approve = true;
+            }
+            if ($this->postService->create($user, $title, $content, $approve)) {
+                if ($approve) {
+                    $this->addFlash(
+                        'success',
+                        'Пост добавлен'
+                    );
+                } else {
+                    $this->addFlash(
+                        'success',
+                        'Пост отправлен на модерацию'
+                    );
+                }
+            } else {
+                $this->addFlash(
+                    'error',
+                    'При добавлении поста произошла ошибка'
+                );
+            }
+
+            return $this->redirectToRoute('post_main');
+        }
+
+        return $this->renderForm('post/post_add.html.twig', [
+            'form'              => $form,
+            'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
+        ]);
+    }
+
+    #[Route('/{id}/update', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function update(Post $post, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        if (
+            $this->isGranted('ROLE_ADMIN') 
+            || ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove()) 
+            || $user->getId() === $post->getUser()->getId()
+        ) {
+            $form = $this->createForm(PostFormType::class, $post, [
+                'title' => $post->getTitle(),
+                'content'   => $post->getContent()
+            ]);
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $post = $form->getData();
+                $post->setApprove(false);
+                if ($this->isGranted('ROLE_MODERATOR')) {
+                    $post->setApprove(true);
+                }
+                $this->postService->update($post);
+
+                if ($this->isGranted('ROLE_ADMIN') || $user->getId() === $post->getUser()->getId()) {
+                    return $this->redirectToRoute('post_main');
+                } else {
+                    return $this->redirectToRoute('moderator_posts');
+                }
+            }
+
+            return $this->renderForm('post/post_add.html.twig', [
+                'form'              => $form,
+                'max_size_of_image' => $this::MAX_SIZE_OF_IMAGE
+            ]);
+        } else {
+            throw $this->createNotFoundException('Something went wrong');
+        }
+    }
+
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deletePost(Post $post): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $postId = $post->getId();
 
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if (
+            $this->isGranted('ROLE_ADMIN')
+            || ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove())
+            || $user->getId() === $post->getUser()->getId()
+        ) {
             $this->postService->delete($post);
             $this->addFlash(
                 'success',
-                sprintf('Пост №%s удален', $postId)
+                sprintf('Пост №%s удален', $post->getId())
             );
-    
+            if ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove()) {
+                return $this->redirectToRoute('moderator_posts');
+            }
+
             return $this->redirectToRoute('post_main');
-        } elseif ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove()) {
-            $this->postService->delete($post);
-            $this->addFlash(
-                'success',
-                sprintf('Пост №%s удален', $postId)
-            );
-    
-            return $this->redirectToRoute('moderator_posts');
-        } elseif ($user->getId() === ($post->getUser())->getId()) {
-            $this->postService->delete($post);
-            $this->addFlash(
-                'success',
-                sprintf('Пост №%s удален', $postId)
-            );
-
-            return $this->redirectToRoute('user_show_profile', [
-                'id' => $user->getId()
-            ]);
         } else {
             throw $this->createNotFoundException('Something went wrong');
         }

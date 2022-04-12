@@ -42,7 +42,7 @@ class CommentFormType extends AbstractType
                 ]
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Отправить на модерацию',
+                'label' => 'Отправить',
                 'attr'  => [
                     'class' => 'formsubmit'
                 ]
