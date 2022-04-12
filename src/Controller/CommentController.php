@@ -50,6 +50,11 @@ class CommentController extends AbstractController
                         'Ваш комментарий отправлен на модерацию'
                     );
                 }
+            } else {
+                $this->addFlash(
+                    'error',
+                    'Произошла ошибка при отправке комментария'
+                );
             }
         } else {
             $this->addFlash(
@@ -117,36 +122,24 @@ class CommentController extends AbstractController
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-        $postId = ($comment->getPost())->getId();
+        $postId = $comment->getPost()->getId();
         $commentId = $comment->getId();
         
-        if ($this->isGranted('ROLE_ADMIN')) {
-            
+        if (
+            $this->isGranted('ROLE_ADMIN')
+            || ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove())
+            || $user->getId() === $comment->getUser()->getId()
+        ) {
             $this->commentService->delete($comment);
             $this->addFlash(
                 'success',
                 sprintf('Комментарий №%s удален', $commentId)
             );
+            if (!$comment->getApprove()) {
+                return $this->redirectToRoute('moderator_comments');
+            }
 
             return $this->redirectToRoute('post_show', ['id' => $postId]);
-        } elseif ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove()) {
-            $this->commentService->delete($comment);
-            $this->addFlash(
-                'success',
-                sprintf('Комментарий №%s удален', $commentId)
-            );
-
-            return $this->redirectToRoute('moderator_comments');
-        } elseif ($user->getId() === $comment->getUser()->getId()) {
-            $this->commentService->delete($comment);
-            $this->addFlash(
-                'success',
-                sprintf('Комментарий №%s удален', $commentId)
-            );
-
-            return $this->redirectToRoute('user_show_profile', [
-                'id' => $user->getId()
-            ]);
         } else {
             throw $this->createNotFoundException('Something went wrong');
         }

@@ -199,7 +199,6 @@ class PostController extends AbstractController
                     $post->setApprove(true);
                 }
                 $this->postService->update($post);
-
                 if ($this->isGranted('ROLE_ADMIN') || $user->getId() === $post->getUser()->getId()) {
                     return $this->redirectToRoute('post_main');
                 } else {
@@ -233,7 +232,7 @@ class PostController extends AbstractController
                 'success',
                 sprintf('Пост №%s удален', $post->getId())
             );
-            if ($this->isGranted('ROLE_MODERATOR') && !$post->getApprove()) {
+            if (!$post->getApprove()) {
                 return $this->redirectToRoute('moderator_posts');
             }
 
