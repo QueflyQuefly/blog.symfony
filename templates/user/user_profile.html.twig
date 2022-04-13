@@ -10,12 +10,14 @@
 
         {% if ( user.roles[0] == 'ROLE_ADMIN' or user.roles[0] == 'ROLE_SUPER_ADMIN' ) %}
             <p style='font-size: 13pt; color: green;'>Является администратором этого сайта</p>
+        {% elseif ( user.roles[0] == 'ROLE_MODERATOR' ) %}
+            <p style='font-size: 13pt; color: green;'>Является модератором этого сайта</p>
+        {% elseif ( user.isVerified ) %}
+            <p style='font-size: 13pt; color: green;'>Аккаунт верифицирован</p>
+        {% else %}
+            <p style='font-size: 13pt; color: crimson;'>Аккаунт не верифицирован. Не доверяйте сообщениям с этого аккаунта</p>
         {% endif %}
 
-        {% if ( user.roles[0] == 'ROLE_MODERATOR' ) %}
-            <p style='font-size: 13pt; color: green;'>Является модератором этого сайта</p>
-        {% endif %}
-        
         {% if ( app.user and user.id == app.user.id ) %}
             <a 
                 class='link' 
@@ -25,6 +27,9 @@
             >
                 Изменить параметры профиля
             </a>
+            {% if not user.isVerified %}
+                <a href='{{ path('user_verify') }}' style='font-size: 13pt;' class='link'>Верифицировать аккаунт</a>
+            {% endif %}
         {% else %} 
             {% if can_subscribe %}
                 <a href='{{ path('user_subscribe', {id: user.id}) }}' style='font-size: 13pt;' class='link'>

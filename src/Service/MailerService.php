@@ -41,6 +41,23 @@ class MailerService
         return true;
     }
 
+    public function sendMailToVerifyUser(string $toAddress, string $fio, array $parameters)
+    {
+        $this->mailer->isHTML(true);
+        $this->mailer->addAddress($toAddress, $fio);
+        $this->mailer->Subject = 'Prosto Blog - verify account';
+        $content = $this->twig->render('email/email_confirmation.html.twig', [
+            'url'       => $parameters['url'],
+            'expiresAt' => $parameters['expiresAt']
+        ]);
+        $this->mailer->msgHTML($content);
+
+        if (!$this->sendMail()) {
+            return false;
+        }
+        return true;
+    }
+
     public function sendMailToRecoveryPassword(string $toAddress, string $fio, array $parameters)
     {
         $this->mailer->isHTML(true);

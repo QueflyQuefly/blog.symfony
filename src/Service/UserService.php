@@ -39,7 +39,8 @@ class UserService
         array $rights,
         ?int $dateTime = null,
         bool $flush = true
-    ) {
+    ): User
+    {
         if (empty($dateTime)){
             $dateTime = time();
         }
@@ -56,7 +57,10 @@ class UserService
         return $user;
     }
 
-    public function sendMailsToSubscribers(Post $post)
+    /**
+     * @return bool Returns true if email sended
+     */
+    public function sendMailsToSubscribers(Post $post): bool
     {
         $toAddresses = $this->getSubscribedUsersEmails($post->getUser());
         if (!empty($toAddresses)) {
@@ -67,9 +71,33 @@ class UserService
     }
 
     /**
+     * @return bool Returns true if email sended
+     */
+    public function sendMailToRecoveryPassword(User $user): bool
+    {
+        $parameters = $this->getArrayWithParameters($user);
+        if(!$this->mailer->sendMailToRecoveryPassword($user->getEmail(), $user->getFio(), $parameters)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @return bool Returns true if email sended
+     */
+    public function sendMailToVerifyUser(User $user): bool
+    {
+        $parameters = $this->getArrayWithParameters($user);
+        if(!$this->mailer->sendMailToVerifyUser($user->getEmail(), $user->getFio(), $parameters)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * @return User Returns User if exists
      */
-    public function isUserExists(string $email, string $fio, ?int $dateTime = null)
+    public function isUserExists(string $email, string $fio, ?int $dateTime = null): ?User
     {
         return $this->userRepository->isUserExists($email, $fio, $dateTime);
     }
@@ -77,7 +105,7 @@ class UserService
     /**
      * @return array Parameters - string url and int expiresAt for recovery password
      */
-    public function getRecoveryParameters(User $user)
+    private function getArrayWithParameters(User $user): array
     {
         $parameters = [];
         $parameters['expiresAt'] = time() + 3600;
@@ -113,7 +141,7 @@ class UserService
     /**
      * @return User Returns an User object
      */
-    public function getUserById(int $userId)
+    public function getUserById(int $userId): ?User
     {
         return $this->userRepository->find($userId);
     }
@@ -121,7 +149,7 @@ class UserService
     /**
      * @return int Returns a max id of table user
      */
-    public function getLastUserId()
+    public function getLastUserId(): ?int
     {
         return $this->userRepository->getLastUserId();
     }
@@ -129,7 +157,7 @@ class UserService
     /**
      * @return bool Returns true if Subscription created
      */
-    public function subscribe(User $userSubscribed, User $user, bool $flush = true)
+    public function subscribe(User $userSubscribed, User $user, bool $flush = true): bool
     {
         if ($subscription = $this->isSubscribe($userSubscribed->getId(), $user->getId())) {
             $this->subscriptionRepository->remove($subscription, $flush);
@@ -162,7 +190,7 @@ class UserService
     /**
      * @return [] Returns an array of emails, which subscribed on user
      */
-    public function getSubscribedUsersEmails(User $user)
+    public function getSubscribedUsersEmails(User $user): array
     {
         return $this->userRepository->getSubscribedUsersEmails($user->getId());
     }
@@ -170,7 +198,7 @@ class UserService
     /**
      * @return User[] Returns an array of User objects
      */
-    public function getUsers(int $numberOfUsers, int $page)
+    public function getUsers(int $numberOfUsers, int $page): array
     {
         $lessThanMaxId = $page * $numberOfUsers - $numberOfUsers;
 
@@ -180,7 +208,7 @@ class UserService
     /**
      * @return User[] Returns an array of Users objects
      */
-    public function searchUsers(string $searchWords)
+    public function searchUsers(string $searchWords): array
     {
         $users = [];
         if (strpos($searchWords, '@') !== false) {
@@ -195,20 +223,19 @@ class UserService
     }
 
     /**
-     * @return bool Returns true if User updated
+     * @return void
      */
-    public function update(User $user, string $password)
+    public function update(User $user, string $password = ''): void
     {
-        if ($password) {
+        if ($password != '') {
             $newHashedPassword = $this->userPasswordHasher->hashPassword($user, $password);
             $this->userRepository->upgradePassword($user, $newHashedPassword);
-
-            return true;
+        } else{
+            $this->userRepository->update();
         }
-        return false;
     }
 
-    public function delete($user, bool $flush = true)
+    public function delete($user, bool $flush = true): void
     {
         $this->userRepository->remove($user, $flush);
     }

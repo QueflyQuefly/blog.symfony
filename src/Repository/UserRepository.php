@@ -48,7 +48,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @return Users[] Returns an array of Users objects
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function update(bool $flush = true): void
+    {
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * @return User Returns an User object
      */
     public function isUserExists(string $email, string $fio, ?int $dateTime = null)
     {
@@ -81,6 +92,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         ;
     }
 
+    /**
+     * @return [] Returns an array of emails
+     */
     public function getSubscribedUsersEmails(int $userId)
     {
         return $this->createQueryBuilder('u')

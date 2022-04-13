@@ -217,8 +217,7 @@ class UserController extends AbstractController
             $email = $form->get('email')->getData();
             $fio = $form->get('fio')->getData();
             if ($user = $this->userService->isUserExists($email, $fio)) {
-                $parameters = $this->userService->getRecoveryParameters($user);
-                if ($this->mailer->sendMailToRecoveryPassword($email, $fio, $parameters)) {
+                if ($this->userService->sendMailToRecoveryPassword($user)) {
                     $description = 'Ожидайте письмо по введенному вами e-mail адресу';
                 } else {
                     $description = 'Произошла ошибка при отправке письма. Возможно введен неверный e-mail адрес';
@@ -261,6 +260,38 @@ class UserController extends AbstractController
         return $this->renderForm('user/user_update.html.twig', [
             'form' => $form
         ]);
+    }
+
+    #[Route('/verify/{secretCipher?}', name: 'verify')]
+    public function verify(?string $secretCipher): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        if (!$user->isVerified()) {
+            if (empty($secretCipher)) {
+                if ($this->userService->sendMailToVerifyUser($user)) {
+                    $this->addFlash(
+                        'success',
+                        'Ожидайте письмо по вашему e-mail адресу'
+                    );
+                } else {
+                    $this->addFlash(
+                        'error',
+                        'Произошла ошибка при отправке письма. Возможно e-mail адрес не существует'
+                    );
+                }
+            } else {
+                if (!$user = $this->userService->getUserBySecretCipher($secretCipher)) {
+                    throw $this->createNotFoundException('Something went wrong');
+                }
+                $user->setIsVerified(true);
+                $this->userService->update($user);
+            }
+
+            return $this->redirectToRoute('user_show_profile');
+        }
     }
 
     #[Route('/logout', name: 'logout')]
