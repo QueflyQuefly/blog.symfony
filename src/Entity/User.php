@@ -66,6 +66,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Subscription::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $mySubscriptions;
 
+    #[ORM\Column(type: 'integer')]
+    private $isBanned;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -384,6 +387,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $mySubscription->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIsBanned(): ?int
+    {
+        return $this->isBanned;
+    }
+
+    public function setIsBanned(int $isBanned): self
+    {
+        $this->isBanned = $isBanned;
 
         return $this;
     }

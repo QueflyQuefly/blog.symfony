@@ -18,6 +18,8 @@
             </div>
         {% endif %}
 
+        {{ include('_blog_flashes.html.twig') }}
+
         <div id='left'><a class='formbutton' href='{{ path('user_register') }}'>Создать аккаунт</a></div>
         <div id='right'>
             {{ form_row(form.submit) }}

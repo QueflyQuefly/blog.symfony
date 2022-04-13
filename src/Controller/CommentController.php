@@ -24,6 +24,16 @@ class CommentController extends AbstractController
     #[Route('/add/{id}', name: 'add', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function create(Post $post, Request $request): Response
     {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if ($user->getIsBanned() > time()) {
+            $text = sprintf('Вы забанены. <br> Доступ будет восстановлен %s', date('d.m.Y в H:i', $user->getIsBanned()));
+
+            return $this->render('blog_message.html.twig', [
+                'description' => $text
+            ]);
+        }
+
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
 
@@ -32,7 +42,6 @@ class CommentController extends AbstractController
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->getUser();
             $content = $form->get('content')->getData();
             $approve = false;
             if ($this->isGranted('ROLE_MODERATOR')) {

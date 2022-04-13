@@ -137,10 +137,19 @@ class PostController extends AbstractController
     public function add(Request $request): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        if ($user->getIsBanned() > time()) {
+            $text = sprintf('Вы забанены. <br> Доступ будет восстановлен %s', date('d.m.Y в H:i', $user->getIsBanned()));
+
+            return $this->render('blog_message.html.twig', [
+                'description' => $text
+            ]);
+        }
+
         $form = $this->createForm(PostFormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->getUser();
             $title = $form->get('title')->getData();
             $content = $form->get('content')->getData();
             $approve = false;

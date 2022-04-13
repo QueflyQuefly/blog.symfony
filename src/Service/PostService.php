@@ -39,13 +39,14 @@ class PostService
         if (empty($dateTime)) {
             $dateTime = time();
         }
-        $post = new Post();
-        $post->setTitle($title);
-        $post->setUser($user);
-        $post->setContent($content);
-        $post->setDateTime($dateTime);
-        $post->setRating('0.0');
-        $post->setApprove($approve);
+        $post = (new Post())
+            ->setTitle($title)
+            ->setUser($user)
+            ->setContent($content)
+            ->setDateTime($dateTime)
+            ->setRating('0.0')
+            ->setApprove($approve)
+        ;
         $this->postRepository->add($post, $flush);
         
         return $post;
@@ -82,20 +83,22 @@ class PostService
     {
         if ($checkingForUser) {
             if(!$this->isUserAddRating($user, $post)) {
-                $ratingPost = new RatingPost();
-                $ratingPost->setPost($post);
-                $ratingPost->setUser($user);
-                $ratingPost->setRating($rating);
+                $ratingPost = (new RatingPost())
+                    ->setPost($post)
+                    ->setUser($user)
+                    ->setRating($rating)
+                ;
                 $post->setRating((string) $this->countRating($post, $rating));
                 $this->ratingPostRepository->add($ratingPost, $flush);
 
                 return true;
             }
         } else {
-            $ratingPost = new RatingPost();
-            $ratingPost->setPost($post);
-            $ratingPost->setUser($user);
-            $ratingPost->setRating($rating);
+            $ratingPost = (new RatingPost())
+                ->setPost($post)
+                ->setUser($user)
+                ->setRating($rating)
+            ;
             $post->setRating((string) $this->countRating($post, $rating));
             $this->ratingPostRepository->add($ratingPost, $flush);
 

@@ -9,7 +9,6 @@ use App\Service\UserService;
 use App\Service\PostService;
 use App\Service\CommentService;
 use App\Service\RedisCacheService;
-use App\Service\MailerService;
 use App\Form\RegistrationFormType;
 use App\Form\LoginFormType;
 use App\Form\RecoveryFormType;
@@ -29,9 +28,10 @@ class UserController extends AbstractController
     private PostService $postService;
     private CommentService $commentService;
     private RedisCacheService $cacheService;
-    private MailerService $mailer;
     private FormFactoryInterface $formFactory;
     private TokenStorageInterface $tokenStorage;
+    const MIN_TIME_FOR_BAN = 86400; // 24 hours in seconds (one day)
+    const MAX_TIME_FOR_BAN = 259200; // 3 days in seconds
 
     public function __construct(
         AuthenticationUtils $authenticationUtils,
@@ -39,7 +39,6 @@ class UserController extends AbstractController
         PostService $postService,
         CommentService $commentService,
         RedisCacheService $cacheService,
-        MailerService $mailer,
         FormFactoryInterface $formFactory,
         TokenStorageInterface $tokenStorage
     ) {
@@ -48,7 +47,6 @@ class UserController extends AbstractController
         $this->postService = $postService;
         $this->commentService = $commentService;
         $this->cacheService = $cacheService;
-        $this->mailer = $mailer;
         $this->formFactory = $formFactory;
         $this->tokenStorage = $tokenStorage;
     }
@@ -292,6 +290,37 @@ class UserController extends AbstractController
 
             return $this->redirectToRoute('user_show_profile');
         }
+    }
+
+    #[Route('/ban/{id<(?!0)\b[0-9]+>}', name: 'ban')]
+    public function ban(User $user): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (in_array('ROLE_SUPER_ADMIN', $user->getRoles()) || in_array('ROLE_ADMIN', $user->getRoles())) {
+            return $this->render('blog_message.html.twig', [
+                'description' => 'Невозможно забанить администратора. <br><br> Обратитесь к суперадмину за помощью'
+            ]);
+        }
+
+        if (!$user->getIsBanned()) {
+            $user->setIsBanned(time() + $this::MIN_TIME_FOR_BAN);
+            $this->addFlash(
+                'success',
+                sprintf('Пользователь №%s забанен на %s часа', $user->getId(), $this::MIN_TIME_FOR_BAN / 3600)
+            );
+        } else {
+            $user->setIsBanned(time() + $this::MAX_TIME_FOR_BAN);
+            $this->addFlash(
+                'success',
+                sprintf('Пользователь №%s забанен на %s часа', $user->getId(), $this::MAX_TIME_FOR_BAN / 3600)
+            );
+        }
+        $this->userService->update($user);
+
+        return $this->redirectToRoute('user_show_profile', [
+            'id' => $user->getId()
+        ]);
     }
 
     #[Route('/logout', name: 'logout')]

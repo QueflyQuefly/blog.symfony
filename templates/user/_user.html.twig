@@ -4,15 +4,23 @@
             <p class='posttitle'> ФИО(псевдоним): {{ user.fio }}</p>
             <p class='posttitle'> Email: {{ user.email }}</p>
             <p class='posttitle'> Дата регистрации: {{ user.dateTime|date('d.m.Y в H:i') }}</p>
-            {% if is_granted('ROLE_SUPER_ADMIN') %}
+            {% if is_granted('ROLE_ADMIN') %}
                 <p class='posttitle'> Права: 
                     {% for role in user.roles %}
                         {{ role|lower|u.camel.title }}
                     {% endfor %}
                 </p>
                 <p class='postdate'>
+                    <a href='{{ path('user_ban', {'id': user.id}) }}' class='link' style='font-size: 14pt;'>
+                        Забанить №{{ user.id }}
+                    </a>
+                </p>
+            {% endif %}
+            
+            {% if is_granted('ROLE_SUPER_ADMIN') %}
+                <p class='postdate'>
                     <a href='{{ path('user_delete', {'id': user.id}) }}' class='link' style='font-size: 14pt;'>
-                        Удалить {{ user.email }}
+                        Удалить №{{ user.id }}
                     </a>
                 </p>
             {% endif %}

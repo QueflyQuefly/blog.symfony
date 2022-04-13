@@ -45,13 +45,12 @@ class UserService
             $dateTime = time();
         }
         $user = new User();
-        $user->setEmail($email);
-        $user->setFio($fio);
-        $user->setPassword(
-            $this->userPasswordHasher->hashPassword($user, $password)
-        );
-        $user->setDateTime($dateTime);
-        $user->setRoles($rights);
+        $user->setEmail($email)
+            ->setFio($fio)
+            ->setPassword($this->userPasswordHasher->hashPassword($user, $password))
+            ->setDateTime($dateTime)
+            ->setRoles($rights)
+        ;
         $this->userRepository->add($user, $flush);
         
         return $user;
@@ -164,9 +163,10 @@ class UserService
 
             return false;
         } else {
-            $subscription = new Subscription();
-            $subscription->setUserSubscribed($userSubscribed);
-            $subscription->setUser($user);
+            $subscription = (new Subscription())
+                ->setUserSubscribed($userSubscribed)
+                ->setUser($user)
+            ;
             $this->subscriptionRepository->add($subscription, $flush);
 
             return true;
@@ -174,17 +174,14 @@ class UserService
     }
 
     /**
-     * @return Subscription|bool Returns an object of Subscription if user subscribed
+     * @return Subscription Returns an object of Subscription if user subscribed
      */
-    public function isSubscribe(int $userIdWantSubscribe, int $userId)
+    public function isSubscribe(int $userIdWantSubscribe, int $userId): ?Subscription
     {
-        if ($subscription = $this->subscriptionRepository->findOneBy([
+        return $this->subscriptionRepository->findOneBy([
             'userSubscribed' => $userIdWantSubscribe,
             'user'           => $userId
-        ])) {
-            return $subscription;
-        }
-        return false;
+        ]);
     }
 
     /**

@@ -1,7 +1,7 @@
 {% extends 'blog_base.html.twig' %}
 
 {% block content %}
-    <h1>{{ description }}</h1>
+    <h1>{{ description|raw }}</h1>
 
     <a class='link' href="#back" onclick="history.back();">Вернуться назад &#8592;</a><br><br>
     <a class='link' href='{{ path('post_main') }}'>Перейти на главную страницу</a>

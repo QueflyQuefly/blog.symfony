@@ -37,13 +37,14 @@ class CommentService
         if (empty($dateTime)) {
             $dateTime = time();
         }
-        $comment = new Comment();
-        $comment->setPost($post);
-        $comment->setUser($user);
-        $comment->setDateTime($dateTime);
-        $comment->setContent($content);
-        $comment->setRating($rating);
-        $comment->setApprove($approve);
+        $comment = (new Comment())
+            ->setPost($post)
+            ->setUser($user)
+            ->setDateTime($dateTime)
+            ->setContent($content)
+            ->setRating($rating)
+            ->setApprove($approve)
+        ;
         $this->commentRepository->add($comment, $flush);
         
         return $comment;
@@ -71,9 +72,10 @@ class CommentService
                 return false;
             }
         }
-        $ratingComment = new RatingComment();
-        $ratingComment->setUser($user);
-        $ratingComment->setComment($comment);
+        $ratingComment = (new RatingComment())
+            ->setUser($user)
+            ->setComment($comment)
+        ;
         $comment->setRating($comment->getRating() + 1);
         $this->ratingCommentRepository->add($ratingComment, $flush);
 
