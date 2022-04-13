@@ -79,7 +79,7 @@ class PostService
     /**
      * @return bool Returns true if rating to post added
      */
-    public function addRating(User $user, Post $post, int $rating, bool $checkingForUser = true, bool $flush = true)
+    public function addOrRemoveRating(User $user, Post $post, int $rating = 0, bool $checkingForUser = true, bool $flush = true)
     {
         if ($checkingForUser) {
             if(!$this->isUserAddRating($user, $post)) {
@@ -92,6 +92,15 @@ class PostService
                 $this->ratingPostRepository->add($ratingPost, $flush);
 
                 return true;
+            } else {
+                $ratingPost = $this->ratingPostRepository->findOneBy([
+                    'user' => $user,
+                    'post' => $post
+                ]);
+                $this->ratingPostRepository->remove($ratingPost);
+                $post->setRating((string) $this->countRating($post));
+
+                return false;
             }
         } else {
             $ratingPost = (new RatingPost())
@@ -104,8 +113,6 @@ class PostService
 
             return true;
         }
-        
-        return false;
     }
 
     /**

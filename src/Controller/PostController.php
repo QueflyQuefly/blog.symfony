@@ -118,15 +118,15 @@ class PostController extends AbstractController
         
         $user = $this->getUser();
         $rating = (int) $request->request->get('rating');
-        if ($this->postService->addRating($user, $post, $rating)) {
+        if ($this->postService->addOrRemoveRating($user, $post, $rating)) {
             $this->addFlash(
                 'success',
                 'Ваша оценка принята'
             );
         } else {
             $this->addFlash(
-                'error',
-                'Вы уже оставили оценку для этого поста'
+                'success',
+                'Предыдущая оценка удалена. Нажмите ещё раз, чтобы поставить новую'
             );
         }
 

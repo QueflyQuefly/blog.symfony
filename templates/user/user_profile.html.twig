@@ -18,7 +18,7 @@
             <p style='font-size: 13pt; color: crimson;'>Аккаунт не верифицирован. Не доверяйте сообщениям с этого аккаунта</p>
         {% endif %}
 
-        {% if user.isBanned %}
+        {% if date(user.isBanned) > date() %}
             <p style='font-size: 13pt; color: crimson;'>Аккаунт забанен за нарушение Правил Сайта</p>
         {% endif %}
 
