@@ -38,6 +38,7 @@ class UserService
         string $password,
         array $rights,
         ?int $dateTime = null,
+        int $isBanned = 0,
         bool $flush = true
     ): User
     {
@@ -50,6 +51,7 @@ class UserService
             ->setPassword($this->userPasswordHasher->hashPassword($user, $password))
             ->setDateTime($dateTime)
             ->setRoles($rights)
+            ->setIsBanned($isBanned)
         ;
         $this->userRepository->add($user, $flush);
         

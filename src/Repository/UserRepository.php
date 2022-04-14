@@ -116,10 +116,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $maxUserId = $this->createQueryBuilder('u')
             ->select('MAX(u.id) as max_id')
             ->getQuery()
-            ->getOneOrNullResult()['max_id']
+            ->getOneOrNullResult()
         ;
-        if (is_array($maxUserId) && in_array('max_id', $maxUserId)) {
-            return (int) $maxUserId['max_id'];
+        if (!empty($maxUserId)) {
+            return $maxUserId['max_id'];
         } else {
             return null;
         }

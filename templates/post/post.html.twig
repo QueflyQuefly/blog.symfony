@@ -13,9 +13,9 @@
     <div id='singlepostauthor'>
         <p class='singlepostdate'>
             {% if post.countRatingPosts %}
-                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatingPosts }}, комментариев: {{ post.countComments }}
+                Рейтинг: {{ post.rating }}, оценок: {{ post.countRatingPosts }}, комментариев: {{ comments|length }}
             {% else %}
-                Нет оценок. Будьте первым! Kомментариев: {{ post.countComments }}
+                Нет оценок. Будьте первым! Kомментариев: {{ comments|length }}
             {% endif %}
         </p>
         

@@ -18,6 +18,7 @@ class StabService
     private EntityManagerInterface $entityManager;
     private array $errors = [];
     private bool $flush = false;
+    private int $isBanned = 0;
     private bool $approve = true;
     private bool $checkingForUser = false;
     private int $maxNumberOfComments = 10;
@@ -112,12 +113,14 @@ class StabService
 
     public function setConfiguration(
         bool $flush = false,
+        int $isBanned = 0,
         bool $approve = true,
         bool $checkingForUser = false,
         int $maxNumberOfComments = 10,
         bool $commentsWithLike = true
     ) {
         $this->flush = $flush;
+        $this->isBanned = $isBanned;
         $this->approve = $approve;
         $this->checkingForUser = $checkingForUser;
         $this->maxNumberOfComments = $maxNumberOfComments;
@@ -127,7 +130,7 @@ class StabService
     /**
      * @return User Returns an object of User
      */
-    private function createRandomUser(int $number, bool $flush = true)
+    private function createRandomUser(int $number, int $isBanned = 0, bool $flush = true)
     {
         $randomName = mt_rand(0, 12);
         $randomSurname = mt_rand(0, 12);
@@ -137,7 +140,7 @@ class StabService
         $password = $number;
         $rights = ['ROLE_USER'];
 
-        return $this->userService->register($email, $fio, $password, $rights, $time, $flush);
+        return $this->userService->register($email, $fio, $password, $rights, $time, $isBanned, $flush);
     }
 
     /**
@@ -172,7 +175,7 @@ class StabService
         if ($post->getApprove()) {
             $randomRating = mt_rand(1, 5);
 
-            return $this->postService->addRating($user, $post, $randomRating, $checkingForUser, $flush);
+            return $this->postService->addOrRemoveRating($user, $post, $randomRating, $checkingForUser, $flush);
         }
 
         return false;
@@ -221,50 +224,53 @@ class StabService
     {
         if ($numberOfIterations > 0) {
             try {
-                if (!$min = $this->userService->getLastUserId() + 1) {
+                if (!$min = $this->userService->getLastUserId()) {
                     throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
                 }
+                $min++;
                 for ($i = $min; $i < $numberOfIterations + $min; $i++) {
 
                     /* For test, recommend to delete */
                     $this->approve = (bool) mt_rand(0, 1);
 
-                    $user = $this->createRandomUser($i, $this->flush);
+                    $user = $this->createRandomUser($i, $this->isBanned, $this->flush);
                     if (!$user) {
                         $this->errors[] = sprintf('User with id = %s not created', $i);
                         continue;
                     }
 
-                    $post = $this->createRandomPost($user, $this->approve, $this->flush);
-                    if (!$post) {
-                        $this->errors[] = sprintf('Post by user with id = %s not created', $i);
-                        continue;
-                    }
-
-                    if ($this->approve) {
-                        if (!$this->createRandomRating($user, $post, $this->checkingForUser, $this->flush)) {
-                            $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
+                    if(!$this->isBanned) {
+                        $post = $this->createRandomPost($user, $this->approve, $this->flush);
+                        if (!$post) {
+                            $this->errors[] = sprintf('Post by user with id = %s not created', $i);
                             continue;
                         }
 
-                        for ($m = 0; $m < $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments); $m++) {
-
-                            /* For test, recommend to delete */
-                            if ($this->approve) {
-                                $this->approve = (bool) mt_rand(0, 1);
+                        if ($this->approve) {
+                            if (!$this->createRandomRating($user, $post, $this->checkingForUser, $this->flush)) {
+                                $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
+                                continue;
                             }
 
-                            $comment = $this->createRandomComment(
-                                $user,
-                                $post,
-                                $this->approve,
-                                $this->commentsWithLike,
-                                $this->checkingForUser,
-                                $this->flush
-                            );
-                            if (!$comment) {
-                                $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
-                                break;
+                            for ($m = 0; $m < $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments); $m++) {
+
+                                /* For test, recommend to delete */
+                                if ($this->approve) {
+                                    $this->approve = (bool) mt_rand(0, 1);
+                                }
+
+                                $comment = $this->createRandomComment(
+                                    $user,
+                                    $post,
+                                    $this->approve,
+                                    $this->commentsWithLike,
+                                    $this->checkingForUser,
+                                    $this->flush
+                                );
+                                if (!$comment) {
+                                    $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
+                                    break;
+                                }
                             }
                         }
                     }
