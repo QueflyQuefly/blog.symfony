@@ -27,9 +27,14 @@ class PostRepository extends ServiceEntityRepository
      */
     public function add(Post $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this
+            ->_em
+            ->persist($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -40,8 +45,11 @@ class PostRepository extends ServiceEntityRepository
     public function approve(Post $entity, bool $flush = true): void
     {
         $entity->setApprove(true);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -52,7 +60,9 @@ class PostRepository extends ServiceEntityRepository
     public function update(bool $flush = true): void
     {
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -62,9 +72,14 @@ class PostRepository extends ServiceEntityRepository
      */
     public function remove(Post $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this
+            ->_em
+            ->remove($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -73,15 +88,15 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getLastPosts(int $numberOfResults)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.approve = 1')
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
    
     /**
@@ -89,7 +104,8 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getMoreTalkedPosts(int $numberOfResults, int $timeWeekAgo)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('DISTINCT p, u')
             ->join('p.user', 'u')
             ->join('p.comments', 'c')
@@ -99,8 +115,7 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -108,15 +123,15 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getPostById(int $postId)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.id = :id')
             ->andWhere('p.approve = 1')
             ->setParameter(':id', $postId)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
 
         /**
@@ -124,15 +139,15 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getNotApprovedPostById(int $postId)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.id = :id')
             ->andWhere('p.approve = 0')
             ->setParameter(':id', $postId)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
        
     /**
@@ -140,7 +155,8 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getPosts(int $numberOfResults, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.approve = 1')
@@ -148,8 +164,7 @@ class PostRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -157,7 +172,8 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getNotApprovedPosts(int $numberOfResults, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.approve = 0')
@@ -165,8 +181,7 @@ class PostRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -174,7 +189,8 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getPostsByUserId(int $userId, int $numberOfResults)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->where('p.user = :user')
@@ -183,8 +199,7 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('user', $userId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -192,7 +207,8 @@ class PostRepository extends ServiceEntityRepository
      */
     public function getLikedPostsByUserId(int $userId, int $numberOfResults)
     {
-        return $this->createQueryBuilder('p')
+        return $this
+            ->createQueryBuilder('p')
             ->select('p, u')
             ->join('p.user', 'u')
             ->join('p.ratingPosts', 'r')
@@ -202,8 +218,7 @@ class PostRepository extends ServiceEntityRepository
             ->setParameter('user', $userId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -212,16 +227,20 @@ class PostRepository extends ServiceEntityRepository
     public function searchByTitle(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select('p, u')
+        return $qb
+            ->select('p, u')
             ->join('p.user', 'u')
-            ->where($qb->expr()->like('p.title', ':search'))
+            ->where(
+                $qb
+                    ->expr()
+                    ->like('p.title', ':search')
+            )
             ->andWhere('p.approve = 1')
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -230,16 +249,20 @@ class PostRepository extends ServiceEntityRepository
     public function searchByAuthor(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select('p, u')
+        return $qb
+            ->select('p, u')
             ->join('p.user', 'u')
-            ->where($qb->expr()->like('u.fio', ':search'))
+            ->where(
+                $qb
+                    ->expr()
+                    ->like('u.fio', ':search')
+            )
             ->andWhere('p.approve = 1')
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -248,15 +271,19 @@ class PostRepository extends ServiceEntityRepository
     public function searchByContent(string $search, int $numberOfResults)
     {
         $qb = $this->createQueryBuilder('p');
-        return $qb->select('p, u')
+        return $qb
+            ->select('p, u')
             ->join('p.user', 'u')
-            ->where($qb->expr()->like('p.content', ':search'))
+            ->where(
+                $qb
+                    ->expr()
+                    ->like('p.content', ':search')
+            )
             ->andWhere('p.approve = 1')
             ->orderBy('p.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 }

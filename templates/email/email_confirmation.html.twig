@@ -4,9 +4,6 @@
     Подтвердить вашу электронную почту можно по ссылке: <br>
     <a href="{{ absolute_url(path('user_verify', {'secretCipher': url})) }}">Ссылка для подтверждения</a>.<br>
 </h3>
-<p>
-    Эта ссылка перестанет быть действительной {{ expiresAt|date('d.m.Y в H:i') }}.
-</p>
 
 <p style='text-align: center;'>
     С наилучшими пожеланиями, Просто Блог 2021-{{ date()|date('Y') }}

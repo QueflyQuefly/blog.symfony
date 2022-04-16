@@ -27,9 +27,14 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function add(Comment $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this
+            ->_em
+            ->persist($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -40,8 +45,11 @@ class CommentRepository extends ServiceEntityRepository
     public function approve(Comment $entity, bool $flush = true): void
     {
         $entity->setApprove(true);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -52,7 +60,9 @@ class CommentRepository extends ServiceEntityRepository
     public function update(bool $flush = true): void
     {
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -62,9 +72,14 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function remove(Comment $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this
+            ->_em
+            ->remove($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
     
@@ -73,7 +88,8 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function getComments(int $numberOfResults, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('c')
+        return $this
+            ->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.approve = 1')
@@ -81,8 +97,7 @@ class CommentRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -90,7 +105,8 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function getNotApprovedComments(int $numberOfResults, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('c')
+        return $this
+            ->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.approve = 0')
@@ -98,8 +114,7 @@ class CommentRepository extends ServiceEntityRepository
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -107,7 +122,8 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function getCommentsByPostId($postId, $numberOfResults = 50)
     {
-        return $this->createQueryBuilder('c')
+        return $this
+            ->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.post = :id')
@@ -116,8 +132,7 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -125,7 +140,8 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function getCommentsByUserId(int $userId, int $numberOfResults)
     {
-        return $this->createQueryBuilder('c')
+        return $this
+            ->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->where('c.user = :val')
@@ -134,8 +150,7 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -143,7 +158,8 @@ class CommentRepository extends ServiceEntityRepository
      */
     public function getLikedCommentsByUserId(int $userId, int $numberOfResults)
     {
-        return $this->createQueryBuilder('c')
+        return $this
+            ->createQueryBuilder('c')
             ->select('c, u')
             ->join('c.user', 'u')
             ->join('c.ratingComments', 'r')
@@ -153,7 +169,6 @@ class CommentRepository extends ServiceEntityRepository
             ->orderBy('c.id', 'DESC')
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 }

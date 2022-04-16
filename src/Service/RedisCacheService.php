@@ -10,42 +10,47 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 class RedisCacheService {
 
     private RedisRepository $redisRepository;
+
     private SerializerInterface $serializer;
 
     public function __construct(
-        RedisRepository $redisRepository,
+        RedisRepository     $redisRepository,
         SerializerInterface $serializer
     ) {
         $this->redisRepository = $redisRepository;
-        $this->serializer = $serializer;
+        $this->serializer      = $serializer;
     }
 
     public function get(string $key, int $ttl, string $type, callable $function)
     {
-        if (empty($value = $this->redisRepository->get($key))) {
-            $value = $function();
-            $serializableValue = $this->serializer->serialize($value, 'json', [
-                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-                AbstractObjectNormalizer::MAX_DEPTH_HANDLER => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []) {
-                    return $innerObject->getId();
-                },
-                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
-                    return $object->getId();
-                }
-            ]);
-            $this->redisRepository->set($key, $serializableValue, $ttl);
-        } else {
-            $value = $this->serializer->deserialize($value, $type, 'json' , [
-                AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
-                AbstractObjectNormalizer::MAX_DEPTH_HANDLER => function ($innerObject, $outerObject, string $attributeName, string $format = null, array $context = []) {
-                    return $innerObject->getId();
-                },
-                AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object, $format, $context) {
-                    return $object->getId();
-                }
-            ]);
+        $handler = function ($object) {
+            return $object->getId();
+        };
+        $parameters = [
+            AbstractObjectNormalizer::ENABLE_MAX_DEPTH     => true,
+            AbstractObjectNormalizer::MAX_DEPTH_HANDLER    => $handler,
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => $handler,
+        ];
+        $cachedValue = $this
+            ->redisRepository
+            ->get($key);
+
+        if (! empty($cachedValue)) {
+            $deserializableValue = $this
+                ->serializer
+                ->deserialize($cachedValue, $type, 'json', $parameters);
+
+            return $deserializableValue;
         }
 
-        return $value;
+        $uncachedValue     = $function();
+        $serializableValue = $this
+            ->serializer
+            ->serialize($uncachedValue, 'json', $parameters);
+        $this
+            ->redisRepository
+            ->set($key, $serializableValue, $ttl);
+        
+        return $uncachedValue;
     }
 }

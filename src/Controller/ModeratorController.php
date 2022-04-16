@@ -14,25 +14,31 @@ use Symfony\Component\Routing\Annotation\Route;
 class ModeratorController extends AbstractController
 {
     private PostService $postService;
+
     private CommentService $commentService;
 
     public function __construct(
-        PostService $postService,
+        PostService    $postService,
         CommentService $commentService
     ) {
-        $this->postService = $postService;
+        $this->postService    = $postService;
         $this->commentService = $commentService;
     }
     #[Route('', name: 'main')]
     public function main(): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+
         return $this->render('moderator/moderator.html.twig');
     }
 
     #[Route('/posts/{numberOfPosts<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'posts')]
     public function showNotApprovedPosts(int $numberOfPosts, int $page): Response
     {
-        $posts = $this->postService->getNotApprovedPosts($numberOfPosts, $page);
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+        $posts = $this
+            ->postService
+            ->getNotApprovedPosts($numberOfPosts, $page);
 
         return $this->render('moderator/mod_posts.html.twig', [
             'nameOfPath' => 'moderator_posts',
@@ -45,7 +51,10 @@ class ModeratorController extends AbstractController
     #[Route('/comments/{numberOfComments<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'comments')]
     public function showNotApprovedComments(int $numberOfComments, int $page): Response
     {
-        $comments = $this->commentService->getNotApprovedComments($numberOfComments, $page);
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+        $comments = $this
+            ->commentService
+            ->getNotApprovedComments($numberOfComments, $page);
 
         return $this->render('moderator/mod_comments.html.twig', [
             'nameOfPath' => 'moderator_comments',
@@ -58,9 +67,12 @@ class ModeratorController extends AbstractController
     #[Route('/post/{id}', name: 'post_show', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function showNotApprovedPost(int $id): Response
     {
-        $post =  $this->postService->getNotApprovedPostById($id);
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+        $post =  $this
+            ->postService
+            ->getNotApprovedPostById($id);
 
-        if (!$post) {
+        if (empty($post)) {
             throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
         }
 
@@ -72,8 +84,11 @@ class ModeratorController extends AbstractController
     #[Route('/post/approve/{id}', name: 'post_approve', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function approvePost(Post $post): Response
     {
-        if ($post) {
-            $this->postService->approve($post);
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+        if (! $post->getApprove()) {
+            $this
+                ->postService
+                ->approve($post);
             $this->addFlash(
                 'success',
                 sprintf('Пост №%s одобрен', $post->getId())
@@ -91,8 +106,11 @@ class ModeratorController extends AbstractController
     #[Route('/comment/approve/{id}', name: 'comment_approve', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function approveComment(Comment $comment): Response
     {
-        if ($comment) {
-            $this->commentService->approve($comment);
+        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
+        if (! $comment->getApprove()) {
+            $this
+                ->commentService
+                ->approve($comment);
             $this->addFlash(
                 'success',
                 sprintf('Комментарий №%s одобрен', $comment->getId())

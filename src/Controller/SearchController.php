@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class SearchController extends AbstractController
 {
     private UserService $userService;
+
     private PostService $postService;
 
     public function __construct(
@@ -27,13 +28,20 @@ class SearchController extends AbstractController
     public function searchPosts(?string $search, Request $request): Response
     {
         $posts = false;
-        if (!$search) {
-            $search = (string) $request->query->get('search');
+
+        if (empty($search)) {
+            $search =  $request
+                ->query
+                ->get('search');
         }
-        $searchWords = trim(strip_tags($search));
-        if('' !== $searchWords) {
+
+        $searchWords = trim(strip_tags((string) $search));
+
+        if ('' !== $searchWords) {
             $numberOfResults = 80;
-            $posts = $this->postService->searchPosts($searchWords, $numberOfResults);
+            $posts = $this
+                ->postService
+                ->searchPosts($searchWords, $numberOfResults);
         }
 
         return $this->render('search/search_posts.html.twig', [
@@ -46,11 +54,16 @@ class SearchController extends AbstractController
     public function searchUsers(?string $search, Request $request): Response
     {
         $users = false;
-        if (!$search) {
-            $search = $request->query->get('search');
+
+        if (empty($search)) {
+            $search = $request
+                ->query
+                ->get('search');
         }
-        $searchWords = (string) trim(strip_tags($search));
-        if('' !== $searchWords) {
+
+        $searchWords = trim(strip_tags((string) $search));
+
+        if ('' !== $searchWords) {
             $users = $this->userService->searchUsers($searchWords);
         }
 

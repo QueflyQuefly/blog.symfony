@@ -28,9 +28,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function add(User $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this
+            ->_em
+            ->persist($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -42,9 +47,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         if (!$user instanceof User) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
+
         $user->setPassword($newHashedPassword);
-        $this->_em->persist($user);
-        $this->_em->flush();
+        $this
+            ->_em
+            ->persist($user);
+        $this
+            ->_em
+            ->flush();
     }
 
     /**
@@ -54,28 +64,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function update(bool $flush = true): void
     {
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
-    }
-
-    /**
-     * @return User Returns an User object
-     */
-    public function isUserExists(string $email, string $fio, ?int $dateTime = null)
-    {
-        $qb = $this->createQueryBuilder('u');
-
-        if (!empty($dateTime)) {
-            $qb->andWhere('u.dateTime = :date')->setParameter('date', $dateTime);
-        }
-        
-        return $qb->andWhere('u.email = :email')
-            ->andWhere('u.fio = :fio')
-            ->setParameter('email', $email)
-            ->setParameter('fio', $fio)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
     }
 
     /**
@@ -83,13 +75,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function getUsers(int $numberOfResults, int $lessThanMaxId)
     {
-        return $this->createQueryBuilder('u')
+        return $this
+            ->createQueryBuilder('u')
             ->orderBy('u.id', 'DESC')
             ->setFirstResult($lessThanMaxId)
             ->setMaxResults($numberOfResults)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -97,15 +89,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function getSubscribedUsersEmails(int $userId)
     {
-        return $this->createQueryBuilder('u')
+        return $this
+            ->createQueryBuilder('u')
             ->select('u.email')
             ->join('App\Entity\Subscription', 's', 'WITH', 's.userSubscribed = u.id')
             ->where('s.user = :id')
             ->setParameter(':id', $userId)
             ->orderBy('u.id', 'DESC')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -113,11 +105,12 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function getLastUserId(): ?int
     {
-        $maxUserId = $this->createQueryBuilder('u')
+        $maxUserId = $this
+            ->createQueryBuilder('u')
             ->select('MAX(u.id) as max_id')
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
+
         if (!empty($maxUserId)) {
             return $maxUserId['max_id'];
         } else {
@@ -131,13 +124,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function searchByFio(string $search)
     {
         $qb = $this->createQueryBuilder('u');
-        return $qb->where($qb->expr()->like('u.fio', ':search'))
+
+        return $qb
+            ->where(
+                $qb
+                    ->expr()
+                    ->like('u.fio', ':search')
+            )
             ->orderBy('u.id', 'DESC')
             ->setParameter('search', $search)
             ->setMaxResults(30)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
@@ -146,9 +144,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function remove(User $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this
+            ->_em
+            ->remove($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 }

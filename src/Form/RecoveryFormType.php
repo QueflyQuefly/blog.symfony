@@ -18,19 +18,16 @@ class RecoveryFormType extends AbstractType
         $builder
             ->add('email', EmailType::class, [
                 'label' => 'Введите е-mail:',
-                'attr' => [
+                'attr'  => [
                     'class'        => 'formtext',
                     'placeholder'  => 'Ваш email',
                     'autofocus'    => 'on',
                     'minlength'    => '1',
                     'maxlength'    => '40',
                     'autocomplete' => 'on',
-                    'value'        => $options['last_username']
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Пожалуйста, введите email'
-                    ]),
+                    new NotBlank(['message' => 'Пожалуйста, введите email']),
                     new Length([
                         'min'        => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
@@ -41,16 +38,14 @@ class RecoveryFormType extends AbstractType
             ])
             ->add('fio', TextType::class, [
                 'label' => 'Введите ФИО:',
-                'attr' => [
+                'attr'  => [
                     'class'       => 'formtext',
                     'placeholder' => 'Введите ФИО или псевдоним',
                     'minlength'   => '1',
-                    'maxlength'   => '40'
+                    'maxlength'   => '40',
                 ],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Пожалуйста, введите ФИО или псевдоним',
-                    ]),
+                    new NotBlank(['message' => 'Пожалуйста, введите ФИО или псевдоним']),
                     new Length([
                         'min'        => 1,
                         'minMessage' => 'Необходимо ввести не менее {{ limit }} знаков',
@@ -61,18 +56,13 @@ class RecoveryFormType extends AbstractType
             ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Отправить',
-                'attr'  => [
-                    'class' => 'formsubmit',
-                ]
+                'attr'  => ['class' => 'formsubmit'],
             ])
         ;
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([
-            'data_class'    => null,
-            'last_username' => ''
-        ]);
+        $resolver->setDefaults(['data_class' => null]);
     }
 }

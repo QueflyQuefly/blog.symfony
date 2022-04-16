@@ -18,23 +18,27 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminController extends AbstractController
 {
     private UserService $userService;
+    
     private CommentService $commentService;
+
     private StabService $stabService;
+
     private RedisCacheService $cacheService;
+
     private string $env;
 
     public function __construct(
-        UserService $userService, 
-        CommentService $commentService,
-        StabService $stabService,
+        UserService       $userService, 
+        CommentService    $commentService,
+        StabService       $stabService,
         RedisCacheService $cacheService,
-        KernelInterface $kernel
+        KernelInterface   $kernel
     ) {
-        $this->userService = $userService;
+        $this->userService    = $userService;
         $this->commentService = $commentService;
-        $this->stabService = $stabService;
-        $this->cacheService = $cacheService;
-        $this->env = $kernel->getEnvironment();
+        $this->stabService    = $stabService;
+        $this->cacheService   = $cacheService;
+        $this->env            = $kernel->getEnvironment();
     }
 
     #[Route('', name: 'main')]
@@ -46,10 +50,16 @@ class AdminController extends AbstractController
     #[Route('/users/{numberOfUsers<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'show_users')]
     public function showUsers(?int $numberOfUsers, ?int $page): Response
     {
-        $users = $this->cacheService->get(sprintf('admin_users_%s_%s', $numberOfUsers, $page), 60, sprintf('%s[]', User::class),
-            function() use ($numberOfUsers, $page) {
-                return $this->userService->getUsers($numberOfUsers, $page);
-        });
+        $users = $this
+            ->cacheService
+            ->get(
+                sprintf('admin_users_%s_%s', $numberOfUsers, $page), 
+                60, 
+                sprintf('%s[]', User::class),
+                function() use ($numberOfUsers, $page) {
+                    return $this->userService->getUsers($numberOfUsers, $page);
+                }
+            );
 
         return $this->render('admin/admin_users.html.twig', [
             'nameOfPath' => 'admin_show_users',
@@ -62,10 +72,16 @@ class AdminController extends AbstractController
     #[Route('/comments/{numberOfComments<(?!0)\b[0-9]+>?25}/{page<(?!0)\b[0-9]+>?1}', name: 'show_comments')]
     public function showComments(?int $numberOfComments, ?int $page): Response
     {
-        $comments = $this->cacheService->get(sprintf('admin_comments_%s_%s', $numberOfComments, $page), 60, sprintf('%s[]', Comment::class),
-            function() use ($numberOfComments, $page) {
-                return $this->commentService->getComments($numberOfComments, $page);
-        });
+        $comments = $this
+            ->cacheService
+            ->get(
+                sprintf('admin_comments_%s_%s', $numberOfComments, $page), 
+                60, 
+                sprintf('%s[]', Comment::class),
+                function() use ($numberOfComments, $page) {
+                    return $this->commentService->getComments($numberOfComments, $page);
+                }
+            );
 
         return $this->render('admin/admin_comments.html.twig', [
             'nameOfPath' => 'admin_show_comments',
@@ -79,11 +95,15 @@ class AdminController extends AbstractController
     public function showStab(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
+
         if ($this->env !== 'dev') {
             throw $this->createNotFoundException('Page not found');
         }
+
         $numberOfIterations = $request->query->get('number') ?? 0;
-        $this->stabService->toStabDb($numberOfIterations);
+        $this
+            ->stabService
+            ->toStabDb($numberOfIterations);
         $errors = $this->stabService->getErrors() ?? false;
 
         return $this->render('admin/admin_stab.html.twig', [

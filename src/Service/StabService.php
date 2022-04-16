@@ -13,16 +13,25 @@ use Doctrine\ORM\EntityManagerInterface;
 class StabService
 {
     private UserService $userService;
+
     private PostService $postService;
+
     private CommentService $commentService;
+
     private EntityManagerInterface $entityManager;
+
     private array $errors = [];
+
     private bool $flush = false;
+
     private int $isBanned = 0;
-    private bool $approve = true;
-    private bool $checkingForUser = false;
+
+    private array $rights = ['ROLE_USER'];
+
     private int $maxNumberOfComments = 10;
+
     private bool $commentsWithLike = true;
+
     private array $names = [
         0  => 'Василий',
         1  => 'Даниил',
@@ -36,8 +45,9 @@ class StabService
         9  => 'Вячеслав',
         10 => 'Кирилл',
         11 => 'Григорий',
-        12 => 'Георгий'
+        12 => 'Георгий',
     ];
+
     private array $surnames = [
         0  => 'Бродский',
         1  => 'Васильев',
@@ -51,9 +61,10 @@ class StabService
         9  => 'Вертеловский',
         10 => 'Кириллов',
         11 => 'Григорьев',
-        12 => 'Георгиевский'
+        12 => 'Георгиевский',
     ];
-    private array $titles1 = [
+
+    private array $titlesFirstPart = [
         0  => 'Пушкиногорье -',
         1  => 'Полуостров Крым -',
         2  => 'Ночная Россия -',
@@ -67,8 +78,9 @@ class StabService
         10 => 'Мне запомнилась эта страна, ведь Канада -',
         11 => 'Солнечный Белиз -',
         12 => 'Таиланд удивил -',
-    ]; 
-    private array $titles2 = [
+    ];
+
+    private array $titlesSecondPart = [
         0  => 'это не только памятник историко-литературный',
         1  => 'это своеобразный ботанический и зоологический сад',
         2  => 'это замечательный памятник природы, хотя львов здесь нет',
@@ -82,7 +94,9 @@ class StabService
         10 => 'это не только крупнейший заповедник',
         11 => 'это худшее путешествие. Впустую потраченные деньги',
         12 => 'это моя рекомендация. Место обязательно к посещению',
-    ];  
+    ];
+
+    // @codingStandardsIgnoreStart
     private array $texts = [
         0  => 'Путешествие - это как попадание в сказку, где всё необычно и нереально. Я люблю путешествовать, узнавать другие страны и города. Залог хорошего путешествия, это грамотная подготовка. Когда я куда-нибудь приезжаю, то стараюсь посмотреть все местные достопримечательности или просто красивые места. Всё это я подготавливаю заранее. Надо знать, что смотреть в первую очередь, как добраться до них, когда они открыты и т.д. Если подготовиться хорошо, то посмотреть и узнать можно гораздо больше и дешевле.',
         1  => 'Путешествовать должны все люди. Без путешествий жизнь становится скучной и серой. Я не понимаю тех людей, кто не хочет и не любит смотреть мир. Я ещё мало где был, но уверен, что успею за свою жизнь посмотреть много красивых стран и городов. Больше всего мне нравится путешествовать на автомобиле. Мы семьёй съездили уже в Крым, Великий Новгород, Псков, Карелию и Ярославль. Сейчас мы собираемся на Онежское озеро. #Россия',
@@ -98,123 +112,124 @@ class StabService
         11 => 'Когда человек начинает путешествовать, он меняется, ведь на него оказывают влияние новые страны, города, люди, природа. Мир становится более интересным и разнообразным, появляются новые друзья. #winter',
         12 => 'С давних времен люди не зная, что там дальше, отправлялись в путешествие, их манила неизведанность, тайна, любопытство. И это было достаточно опасно, но несмотря на это, открывались новые города, страны, моря, океаны, материки. Сейчас современный человек знает многое, но отправляясь в путешествие, он по-прежнему открывает перед собой удивительный и неповторимый мир. #spring',
     ];
+    // @codingStandardsIgnoreStop
 
     public function __construct(
-        UserService $userService,
-        PostService $postService,
-        CommentService $commentService,
+        UserService            $userService,
+        PostService            $postService,
+        CommentService         $commentService,
         EntityManagerInterface $entityManager
     ) {
-        $this->userService = $userService;
-        $this->postService = $postService;
+        $this->userService    = $userService;
+        $this->postService    = $postService;
         $this->commentService = $commentService;
-        $this->entityManager = $entityManager;
+        $this->entityManager  = $entityManager;
     }
 
+    /**
+     * @return this Returns a configured StabService
+     */
     public function setConfiguration(
-        bool $flush = false,
-        int $isBanned = 0,
-        bool $approve = true,
-        bool $checkingForUser = false,
-        int $maxNumberOfComments = 10,
-        bool $commentsWithLike = true
+        bool  $flush               = false,
+        int   $isBanned            = 0,
+        array $rights              = ['ROLE_USER'],
+        bool  $approve             = true,
+        int   $maxNumberOfComments = 10,
+        bool  $commentsWithLike    = true
     ) {
-        $this->flush = $flush;
-        $this->isBanned = $isBanned;
-        $this->approve = $approve;
-        $this->checkingForUser = $checkingForUser;
+        $this->flush               = $flush;
+        $this->isBanned            = $isBanned;
+        $this->rights              = $rights;
+        $this->approve             = $approve;
         $this->maxNumberOfComments = $maxNumberOfComments;
-        $this->commentsWithLike = $commentsWithLike;
+        $this->commentsWithLike    = $commentsWithLike;
+
+        return $this;
     }
 
     /**
      * @return User Returns an object of User
      */
-    private function createRandomUser(int $number, int $isBanned = 0, bool $flush = true)
+    public function createRandomUser(int $password, array $rights, int $isBanned = 0, bool $flush = true)
     {
-        $randomName = mt_rand(0, 12);
-        $randomSurname = mt_rand(0, 12);
-        $time = time() - mt_rand(1000000, 2000000);
-        $email = $number . '@' . $number . '.' . $number;
-        $fio = $this->names[$randomName] . ' ' . $this->surnames[$randomSurname];
-        $password = $number;
-        $rights = ['ROLE_USER'];
+        $userEmail = $password . '@' . $password . '.' . $password;
+        $userFio   = $this->getRandomValue('userFio');
+        $time  = $this->getRandomValue('time');
 
-        return $this->userService->register($email, $fio, $password, $rights, $time, $isBanned, $flush);
+        return $this
+            ->userService
+            ->register($userEmail, $userFio, $password, $rights, $time, $isBanned, $flush);
     }
 
     /**
      * @return Post Returns an object of Post
      */
-    private function createRandomPost(User $user, bool $approve = false, bool $flush = true)
+    public function createRandomPost(User $user, bool $approve = false, bool $flush = true)
     {
-        $randomText1 = mt_rand(0, 12);
-        $randomText2 = mt_rand(0, 12);
-        $randomText3 = mt_rand(0, 12);
-        $time = time() - mt_rand(100000, 1000000);
-        $title = $this->titles1[$randomText1] . ' ' . $this->titles2[$randomText2];
-        $content = $this->texts[$randomText3] . ' 
-            
-            ' . $this->texts[$randomText2]. '
-            
-            ' . $this->texts[$randomText1]
-        ;
+        $postTitle   = $this->getRandomValue('postTitle');
+        $postContent = $this->getRandomValue('postContent');
+        $time        = $this->getRandomValue('time');
 
-        return $this->postService->create($user, $title, $content, $approve, $time, $flush);
+        return $this
+            ->postService
+            ->create($user, $postTitle, $postContent, $approve, $time, $flush);
     }
 
     /**
      * @return bool Returns true if rating added, false if not
      */
-    private function createRandomRating(
+    public function createRandomRating(
         User $user,
         Post $post,
-        bool $checkingForUser = true,
         bool $flush = true
     ) {
-        if ($post->getApprove()) {
-            $randomRating = mt_rand(1, 5);
-
-            return $this->postService->addOrRemoveRating($user, $post, $randomRating, $checkingForUser, $flush);
+        if (! $post->getApprove()) {
+            return false;
         }
+        
+        $rating = $this->getRandomValue('postRating');
 
-        return false;
+        return $this
+            ->postService
+            ->addRating($user, $post, $rating, $flush);
     }
 
     /**
      * @return Comment Returns an object of Comment
      */
-    private function createRandomComment(
+    public function createRandomComment(
         User $user,
         Post $post,
-        bool $approve = false,
-        bool $withLike = false,
-        bool $checkingForUser = true,
-        bool $flush = true
+        bool $approve         = false,
+        bool $withLike        = false,
+        bool $flush           = true
     ) {
-        if ($post->getApprove()) {
-            $randomText = mt_rand(0, 12);
-            $dateOfComment = time() - mt_rand(10000, 100000);
-            $commentContent = $this->texts[$randomText];
-            $randomLike = mt_rand(0, 1000);
+        if (! $post->getApprove()) {
+            return false;
+        }
 
-            $comment = $this->commentService->create(
+        $commentContent = $this->getRandomValue('commentContent');
+        $commentRating  = $this->getRandomValue('commentRating');
+        $commentTime    = $this->getRandomValue('commentTime');
+        $comment        = $this
+            ->commentService
+            ->create(
                 $user, 
                 $post, 
                 $commentContent, 
                 $approve, 
-                $randomLike, 
-                $dateOfComment, 
+                $commentRating, 
+                $commentTime, 
                 $flush
             );
-            if ($withLike && $approve) {
-                $this->commentService->like($user, $comment, $checkingForUser, $flush);
-            }
 
-            return $comment;
+        if ($withLike && $approve) {
+            $this
+                ->commentService
+                ->addLike($user, $comment, $flush);
         }
 
-        return false;
+        return $comment;
     }
 
     /**
@@ -222,75 +237,121 @@ class StabService
      */
     public function toStabDb(int $numberOfIterations)
     {
-        if ($numberOfIterations > 0) {
-            try {
-                if (!$min = $this->userService->getLastUserId()) {
-                    throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
-                }
-                $min++;
-                for ($i = $min; $i < $numberOfIterations + $min; $i++) {
+        try {
+            if ($numberOfIterations < 0) {
+                throw new \Exception(sprintf('Invalid number of iterations = %s', $numberOfIterations));
+            }
 
+            $min = $this->userService->getLastUserId();
+
+            if (empty($min)) {
+                throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
+            }
+
+            $min++;
+
+            for ($i = $min; $i < $numberOfIterations + $min; $i++) {
+                /* For test, recommend to delete */
+                $this->approve = (bool) mt_rand(0, 1);
+                $user          = $this->createRandomUser($i, $this->rights, $this->isBanned, $this->flush);
+
+                if (! $user) {
+                    throw new \Exception(sprintf('User with id = %s not created', $i));
+                }
+
+                if($this->isBanned) {
+                    continue;
+                }
+
+                $post = $this->createRandomPost($user, $this->approve, $this->flush);
+
+                if (! $post) {
+                    throw new \Exception(sprintf('Post by user with id = %s not created', $i));
+                }
+
+                if (! $this->approve) {
+                    continue;
+                }
+
+                if (! $this->createRandomRating($user, $post, $this->flush)) {
+                    $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
+                    continue;
+                }
+
+                $numberOfComments = $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments);
+
+                for ($m = 0; $m < $numberOfComments; $m++) {
                     /* For test, recommend to delete */
                     $this->approve = (bool) mt_rand(0, 1);
+                    $comment       = $this->createRandomComment(
+                        $user,
+                        $post,
+                        $this->approve,
+                        $this->commentsWithLike,
+                        $this->flush
+                    );
 
-                    $user = $this->createRandomUser($i, $this->isBanned, $this->flush);
-                    if (!$user) {
-                        $this->errors[] = sprintf('User with id = %s not created', $i);
-                        continue;
-                    }
-
-                    if(!$this->isBanned) {
-                        $post = $this->createRandomPost($user, $this->approve, $this->flush);
-                        if (!$post) {
-                            $this->errors[] = sprintf('Post by user with id = %s not created', $i);
-                            continue;
-                        }
-
-                        if ($this->approve) {
-                            if (!$this->createRandomRating($user, $post, $this->checkingForUser, $this->flush)) {
-                                $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
-                                continue;
-                            }
-
-                            for ($m = 0; $m < $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments); $m++) {
-
-                                /* For test, recommend to delete */
-                                if ($this->approve) {
-                                    $this->approve = (bool) mt_rand(0, 1);
-                                }
-
-                                $comment = $this->createRandomComment(
-                                    $user,
-                                    $post,
-                                    $this->approve,
-                                    $this->commentsWithLike,
-                                    $this->checkingForUser,
-                                    $this->flush
-                                );
-                                if (!$comment) {
-                                    $this->errors[] = sprintf('Comment to post by user with id = %s not created', $i);
-                                    break;
-                                }
-                            }
-                        }
+                    if (! $comment) {
+                        throw new \Exception(sprintf('Comment to post by user with id = %s not created', $i));
                     }
                 }
-                $this->entityManager->flush();
-            } catch (\Exception $e) {
-                $this->errors[] = $e->getMessage();
-
-                return false;
             }
+
+            $this->entityManager->flush();
+
             return true;
+
+        } catch (\Exception $e) {
+            $this->errors[] = $e->getMessage();
+
+            return false;
         }
-        return false;
     }
 
     /**
      * @return [] Returns an array of errors
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    /**
+     * @return int|string|array Returns an info for creating random entities
+     */
+    private function getRandomValue(string $key)
+    {
+        $randomInt1           = mt_rand(0, 12);
+        $randomInt2           = mt_rand(0, 12);
+        $randomInt3           = mt_rand(0, 12);
+        $randomInt4           = mt_rand(0, 12);
+        $randomInt5           = mt_rand(0, 12);
+        $randomPostRating     = mt_rand(1, 5);
+        $randomCommentRating  = mt_rand(0, 1000);
+        $randomTime           = time() - mt_rand(1000000, 2000000);
+        $randomCommentTime    = mt_rand(time() - 1000000, time());
+        $randomUserFio        = $this->names[$randomInt1] . ' ' . $this->surnames[$randomInt2];
+        $randomPostTitle      = $this->titlesFirstPart[$randomInt3] . ' ' . $this->titlesSecondPart[$randomInt4];
+        $randomCommentContent = $this->texts[$randomInt1];
+        // @codingStandardsIgnoreStart
+        $randomPostContent    = $this->texts[$randomInt5] . ' 
+            
+            ' . $this->texts[$randomInt2]. '
+            
+            ' . $this->texts[$randomInt3]
+        ;
+        // @codingStandardsIgnoreStop
+
+        switch ($key) {
+            case 'time'           : return $randomTime;
+            case 'userFio'        : return $randomUserFio;
+            case 'postTitle'      : return $randomPostTitle;
+            case 'postContent'    : return $randomPostContent;
+            case 'postRating'     : return $randomPostRating;
+            case 'commentContent' : return $randomCommentContent;
+            case 'commentTime'    : return $randomCommentTime;
+            case 'commentRating'  : return $randomCommentRating;
+            default               : return $randomInt1;
+        }
     }
 }

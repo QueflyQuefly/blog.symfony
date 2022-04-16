@@ -27,9 +27,14 @@ class SubscriptionRepository extends ServiceEntityRepository
      */
     public function add(Subscription $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
+        $this
+            ->_em
+            ->persist($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 
@@ -39,9 +44,14 @@ class SubscriptionRepository extends ServiceEntityRepository
      */
     public function remove(Subscription $entity, bool $flush = true): void
     {
-        $this->_em->remove($entity);
+        $this
+            ->_em
+            ->remove($entity);
+
         if ($flush) {
-            $this->_em->flush();
+            $this
+                ->_em
+                ->flush();
         }
     }
 }

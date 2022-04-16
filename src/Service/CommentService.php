@@ -12,13 +12,14 @@ use App\Repository\CommentRepository;
 class CommentService
 {
     private CommentRepository $commentRepository;
+
     private RatingCommentRepository $ratingCommentRepository;
 
     public function __construct(
-        CommentRepository $commentRepository,
+        CommentRepository       $commentRepository,
         RatingCommentRepository $ratingCommentRepository
     ) {
-        $this->commentRepository = $commentRepository;
+        $this->commentRepository       = $commentRepository;
         $this->ratingCommentRepository = $ratingCommentRepository;
     }
 
@@ -26,58 +27,72 @@ class CommentService
      * @return Comment Returns an object of Comment
      */
     public function create(
-        User $user,
-        Post $post,
+        User   $user,
+        Post   $post,
         string $content,
-        bool $approve = false,
-        int $rating = 0,
-        ?int $dateTime = null,
-        bool $flush = true
+        bool   $approve  = false,
+        int    $rating   = 0,
+        ?int   $dateTime = null,
+        bool   $flush    = true
     ) {
         if (empty($dateTime)) {
             $dateTime = time();
         }
+
         $comment = (new Comment())
             ->setPost($post)
             ->setUser($user)
             ->setDateTime($dateTime)
             ->setContent($content)
             ->setRating($rating)
-            ->setApprove($approve)
-        ;
-        $this->commentRepository->add($comment, $flush);
+            ->setApprove($approve);
+        $this
+            ->commentRepository
+            ->add($comment, $flush);
         
         return $comment;
     }
 
     public function approve(Comment $comment, bool $flush = true)
     {
-        $this->commentRepository->approve($comment, $flush);
+        $this
+            ->commentRepository
+            ->approve($comment, $flush);
     }
 
     /**
      * @return bool Returns true if like added
      */
-    public function like(User $user, Comment $comment, $checkingForUser = true, bool $flush = true)
+    public function changeLike(User $user, Comment $comment, bool $flush = true)
     {
-        if ($checkingForUser) {
-            $ratingComment = $this->ratingCommentRepository->findOneBy([
-                'user'    => $user, 
-                'comment' => $comment
-            ]);
-            if ($ratingComment) {
-                $comment->setRating($comment->getRating() - 1);
-                $this->ratingCommentRepository->remove($ratingComment, $flush);
+        $ratingComment = $this->ratingCommentRepository->findOneBy([
+            'user'    => $user, 
+            'comment' => $comment,
+        ]);
 
-                return false;
-            }
+        if (! empty($ratingComment)) {
+            $this->removeLike($ratingComment, $comment, $flush);
+
+            return false;
         }
+
+        $this->addLike($user, $comment, $flush);
+
+        return true;
+    }
+
+    /**
+     * @return bool Returns true if like added
+     */
+    public function addLike(User $user, Comment $comment, bool $flush = true)
+    {
         $ratingComment = (new RatingComment())
             ->setUser($user)
-            ->setComment($comment)
-        ;
+            ->setComment($comment);
         $comment->setRating($comment->getRating() + 1);
-        $this->ratingCommentRepository->add($ratingComment, $flush);
+        $this
+            ->ratingCommentRepository
+            ->add($ratingComment, $flush);
 
         return true;
     }
@@ -89,7 +104,9 @@ class CommentService
     {
         $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
 
-        return $this->commentRepository->getComments($numberOfComments, $lessThanMaxId);
+        return $this
+            ->commentRepository
+            ->getComments($numberOfComments, $lessThanMaxId);
     }
 
     /**
@@ -99,7 +116,9 @@ class CommentService
     {
         $lessThanMaxId = $page * $numberOfComments - $numberOfComments;
 
-        return $this->commentRepository->getNotApprovedComments($numberOfComments, $lessThanMaxId);
+        return $this
+            ->commentRepository
+            ->getNotApprovedComments($numberOfComments, $lessThanMaxId);
     }
 
     /**
@@ -107,7 +126,9 @@ class CommentService
      */
     public function getCommentsByPostId(int $postId)
     {
-        return $this->commentRepository->getCommentsByPostId($postId);
+        return $this
+            ->commentRepository
+            ->getCommentsByPostId($postId);
     }
 
     /**
@@ -115,7 +136,9 @@ class CommentService
      */
     public function getCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentRepository->getCommentsByUserId($userId, $numberOfComments);
+        return $this
+            ->commentRepository
+            ->getCommentsByUserId($userId, $numberOfComments);
     }
 
     /**
@@ -123,16 +146,20 @@ class CommentService
      */
     public function getLikedCommentsByUserId(int $userId, int $numberOfComments)
     {
-        return $this->commentRepository->getLikedCommentsByUserId($userId, $numberOfComments);
+        return $this
+            ->commentRepository
+            ->getLikedCommentsByUserId($userId, $numberOfComments);
     }
 
     /**
      * @return bool Returns true if Post updated
      */
-    public function update(Comment $comment, bool $flush = true)
+    public function update(bool $flush = true)
     {
-        if ($comment->getId() && $flush) {
-            $this->commentRepository->update($flush);
+        if ($flush) {
+            $this
+                ->commentRepository
+                ->update($flush);
 
             return true;
         }
@@ -142,6 +169,21 @@ class CommentService
 
     public function delete(Comment $comment, bool $flush = true)
     {
-        $this->commentRepository->remove($comment, $flush);
+        $this
+            ->commentRepository
+            ->remove($comment, $flush);
+    }
+
+    /**
+     * @return bool Returns true if like added
+     */
+    private function removeLike(RatingComment $ratingComment, Comment $comment, bool $flush = true)
+    {
+        $comment->setRating($comment->getRating() - 1);
+        $this
+            ->ratingCommentRepository
+            ->remove($ratingComment, $flush);
+
+        return true;
     }
 }

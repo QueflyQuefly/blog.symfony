@@ -12,52 +12,60 @@ use App\Service\UserService;
 class PostService
 {
     private PostRepository $postRepository;
+
     private RatingPostRepository $ratingPostRepository;
+
     private UserService $userService;
 
     public function __construct(
-        PostRepository $postRepository,
+        PostRepository       $postRepository,
         RatingPostRepository $ratingPostRepository,
-        UserService $userService
+        UserService          $userService
     ) {
-        $this->postRepository = $postRepository;
+        $this->postRepository       = $postRepository;
         $this->ratingPostRepository = $ratingPostRepository;
-        $this->userService = $userService;
+        $this->userService          = $userService;
     }
 
     /**
      * @return Post Returns an object of Post
      */
     public function create(
-        User $user,
+        User   $user,
         string $title,
         string $content,
-        bool $approve = false,
-        ?int $dateTime = null,
-        bool $flush = true
+        bool   $approve  = false,
+        ?int   $dateTime = null,
+        bool   $flush    = true
     ) {
         if (empty($dateTime)) {
             $dateTime = time();
         }
+
         $post = (new Post())
             ->setTitle($title)
             ->setUser($user)
             ->setContent($content)
             ->setDateTime($dateTime)
             ->setRating('0.0')
-            ->setApprove($approve)
-        ;
-        $this->postRepository->add($post, $flush);
+            ->setApprove($approve);
+        $this
+            ->postRepository
+            ->add($post, $flush);
         
         return $post;
     }
 
     public function approve(Post $post, bool $flush = true)
     {
-        $this->postRepository->approve($post, $flush);
+        $this
+            ->postRepository
+            ->approve($post, $flush);
 
         if ($flush) {
-            $this->userService->sendMailsToSubscribers($post);
+            $this
+                ->userService
+                ->sendMailsToSubscribers($post);
         }
     }
 
@@ -67,48 +75,35 @@ class PostService
     private function countRating(Post $post, int $rating = 0)
     {
         $allRatingsPost = $post->getRatingPosts();
-        if ($count = $allRatingsPost->count()) {
+        $count          = $allRatingsPost->count();
+
+        if ($count > 0) {
             foreach ($allRatingsPost as $ratingPost) {
                 $rating += $ratingPost->getRating();
             }
+
             $rating = round($rating / ($count + 1), 1);
         }
+
         return $rating;
     }
 
     /**
      * @return bool Returns true if rating to post added
      */
-    public function addOrRemoveRating(User $user, Post $post, int $rating = 0, bool $checkingForUser = true, bool $flush = true)
+    public function changeRating(User $user, Post $post, int $rating = 0, bool $flush = true)
     {
-        if ($checkingForUser) {
-            if($ratingPost = $this->isUserAddRating($user, $post)) {
-                $this->ratingPostRepository->remove($ratingPost);
-                $post->setRating((string) $this->countRating($post));
+        $ratingPost = $this->isUserAddRating($user, $post);
 
-                return false;
-            } else {
-                $ratingPost = (new RatingPost())
-                    ->setPost($post)
-                    ->setUser($user)
-                    ->setRating($rating)
-                ;
-                $post->setRating((string) $this->countRating($post, $rating));
-                $this->ratingPostRepository->add($ratingPost, $flush);
+        if (! empty($ratingPost)) {
+            $this->removeRating($ratingPost, $post);
 
-                return true;
-            }
-        } else {
-            $ratingPost = (new RatingPost())
-                ->setPost($post)
-                ->setUser($user)
-                ->setRating($rating)
-            ;
-            $post->setRating((string) $this->countRating($post, $rating));
-            $this->ratingPostRepository->add($ratingPost, $flush);
-
-            return true;
+            return false;
         }
+
+        $this->addRating($user, $post, $rating, $flush);
+
+        return true;
     }
 
     /**
@@ -120,6 +115,23 @@ class PostService
             'user' => $user,
             'post' => $post
         ]);
+    }
+
+    /**
+     * @return bool Returns true if rating to post added
+     */
+    public function addRating(User $user, Post $post, int $rating = 0, bool $flush = true)
+    {
+        $ratingPost = (new RatingPost())
+            ->setPost($post)
+            ->setUser($user)
+            ->setRating($rating);
+        $post->setRating((string) $this->countRating($post, $rating));
+        $this
+            ->ratingPostRepository
+            ->add($ratingPost, $flush);
+
+        return true;
     }
 
     /**
@@ -221,5 +233,16 @@ class PostService
     public function delete($post, bool $flush = true)
     {
         $this->postRepository->remove($post, $flush);
+    }
+
+    /**
+     * @return bool Returns true if rating to post deleted
+     */
+    private function removeRating(RatingPost $ratingPost, Post $post)
+    {
+        $this->ratingPostRepository->remove($ratingPost);
+        $post->setRating((string) $this->countRating($post));
+
+        return true;
     }
 }

@@ -13,20 +13,23 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class UserService
 {
     private UserRepository $userRepository;
+
     private SubscriptionRepository $subscriptionRepository;
+
     private UserPasswordHasherInterface $userPasswordHasher;
+
     private MailerService $mailer;
 
     public function __construct(
-        UserRepository $userRepository,
-        SubscriptionRepository $subscriptionRepository,
+        UserRepository              $userRepository,
+        SubscriptionRepository      $subscriptionRepository,
         UserPasswordHasherInterface $userPasswordHasher,
-        MailerService $mailer
+        MailerService               $mailer
     ) {
-        $this->userRepository = $userRepository;
+        $this->userRepository         = $userRepository;
         $this->subscriptionRepository = $subscriptionRepository;
-        $this->userPasswordHasher = $userPasswordHasher;
-        $this->mailer = $mailer;
+        $this->userPasswordHasher     = $userPasswordHasher;
+        $this->mailer                 = $mailer;
     }
 
     /**
@@ -36,24 +39,31 @@ class UserService
         string $email,
         string $fio,
         string $password,
-        array $rights,
-        ?int $dateTime = null,
-        int $isBanned = 0,
-        bool $flush = true
+        array  $rights,
+        ?int   $dateTime = null,
+        int    $isBanned = 0,
+        bool   $flush    = true
     ): User
     {
-        if (empty($dateTime)){
+        if (empty($dateTime)) {
             $dateTime = time();
         }
+
         $user = new User();
-        $user->setEmail($email)
+        $user
+            ->setEmail($email)
             ->setFio($fio)
-            ->setPassword($this->userPasswordHasher->hashPassword($user, $password))
+            ->setPassword(
+                $this
+                    ->userPasswordHasher
+                    ->hashPassword($user, $password)
+            )
             ->setDateTime($dateTime)
             ->setRoles($rights)
-            ->setIsBanned($isBanned)
-        ;
-        $this->userRepository->add($user, $flush);
+            ->setIsBanned($isBanned);
+        $this
+            ->userRepository
+            ->add($user, $flush);
         
         return $user;
     }
@@ -64,11 +74,16 @@ class UserService
     public function sendMailsToSubscribers(Post $post): bool
     {
         $toAddresses = $this->getSubscribedUsersEmails($post->getUser());
-        if (!empty($toAddresses)) {
-            if(!$this->mailer->sendMailsToSubscribers($toAddresses, $post->getUser(), $post->getId())) {
-                return false;
-            }
+
+        if (empty($toAddresses)) {
+            return false;
         }
+
+        if ($this->mailer->sendMailsToSubscribers($toAddresses, $post->getUser(), $post->getId())) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -76,11 +91,13 @@ class UserService
      */
     public function sendMailToRecoveryPassword(User $user): bool
     {
-        $parameters = $this->getArrayWithParameters($user);
-        if(!$this->mailer->sendMailToRecoveryPassword($user->getEmail(), $user->getFio(), $parameters)) {
-            return false;
+        $url = $this->getSecretCipherForUser($user);
+
+        if ($this->mailer->sendMailToRecoveryPassword($user->getEmail(), $user->getFio(), $url)) {
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     /**
@@ -88,37 +105,33 @@ class UserService
      */
     public function sendMailToVerifyUser(User $user): bool
     {
-        $parameters = $this->getArrayWithParameters($user);
-        if(!$this->mailer->sendMailToVerifyUser($user->getEmail(), $user->getFio(), $parameters)) {
-            return false;
+        $url = $this->getSecretCipherForUser($user);
+
+        if ($this->mailer->sendMailToVerifyUser($user->getEmail(), $user->getFio(), $url)) {
+            return true;
         }
-        return true;
+
+        return false;
     }
 
     /**
      * @return User Returns User if exists
      */
-    public function isUserExists(string $email, string $fio, ?int $dateTime = null): ?User
+    public function isUserExists(string $userInfo): ?User
     {
-        return $this->userRepository->isUserExists($email, $fio, $dateTime);
+        return $this
+            ->userRepository
+            ->findOneByPassword($userInfo);
     }
 
     /**
-     * @return array Parameters - string url and int expiresAt for recovery password
+     * @return string Returns url for recovery password
      */
-    private function getArrayWithParameters(User $user): array
+    private function getSecretCipherForUser(User $user): string
     {
-        $parameters = [];
-        $parameters['expiresAt'] = time() + 3600;
-        $array = [
-            // 'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'fio' => $user->getFio(),
-            'dateTime' => $user->getDateTime(),
-            'expiresAt' => $parameters['expiresAt']
-        ];
-        $parameters['url'] = base64_encode(json_encode($array));
-        return $parameters;
+        $url = base64_encode($user->getPassword());
+
+        return $url;
     }
 
     /**
@@ -126,17 +139,14 @@ class UserService
      */
     public function getUserBySecretCipher(string $secretCipher)
     {
-        $array = json_decode(base64_decode($secretCipher), true);
-        $email = $array['email'] ?? false;
-        $fio = $array['fio'] ?? false;
-        $dateTime = $array['dateTime'] ?? false;
-        $expiresAt = $array['expiresAt'] ?? false;
-        if ($email && $fio && $dateTime && $expiresAt && $expiresAt > time()) {
-            if ($user = $this->isUserExists($email, $fio, $dateTime)) {
-                return $user;
-            }
+        $userInfo = base64_decode($secretCipher);
+        $user = $this->isUserExists($userInfo);
+
+        if (empty($user)) {
+            return false;
         }
-        return false;
+
+        return $user;
     }
 
     /**

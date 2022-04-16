@@ -23,32 +23,40 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 #[Route('/user', name: 'user_')]
 class UserController extends AbstractController
 {
+    public const MIN_TIME_FOR_BAN = 86400; // 24 hours in seconds (one day)
+    
+    public const MAX_TIME_FOR_BAN = 259200; // 3 days in seconds
+
     private AuthenticationUtils $authenticationUtils;
+
     private UserService $userService;
+
     private PostService $postService;
+
     private CommentService $commentService;
+
     private RedisCacheService $cacheService;
+
     private FormFactoryInterface $formFactory;
+
     private TokenStorageInterface $tokenStorage;
-    const MIN_TIME_FOR_BAN = 86400; // 24 hours in seconds (one day)
-    const MAX_TIME_FOR_BAN = 259200; // 3 days in seconds
 
     public function __construct(
-        AuthenticationUtils $authenticationUtils,
-        UserService $userService,
-        PostService $postService,
-        CommentService $commentService,
-        RedisCacheService $cacheService,
-        FormFactoryInterface $formFactory,
+        AuthenticationUtils   $authenticationUtils,
+        UserService           $userService,
+        PostService           $postService,
+        CommentService        $commentService,
+        RedisCacheService     $cacheService,
+        FormFactoryInterface  $formFactory,
         TokenStorageInterface $tokenStorage
     ) {
         $this->authenticationUtils = $authenticationUtils;
-        $this->userService = $userService;
-        $this->postService = $postService;
-        $this->commentService = $commentService;
-        $this->cacheService = $cacheService;
-        $this->formFactory = $formFactory;
-        $this->tokenStorage = $tokenStorage;
+        $this->userService         = $userService;
+        $this->postService         = $postService;
+        $this->commentService      = $commentService;
+        $this->cacheService        = $cacheService;
+        $this->formFactory         = $formFactory;
+        $this->tokenStorage        = $tokenStorage;
     }
 
     #[Route('/register', name: 'register')]
@@ -58,19 +66,36 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $email = $form->get('email')->getData();
-            $fio = $form->get('fio')->getData();
-            $password = $form->get('plainPassword')->getData();
+            $email = $form
+                ->get('email')
+                ->getData();
+            $fio = $form
+                ->get('fio')
+                ->getData();
+            $password = $form
+                ->get('plainPassword')
+                ->getData();
+            $addModerator = $form
+                ->get('addModerator')
+                ->getData();
+            $addAdmin = $form
+                ->get('addAdmin')
+                ->getData();
             $rights = ['ROLE_USER'];
-            if ($form->get('addModerator')->getData()) {
+
+            if (! empty($addModerator)) {
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $rights = ['ROLE_MODERATOR'];
             }
-            if ($form->get('addAdmin')->getData()) {
+
+            if (! empty($addAdmin)) {
                 $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
                 $rights = ['ROLE_ADMIN'];
             }
-            $this->userService->register($email, $fio, $password, $rights);
+
+            $this
+                ->userService
+                ->register($email, $fio, $password, $rights);
 
             return $this->redirectToRoute('user_login');
         }
@@ -83,46 +108,91 @@ class UserController extends AbstractController
     #[Route('/profile/{id<(?!0)\b[0-9]+>?}', name: 'show_profile')]
     public function showProfile(?int $id): Response
     {
-        $canSubscribe = $isSubscribe = false;
-        if (!is_null($id)) {
-            $user = $this->cacheService->get(sprintf('user_%s', $id), 60, User::class, 
-                function () use ($id) {
-                    return $this->userService->getUserById($id);
-            });
-            /** @var \App\Entity\User $sessionUser */
-            if ($sessionUser = $this->getUser()) {
-                if ($sessionUser->getId() !== $id) {
-                    $canSubscribe = true;
-                    $isSubscribe = $this->userService->isSubscribe($sessionUser->getId(), $id);
-                }
-            }
-            if (!$user) {
+        $canSubscribe = false;
+        $isSubscribe  = false;
+
+        if (! empty($id)) {
+            $user = $this
+                ->cacheService
+                ->get(
+                    sprintf('user_%s', $id), 
+                    60, 
+                    User::class, 
+                    function () use ($id) {
+                        return $this->userService->getUserById($id);
+                    }
+                );
+
+            if (empty($user)) {
                 throw $this->createNotFoundException(sprintf('Пользователь с id = %s не найден', $id));
             }
+
+            /** @var \App\Entity\User $sessionUser */
+            $sessionUser = $this->getUser();
+
+            if (! empty($sessionUser) && $sessionUser->getId() !== $id) {
+                $canSubscribe = true;
+                $isSubscribe  = $this
+                    ->userService
+                    ->isSubscribe($sessionUser->getId(), $id);
+            } 
         } else {
             $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
             /** @var \App\Entity\User $user */
             $user = $this->getUser();
         }
-        $numberOfResults = 5;
-        $userId = $user->getId();
 
-        $posts = $this->cacheService->get(sprintf('posts_user_%s', $userId), 10, sprintf('%s[]', Post::class),
-            function () use ($userId, $numberOfResults) {
-                return $this->postService->getPostsByUserId($userId, $numberOfResults);
-        });
-        $comments = $this->cacheService->get(sprintf('comments_user_%s', $userId), 10, sprintf('%s[]', Comment::class),
-            function () use ($userId, $numberOfResults) {
-                return $this->commentService->getCommentsByUserId($userId, $numberOfResults);
-        });
-        $likedPosts = $this->cacheService->get(sprintf('liked_posts_user_%s', $userId), 10, sprintf('%s[]', Post::class),
-            function () use ($userId, $numberOfResults) {
-                return $this->postService->getLikedPostsByUserId($userId, $numberOfResults);
-        });
-        $likedComments = $this->cacheService->get(sprintf('liked_comments_user_%s', $userId), 10, sprintf('%s[]', Comment::class),
-            function () use ($userId, $numberOfResults) {
-                return $this->commentService->getLikedCommentsByUserId($userId, $numberOfResults);
-        });
+        $numberOfResults = 5;
+        $userId          = $user->getId();
+
+        $posts = $this
+            ->cacheService
+            ->get(
+                sprintf('posts_user_%s', $userId), 
+                10, 
+                sprintf('%s[]', Post::class),
+                function () use ($userId, $numberOfResults) {
+                    return $this
+                        ->postService
+                        ->getPostsByUserId($userId, $numberOfResults);
+                }
+            );
+        $comments = $this
+            ->cacheService
+            ->get(
+                sprintf('comments_user_%s', $userId), 
+                10, 
+                sprintf('%s[]', Comment::class),
+                function () use ($userId, $numberOfResults) {
+                    return $this
+                        ->commentService
+                        ->getCommentsByUserId($userId, $numberOfResults);
+                }
+            );
+        $likedPosts = $this
+            ->cacheService
+            ->get(
+                sprintf('liked_posts_user_%s', $userId), 
+                10, 
+                sprintf('%s[]', Post::class),
+                function () use ($userId, $numberOfResults) {
+                    return $this
+                        ->postService
+                        ->getLikedPostsByUserId($userId, $numberOfResults);
+                }
+            );
+        $likedComments = $this
+            ->cacheService
+            ->get(
+                sprintf('liked_comments_user_%s', $userId), 
+                10, 
+                sprintf('%s[]', Comment::class),
+                function () use ($userId, $numberOfResults) {
+                    return $this
+                        ->commentService
+                        ->getLikedCommentsByUserId($userId, $numberOfResults);
+                }
+            );
 
         return $this->render('user/user_profile.html.twig', [
             'user'              => $user,
@@ -146,14 +216,18 @@ class UserController extends AbstractController
             'email' => $user->getEmail(),
             'fio'   => $user->getFio()
         ]);
-
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $user = $form->getData();
-            $password = $form->get('plainPassword')->getData();
-            $this->userService->update($user, $password);
 
-            return $this->redirectToRoute('user_show_profile', ['id' => $user->getId()]);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user     = $form->getData();
+            $password = $form->get('plainPassword')->getData();
+            $this
+                ->userService
+                ->update($user, $password);
+
+            return $this->redirectToRoute('user_show_profile', [
+                'id' => $user->getId()
+            ]);
         }
 
         return $this->renderForm('user/user_update.html.twig', [
@@ -185,14 +259,13 @@ class UserController extends AbstractController
     #[Route('/login', name: 'login')]
     public function login(): Response
     {
-        if ($error = $this->authenticationUtils->getLastAuthenticationError()) {
+        $error = $this->authenticationUtils->getLastAuthenticationError();
+
+        if (! empty($error)) {
             $error = 'Неверная почта или пароль';
         }
-        $lastUsername = $this->authenticationUtils->getLastUsername();
 
-        $form = $this->formFactory->createNamed('', LoginFormType::class, null, [
-            'last_username' => $lastUsername
-        ]);
+        $form = $this->formFactory->createNamed('', LoginFormType::class);
 
         return $this->renderForm('user/user_login.html.twig', [
             'form'  => $form,
@@ -204,17 +277,21 @@ class UserController extends AbstractController
     public function showRecovery(Request $request): Response
     {
         $error = '';
-        $lastUsername = $this->authenticationUtils->getLastUsername();
-
-        $form = $this->createForm(RecoveryFormType::class, null, [
-            'last_username' => $lastUsername
-        ]);
-
+        $form  = $this->createForm(RecoveryFormType::class);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $email = $form->get('email')->getData();
-            $fio = $form->get('fio')->getData();
-            if ($user = $this->userService->isUserExists($email, $fio)) {
+            $email = $form
+                ->get('email')
+                ->getData();
+            $fio = $form
+                ->get('fio')
+                ->getData();
+            $user = $this
+                ->userService
+                ->isUserExists($email, $fio);
+
+            if (! empty($user)) {
                 if ($this->userService->sendMailToRecoveryPassword($user)) {
                     $description = 'Ожидайте письмо по введенному вами e-mail адресу';
                 } else {
@@ -225,6 +302,7 @@ class UserController extends AbstractController
                     'description' => $description
                 ]);
             }
+
             $error = 'Такого пользователя не существует';
         }
 
@@ -237,7 +315,9 @@ class UserController extends AbstractController
     #[Route('/recovery/{secretCipher}', name: 'recovery')]
     public function recovery(string $secretCipher, Request $request): Response
     {
-        if (!$user = $this->userService->getUserBySecretCipher($secretCipher)) {
+        $user = $this->userService->getUserBySecretCipher($secretCipher);
+
+        if (empty($user)) {
             throw $this->createNotFoundException('Something went wrong');
         }
 
@@ -245,12 +325,16 @@ class UserController extends AbstractController
             'email' => $user->getEmail(),
             'fio'   => $user->getFio()
         ]);
-
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $form->getData();
-            $password = $form->get('plainPassword')->getData();
-            $this->userService->update($user, $password);
+            $user     = $form->getData();
+            $password = $form
+                ->get('plainPassword')
+                ->getData();
+            $this
+                ->userService
+                ->update($user, $password);
 
             return $this->redirectToRoute('user_login');
         }
@@ -267,29 +351,36 @@ class UserController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
-        if (!$user->isVerified()) {
-            if (empty($secretCipher)) {
-                if ($this->userService->sendMailToVerifyUser($user)) {
-                    $this->addFlash(
-                        'success',
-                        'Ожидайте письмо по вашему e-mail адресу'
-                    );
-                } else {
-                    $this->addFlash(
-                        'error',
-                        'Произошла ошибка при отправке письма. Возможно e-mail адрес не существует'
-                    );
-                }
+        if ($user->isVerified()) {
+            throw $this->createNotFoundException();
+        }
+
+        if (empty($secretCipher)) {
+            if ($this->userService->sendMailToVerifyUser($user)) {
+                $this->addFlash(
+                    'success',
+                    'Ожидайте письмо по вашему e-mail адресу'
+                );
             } else {
-                if (!$user = $this->userService->getUserBySecretCipher($secretCipher)) {
-                    throw $this->createNotFoundException('Something went wrong');
-                }
-                $user->setIsVerified(true);
-                $this->userService->update($user);
+                $this->addFlash(
+                    'error',
+                    'Произошла ошибка при отправке письма. Возможно e-mail адрес не существует'
+                );
+            }
+        } else {
+            $user = $this->userService->getUserBySecretCipher($secretCipher);
+
+            if (empty($user)) {
+                throw $this->createNotFoundException('Something went wrong');
             }
 
-            return $this->redirectToRoute('user_show_profile');
+            $user->setIsVerified(true);
+            $this
+                ->userService
+                ->update($user);
         }
+
+        return $this->redirectToRoute('user_show_profile');
     }
 
     #[Route('/ban/{id<(?!0)\b[0-9]+>}', name: 'ban')]
@@ -303,7 +394,7 @@ class UserController extends AbstractController
             ]);
         }
 
-        if (!$user->getIsBanned()) {
+        if ($user->getIsBanned() === 0) {
             $user->setIsBanned(time() + $this::MIN_TIME_FOR_BAN);
             $this->addFlash(
                 'success',
@@ -316,7 +407,10 @@ class UserController extends AbstractController
                 sprintf('Пользователь №%s забанен на %s часа', $user->getId(), $this::MAX_TIME_FOR_BAN / 3600)
             );
         }
-        $this->userService->update($user);
+
+        $this
+            ->userService
+            ->update($user);
 
         return $this->redirectToRoute('user_show_profile', [
             'id' => $user->getId()
@@ -338,7 +432,9 @@ class UserController extends AbstractController
 
         if ($this->isGranted('ROLE_SUPER_ADMIN')) {
             $userForDeleteEmail = $userForDelete->getEmail();
-            $this->userService->delete($userForDelete);
+            $this
+                ->userService
+                ->delete($userForDelete);
             $this->addFlash(
                 'success',
                 sprintf('Пользователь №%s удален', $userForDeleteEmail)
@@ -346,9 +442,15 @@ class UserController extends AbstractController
 
             return $this->redirectToRoute('admin_show_users');
         } elseif ($user->getId() === $userForDelete->getId()) {
-            $this->userService->delete($userForDelete);
-            $request->getSession()->invalidate();
-            $this->tokenStorage->setToken();
+            $this
+                ->userService
+                ->delete($userForDelete);
+            $request
+                ->getSession()
+                ->invalidate();
+            $this
+                ->tokenStorage
+                ->setToken();
             
             return $this->redirectToRoute('user_login');
         } else {

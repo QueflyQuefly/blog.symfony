@@ -24,8 +24,10 @@ class CommentController extends AbstractController
     #[Route('/add/{id}', name: 'add', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function create(Post $post, Request $request): Response
     {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
+
         if ($user->getIsBanned() > time()) {
             $text = sprintf('Вы забанены. <br> Доступ будет восстановлен %s', date('d.m.Y в H:i', $user->getIsBanned()));
 
@@ -37,17 +39,23 @@ class CommentController extends AbstractController
         $form = $this->createForm(CommentFormType::class);
         $form->handleRequest($request);
 
-        if (!$post->getApprove()) {
+        if (! $post->getApprove()) {
             throw $this->createNotFoundException('Невозможно добавить комментарий к неодобренному посту');
         }
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $content = $form->get('content')->getData();
             $approve = false;
+            $content = $form
+                ->get('content')
+                ->getData();
+
             if ($this->isGranted('ROLE_MODERATOR')) {
                 $approve = true;
             }
-            if ($this->commentService->create($user, $post, $content, $approve)) {
+
+            $comment = $this->commentService->create($user, $post, $content, $approve);
+
+            if (! empty($comment)) {
                 if ($approve) {
                     $this->addFlash(
                         'success',
@@ -71,17 +79,23 @@ class CommentController extends AbstractController
                 'Заполните поля формы'
             );
         }
+
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
     }
 
     #[Route('/like/{postId<(?!0)\b[0-9]+>}/{id<(?!0)\b[0-9]+>}', name: 'like')]
     public function like(int $postId, Comment $comment): Response
     {
-        if (!$comment->getApprove()) {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+
+        if (! $comment->getApprove()) {
             throw $this->createNotFoundException('Невозможно поставить лайк неодобренному комментарию');
         }
+
         $user = $this->getUser();
-        $this->commentService->like($user, $comment);
+        $this
+            ->commentService
+            ->changeLike($user, $comment);
 
         return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
@@ -91,38 +105,43 @@ class CommentController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var \App\Entity\User $user */
-        $user = $this->getUser();
+        $user   = $this->getUser();
         $postId = ($comment->getPost())->getId();
 
         if (
-            $this->isGranted('ROLE_ADMIN') 
-            || ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove()) 
-            || $user->getId() === $comment->getUser()->getId()
+            ! $this->isGranted('ROLE_ADMIN') 
+            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $comment->getApprove()) 
+            xor $user->getId() !== $comment->getUser()->getId()
         ) {
-            $form = $this->createForm(CommentFormType::class, $comment, [
-                'content' => $comment->getContent(),
-            ]);
-            $form->handleRequest($request);
-            if ($form->isSubmitted() && $form->isValid()) {
-                $comment = $form->getData();
-                if ($this->isGranted('ROLE_MODERATOR')) {
-                    $comment->setApprove(true);
-                }
-                $this->commentService->update($comment);
-
-                if ($this->isGranted('ROLE_ADMIN') || $user->getId() === $comment->getUser()->getId()) {
-                    return $this->redirectToRoute('post_show', ['id' => $postId]);
-                } else {
-                    return $this->redirectToRoute('moderator_comments');
-                }
-            }
-
-            return $this->renderForm('comment/comment_update.html.twig', [
-                'form' => $form
-            ]);
-        } else {
             throw $this->createNotFoundException('Something went wrong');
         }
+
+        $form = $this->createForm(CommentFormType::class, $comment, [
+            'content' => $comment->getContent(),
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $form->getData();
+    
+            if ($this->isGranted('ROLE_MODERATOR')) {
+                $comment->setApprove(true);
+            }
+
+            $this
+                ->commentService
+                ->update();
+
+            if ($this->isGranted('ROLE_ADMIN') || $user->getId() === $comment->getUser()->getId()) {
+                return $this->redirectToRoute('post_show', ['id' => $postId]);
+            } else {
+                return $this->redirectToRoute('moderator_comments');
+            }
+        }
+
+        return $this->renderForm('comment/comment_update.html.twig', [
+            'form' => $form
+        ]);
     }
     
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
@@ -130,27 +149,32 @@ class CommentController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var \App\Entity\User $user */
-        $user = $this->getUser();
-        $postId = $comment->getPost()->getId();
+        $user   = $this->getUser();
+        $postId = $comment
+            ->getPost()
+            ->getId();
         $commentId = $comment->getId();
         
         if (
-            $this->isGranted('ROLE_ADMIN')
-            || ($this->isGranted('ROLE_MODERATOR') && !$comment->getApprove())
-            || $user->getId() === $comment->getUser()->getId()
+            ! $this->isGranted('ROLE_ADMIN') 
+            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $comment->getApprove()) 
+            xor $user->getId() !== $comment->getUser()->getId()
         ) {
-            $this->commentService->delete($comment);
-            $this->addFlash(
-                'success',
-                sprintf('Комментарий №%s удален', $commentId)
-            );
-            if (!$comment->getApprove()) {
-                return $this->redirectToRoute('moderator_comments');
-            }
-
-            return $this->redirectToRoute('post_show', ['id' => $postId]);
-        } else {
             throw $this->createNotFoundException('Something went wrong');
         }
+
+        $this
+            ->commentService
+            ->delete($comment);
+        $this->addFlash(
+            'success',
+            sprintf('Комментарий №%s удален', $commentId)
+        );
+
+        if (! $comment->getApprove()) {
+            return $this->redirectToRoute('moderator_comments');
+        }
+
+        return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
 }

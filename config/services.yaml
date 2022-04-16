@@ -21,5 +21,12 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    PHPMailer\PHPMailer\:
+        resource: '../vendor/phpmailer/phpmailer/src/*'
+
+    App\Service\MailerService:
+        arguments:
+            $fromEmail: 'blogsymfony@mail.ru'
+            $password: 'w5rs8YNVmk2NBLTqHyWi'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

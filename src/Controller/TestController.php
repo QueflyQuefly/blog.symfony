@@ -25,40 +25,52 @@ use Symfony\Component\Mime\Email;
 class TestController extends AbstractController
 {
     /* private RedisCacheService $cacheService;
+
     private UserService $userService;
+
     private PostService $postService;
+
     private CommentService $commentService; */
+
     private MailerService $mailerService;
+
     private string $env;
 
     public function __construct(
         /* RedisCacheService $cacheService,
-        UserService $userService,
-        PostService $postService,
-        CommentService $commentService, */
-        MailerService $mailerService,
-        KernelInterface $kernel
+        UserService       $userService,
+        PostService       $postService,
+        CommentService    $commentService, */
+        MailerService     $mailerService,
+        KernelInterface   $kernel
     ) {
         /* $this->cacheService = $cacheService;
-        $this->userService = $userService;
-        $this->postService = $postService;
+        $this->userService    = $userService;
+        $this->postService    = $postService;
         $this->commentService = $commentService; */
-        $this->mailerService = $mailerService;
-        $this->env = $kernel->getEnvironment();
+        $this->mailerService  = $mailerService;
+        $this->env            = $kernel->getEnvironment();
     }
 
     #[Route('', name: 'main')]
     public function main(): Response
     {
         if ($this->env !== 'dev') {
-            throw $this->createNotFoundException('Access denied');
+            throw $this->createNotFoundException('Something went wrong');
         }
 
-        $this->mailerService->sendMailsToSubscribers([0 => ['email' => 'drotovmihailo@gmail.com']], $this->getUser(), 1);
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this
+            ->mailerService
+            ->sendMailsToSubscribers(
+                [
+                    0 => ['email' => 'drotovmihailo@gmail.com']
+                ], 
+                $this->getUser(), 
+                1
+            );
         
-        $response = $this->render('blog_base.html.twig');
-
-        return $response;
+        return $this->render('blog_base.html.twig');
     }
 
     #[Route('/email')]
@@ -71,8 +83,7 @@ class TestController extends AbstractController
             ->to('drotovmihailo@gmail.com')
             ->priority(Email::PRIORITY_HIGHEST)
             ->subject('New Post')
-            ->text('fffffffff')
-        ;
+            ->text('fffffffff');
 
         try {
             $mailer->send($email);
