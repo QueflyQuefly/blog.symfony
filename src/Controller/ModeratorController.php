@@ -65,16 +65,9 @@ class ModeratorController extends AbstractController
     }
 
     #[Route('/post/{id}', name: 'post_show', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function showNotApprovedPost(int $id): Response
+    public function showNotApprovedPost(Post $post): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_MODERATOR');
-        $post =  $this
-            ->postService
-            ->getNotApprovedPostById($id);
-
-        if (empty($post)) {
-            throw $this->createNotFoundException(sprintf('Пост с id = %s не найден. Вероятно, он удален', $id));
-        }
+        $this->denyAccessUnlessGranted('view', $post);
 
         return $this->renderForm('moderator/mod_post.html.twig', [
             'post' => $post

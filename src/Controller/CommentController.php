@@ -100,21 +100,13 @@ class CommentController extends AbstractController
         return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
 
-    #[Route('/update/{id}', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function update(Comment $comment, Request $request): Response
+    #[Route('/edit/{id}', name: 'edit', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function editComment(Comment $comment, Request $request): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('edit', $comment);
         /** @var \App\Entity\User $user */
         $user   = $this->getUser();
         $postId = ($comment->getPost())->getId();
-
-        if (
-            ! $this->isGranted('ROLE_ADMIN') 
-            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $comment->getApprove()) 
-            xor $user->getId() !== $comment->getUser()->getId()
-        ) {
-            throw $this->createNotFoundException('Something went wrong');
-        }
 
         $form = $this->createForm(CommentFormType::class, $comment, [
             'content' => $comment->getContent(),
@@ -139,7 +131,7 @@ class CommentController extends AbstractController
             }
         }
 
-        return $this->renderForm('comment/comment_update.html.twig', [
+        return $this->renderForm('comment/comment_edit.html.twig', [
             'form' => $form
         ]);
     }
@@ -147,21 +139,11 @@ class CommentController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deleteComment(Comment $comment): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        /** @var \App\Entity\User $user */
-        $user   = $this->getUser();
+        $this->denyAccessUnlessGranted('delete', $comment);
         $postId = $comment
             ->getPost()
             ->getId();
         $commentId = $comment->getId();
-        
-        if (
-            ! $this->isGranted('ROLE_ADMIN') 
-            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $comment->getApprove()) 
-            xor $user->getId() !== $comment->getUser()->getId()
-        ) {
-            throw $this->createNotFoundException('Something went wrong');
-        }
 
         $this
             ->commentService

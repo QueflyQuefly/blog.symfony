@@ -12,7 +12,7 @@
                 Удалить комментарий №{{ comment.id }}
             </a>
 
-            <a href='{{ path('comment_update', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
+            <a href='{{ path('comment_edit', {id: comment.id}) }}' class='link' style='margin-left: 10vmin;'>
                 Изменить комментарий №{{ comment.id }}
             </a>
         {% endif %} 

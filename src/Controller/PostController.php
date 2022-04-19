@@ -227,20 +227,12 @@ class PostController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/update', name: 'update', requirements: ['id' => '(?!0)\b[0-9]+'])]
-    public function update(Post $post, Request $request): Response
+    #[Route('/{id}/edit', name: 'edit', requirements: ['id' => '(?!0)\b[0-9]+'])]
+    public function edit(Post $post, Request $request): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted('edit', $post);
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
-
-        if (
-            ! $this->isGranted('ROLE_ADMIN') 
-            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $post->getApprove()) 
-            xor $user->getId() !== $post->getUser()->getId()
-        ) {
-            throw $this->createNotFoundException('Something went wrong');
-        }
 
         $form = $this->createForm(PostFormType::class, $post, [
             'title' => $post->getTitle(),
@@ -274,18 +266,8 @@ class PostController extends AbstractController
     #[Route('/delete/{id}', name: 'delete', requirements: ['id' => '(?!0)\b[0-9]+'])]
     public function deletePost(Post $post): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-        /** @var \App\Entity\User $user */
-        $user = $this->getUser();
+        $this->denyAccessUnlessGranted('delete', $post);
 
-        if (
-            ! $this->isGranted('ROLE_ADMIN') 
-            xor ! ($this->isGranted('ROLE_MODERATOR') && ! $post->getApprove()) 
-            xor $user->getId() !== $post->getUser()->getId()
-        ) {
-            throw $this->createNotFoundException('Something went wrong');
-        }
-        
         $this
             ->postService
             ->delete($post);
