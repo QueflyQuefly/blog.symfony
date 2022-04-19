@@ -145,6 +145,14 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
+    public function getLastPostsAsArrays(int $amountOfPosts)
+    {
+        return $this->postRepository->getLastPostsAsArrays($amountOfPosts);
+    }
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
     public function getMoreTalkedPosts(int $amountOfPosts)
     {
         $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;

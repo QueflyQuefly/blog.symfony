@@ -53,4 +53,23 @@ class RedisCacheService {
         
         return $uncachedValue;
     }
+
+    public function getWithoutSerializer(string $key, int $ttl, callable $function)
+    {
+        $cachedValue = $this
+            ->redisRepository
+            ->get($key);
+
+        if (! empty($cachedValue)) {
+ 
+            return $cachedValue;
+        }
+
+        $uncachedValue = $function();
+        $this
+            ->redisRepository
+            ->set($key, $uncachedValue, $ttl);
+        
+        return $uncachedValue;
+    }
 }

@@ -98,6 +98,22 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function getLastPostsAsArrays(int $numberOfResults)
+    {
+        return $this
+            ->createQueryBuilder('p')
+            ->select('p, u')
+            ->join('p.user', 'u')
+            ->where('p.approve = 1')
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($numberOfResults)
+            ->getQuery()
+            ->getArrayResult();
+    }
    
     /**
      * @return Post[] Returns an array of Post objects
