@@ -11,12 +11,12 @@
         <link rel='stylesheet' href='{{ asset('css/style.css') }}'>
         {% endblock %}
 
-        {% block stylesheets %}
-            {# 'app' must match the first argument to addEntry() in webpack.config.js 
+        {# {% block stylesheets %}
+            'app' must match the first argument to addEntry() in webpack.config.js 
             {{ encore_entry_link_tags('css/app') }}
 
             <!-- Renders a link tag (if your module requires any CSS)
-                 <link rel="stylesheet" href="/build/app.css"> -->#}
+                 <link rel="stylesheet" href="/build/app.css"> -->
         {% endblock %}
 
         {% block javascripts %}
@@ -26,7 +26,7 @@
                 <script src="/build/runtime.js" defer></script>
                 <script src="/build/app.js" defer></script>
                 See note below about the "defer" attribute -->
-        {% endblock %}
+        {% endblock %} #}
 
         <link rel="shortcut icon" href="{{ asset('images/logo.jpg') }}" type="image/x-icon">
     </head>

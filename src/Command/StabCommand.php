@@ -44,7 +44,7 @@ class StabCommand extends Command
             throw new \LogicException('This command accepts only an instance of "ConsoleOutputInterface".');
         }
 
-        if ((int)$input->getArgument('number') > 0) {
+        if ((int) $input->getArgument('number') > 0) {
             $this->numberOfIterations = $input->getArgument('number');
         } else {
             $output->writeln([
@@ -56,30 +56,24 @@ class StabCommand extends Command
         }
 
         $section = $output->section();
-        $section->write(
-            sprintf('Cycle with the number of iterations %s started', $this->numberOfIterations)
-        );
-        $this
+        $section->write(sprintf('Cycle with the number of iterations %s started', $this->numberOfIterations));
+
+        try {
+            $this
             ->stabService
             ->toStabDb($this->numberOfIterations);
-        $section->overwrite(sprintf(
-            'Cycle with the number of iterations = %s completed in %s', 
-            $this->numberOfIterations, 
-            microtime(true) - $this->startTime
-        ));
-
-        $errors = $this->stabService->getErrors();
-
-        if (! empty($errors)) {
             $section->overwrite(sprintf(
-                'Cycle (%s) completed in %s with errors, see below', 
+                'Cycle with the number of iterations = %s completed in %s', 
                 $this->numberOfIterations, 
                 microtime(true) - $this->startTime
             ));
-
-            foreach ($errors as $error) {
-                $output->writeln($error);
-            }
+        } catch (\Exception $e) {
+            $section->overwrite(sprintf(
+                'Cycle (%s) completed in %s with error, see below', 
+                $this->numberOfIterations, 
+                microtime(true) - $this->startTime
+            ));
+            $output->writeln($e->getMessage());
 
             return Command::FAILURE;
         }

@@ -20,13 +20,13 @@ class StabService
 
     private EntityManagerInterface $entityManager;
 
-    private array $errors = [];
-
     private bool $flush = false;
 
     private int $isBanned = 0;
 
     private array $rights = ['ROLE_USER'];
+
+    private string $password = '1111';
 
     private int $maxNumberOfComments = 10;
 
@@ -115,9 +115,9 @@ class StabService
     // @codingStandardsIgnoreStop
 
     public function __construct(
-        UserService            $userService,
-        PostService            $postService,
-        CommentService         $commentService,
+        UserService $userService,
+        PostService $postService,
+        CommentService $commentService,
         EntityManagerInterface $entityManager
     ) {
         $this->userService    = $userService;
@@ -130,16 +130,18 @@ class StabService
      * @return this Returns a configured StabService
      */
     public function setConfiguration(
-        bool  $flush               = false,
-        int   $isBanned            = 0,
-        array $rights              = ['ROLE_USER'],
-        bool  $approve             = true,
-        int   $maxNumberOfComments = 10,
-        bool  $commentsWithLike    = true
+        bool   $flush               = false,
+        int    $isBanned            = 0,
+        array  $rights              = ['ROLE_USER'],
+        string $password            = '1111',
+        bool   $approve             = true,
+        int    $maxNumberOfComments = 10,
+        bool   $commentsWithLike    = true
     ) {
         $this->flush               = $flush;
         $this->isBanned            = $isBanned;
         $this->rights              = $rights;
+        $this->password            = $password;
         $this->approve             = $approve;
         $this->maxNumberOfComments = $maxNumberOfComments;
         $this->commentsWithLike    = $commentsWithLike;
@@ -148,13 +150,13 @@ class StabService
     }
 
     /**
-     * @return User Returns an object of User
+     * Returns an object of User
      */
-    public function createRandomUser(int $password, array $rights, int $isBanned = 0, bool $flush = true)
+    public function createRandomUser(int $password, array $rights, int $isBanned = 0, bool $flush = true): User
     {
-        $userEmail = $password . '@' . $password . '.' . $password;
+        $userEmail = $this->getRandomValue('userEmail');
         $userFio   = $this->getRandomValue('userFio');
-        $time  = $this->getRandomValue('time');
+        $time      = $this->getRandomValue('time');
 
         return $this
             ->userService
@@ -162,9 +164,9 @@ class StabService
     }
 
     /**
-     * @return Post Returns an object of Post
+     * Returns an object of Post
      */
-    public function createRandomPost(User $user, bool $approve = false, bool $flush = true)
+    public function createRandomPost(User $user, bool $approve = false, bool $flush = true): Post
     {
         $postTitle   = $this->getRandomValue('postTitle');
         $postContent = $this->getRandomValue('postContent');
@@ -176,13 +178,10 @@ class StabService
     }
 
     /**
-     * @return bool Returns true if rating added, false if not
+     * Returns true if rating added, false if not
      */
-    public function createRandomRating(
-        User $user,
-        Post $post,
-        bool $flush = true
-    ) {
+    public function createRandomRating(User $user, Post $post, bool $flush = true): bool 
+    {
         if (! $post->getApprove()) {
             return false;
         }
@@ -195,15 +194,15 @@ class StabService
     }
 
     /**
-     * @return Comment Returns an object of Comment
+     * Returns an object of Comment
      */
     public function createRandomComment(
         User $user,
         Post $post,
-        bool $approve         = false,
-        bool $withLike        = false,
-        bool $flush           = true
-    ) {
+        bool $approve  = false,
+        bool $withLike = false,
+        bool $flush    = true
+    ): Comment {
         if (! $post->getApprove()) {
             return false;
         }
@@ -233,87 +232,62 @@ class StabService
     }
 
     /**
-     * @return bool Returns false if there are errors
+     * @throws Exception
      */
-    public function toStabDb(int $numberOfIterations)
+    public function toStabDb(int $numberOfIterations): void
     {
-        try {
-            if ($numberOfIterations < 0) {
-                throw new \Exception(sprintf('Invalid number of iterations = %s', $numberOfIterations));
+        if ($numberOfIterations < 0) {
+            throw new \Exception(sprintf('Invalid number of iterations = %s', $numberOfIterations));
+        }
+
+        for ($i = 0; $i < $numberOfIterations; $i++) {
+            /* For test, recommend to delete */
+            $this->isBanned = (bool) mt_rand(0, 1);
+            $this->approve  = (bool) mt_rand(0, 1);
+            $user           = $this->createRandomUser($this->password, $this->rights, $this->isBanned, $this->flush);
+
+            if (! $user) {
+                throw new \Exception(sprintf('User with id = %s not created', $i));
             }
 
-            $min = $this->userService->getLastUserId();
-
-            if (empty($min)) {
-                throw new \Exception(sprintf('Invalid result of function getLastUserId() = %s', $min));
+            if($this->isBanned) {
+                continue;
             }
 
-            $min++;
+            $post = $this->createRandomPost($user, $this->approve, $this->flush);
 
-            for ($i = $min; $i < $numberOfIterations + $min; $i++) {
+            if (! $post) {
+                throw new \Exception(sprintf('Post by user with id = %s not created', $i));
+            }
+
+            if (! $this->approve) {
+                continue;
+            }
+
+            if (! $this->createRandomRating($user, $post, $this->flush)) {
+                throw new \Exception(sprintf('Rating to post by user with id = %s not created', $i));
+            }
+
+            $numberOfComments = $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments);
+
+            for ($m = 0; $m < $numberOfComments; $m++) {
                 /* For test, recommend to delete */
                 $this->approve = (bool) mt_rand(0, 1);
-                $user          = $this->createRandomUser($i, $this->rights, $this->isBanned, $this->flush);
+                $comment       = $this->createRandomComment(
+                    $user,
+                    $post,
+                    $this->approve,
+                    $this->commentsWithLike,
+                    $this->flush
+                );
 
-                if (! $user) {
-                    throw new \Exception(sprintf('User with id = %s not created', $i));
-                }
-
-                if($this->isBanned) {
-                    continue;
-                }
-
-                $post = $this->createRandomPost($user, $this->approve, $this->flush);
-
-                if (! $post) {
-                    throw new \Exception(sprintf('Post by user with id = %s not created', $i));
-                }
-
-                if (! $this->approve) {
-                    continue;
-                }
-
-                if (! $this->createRandomRating($user, $post, $this->flush)) {
-                    $this->errors[] = sprintf('Rating to post by user with id = %s not created', $i);
-                    continue;
-                }
-
-                $numberOfComments = $this->maxNumberOfComments - mt_rand(0, $this->maxNumberOfComments);
-
-                for ($m = 0; $m < $numberOfComments; $m++) {
-                    /* For test, recommend to delete */
-                    $this->approve = (bool) mt_rand(0, 1);
-                    $comment       = $this->createRandomComment(
-                        $user,
-                        $post,
-                        $this->approve,
-                        $this->commentsWithLike,
-                        $this->flush
-                    );
-
-                    if (! $comment) {
-                        throw new \Exception(sprintf('Comment to post by user with id = %s not created', $i));
-                    }
+                if (! $comment) {
+                    throw new \Exception(sprintf('Comment to post by user with id = %s not created', $i));
                 }
             }
-
-            $this->entityManager->flush();
-
-            return true;
-
-        } catch (\Exception $e) {
-            $this->errors[] = $e->getMessage();
-
-            return false;
         }
-    }
 
-    /**
-     * @return [] Returns an array of errors
-     */
-    public function getErrors(): array
-    {
-        return $this->errors;
+        $this->entityManager->flush();
     }
 
     /**
@@ -330,6 +304,7 @@ class StabService
         $randomCommentRating  = mt_rand(0, 1000);
         $randomTime           = time() - mt_rand(1000000, 2000000);
         $randomCommentTime    = mt_rand(time() - 1000000, time());
+        $randomUserEmail      = uniqid('user') . '@blog.symfony';
         $randomUserFio        = $this->names[$randomInt1] . ' ' . $this->surnames[$randomInt2];
         $randomPostTitle      = $this->titlesFirstPart[$randomInt3] . ' ' . $this->titlesSecondPart[$randomInt4];
         $randomCommentContent = $this->texts[$randomInt1];
@@ -345,6 +320,7 @@ class StabService
         switch ($key) {
             case 'time'           : return $randomTime;
             case 'userFio'        : return $randomUserFio;
+            case 'userEmail'      : return $randomUserEmail;
             case 'postTitle'      : return $randomPostTitle;
             case 'postContent'    : return $randomPostContent;
             case 'postRating'     : return $randomPostRating;

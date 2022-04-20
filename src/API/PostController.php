@@ -10,7 +10,7 @@ use App\Service\RedisCacheService;
 use App\Form\PostFormType;
 use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -25,8 +25,8 @@ class PostController extends AbstractController
     private RedisCacheService $cacheService;
 
     public function __construct(
-        PostService       $postService,
-        CommentService    $commentService,
+        PostService $postService,
+        CommentService $commentService,
         RedisCacheService $cacheService
     ) {
         $this->postService    = $postService;
@@ -34,19 +34,19 @@ class PostController extends AbstractController
         $this->cacheService   = $cacheService;
     }
 
-    public function main(): Response
+    public function main(): JsonResponse
     {
         $numberOfPosts = 10;
         $posts         = $this
             ->cacheService
             ->getWithoutSerializer(
-                'last_posts', 
+                'last_posts_array', 
                 10,
                 function () use ($numberOfPosts) {
-                    return json_encode($this->postService->getLastPostsAsArrays($numberOfPosts));
+                    return $this->postService->getLastPostsAsArrays($numberOfPosts);
                 }
             );
 
-        return new Response($posts);
+        return new JsonResponse($posts);
     }
 }

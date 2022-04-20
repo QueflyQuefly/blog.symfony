@@ -8,6 +8,7 @@ use App\Service\UserService;
 use App\Service\CommentService;
 use App\Service\StabService;
 use App\Service\RedisCacheService;
+use Exception;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -101,13 +102,18 @@ class AdminController extends AbstractController
         }
 
         $numberOfIterations = $request->query->get('number') ?? 0;
-        $this
-            ->stabService
-            ->toStabDb($numberOfIterations);
-        $errors = $this->stabService->getErrors() ?? false;
+        $error = '';
+        
+        try {
+            $this
+                ->stabService
+                ->toStabDb($numberOfIterations);
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+        }
 
         return $this->render('admin/admin_stab.html.twig', [
-            'errors'             => $errors,
+            'error'              => $error,
             'numberOfIterations' => $numberOfIterations
         ]);
     }

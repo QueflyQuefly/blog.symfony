@@ -6,10 +6,8 @@
     {{ include('_blog_flashes.html.twig') }}
 
     <h1>
-        {% if errors %}
-            {% for error in errors %}
-                {{ error }} <br>
-            {% endfor %}
+        {% if error %}
+            {{ error }}
         {% else %}
             <p>Цикл выполнился столько раз: {{ numberOfIterations }}. Нет сообщений об ошибках </p>
             В одной итерации цикла создается новый пользователь, новый пост от этого пользователя и несколько 
