@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\API;
 
 use App\Entity\Post;
 use App\Entity\Comment;
@@ -14,7 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/post', name: 'api_post_')]
 class PostController extends AbstractController
 {
     public const MAX_SIZE_OF_IMAGE = 4194304; // 4 megabytes (4*1024*1024 bytes)
@@ -35,7 +34,6 @@ class PostController extends AbstractController
         $this->cacheService   = $cacheService;
     }
 
-    #[Route('', name: 'main')]
     public function main(): Response
     {
         $numberOfPosts = 10;
@@ -43,8 +41,7 @@ class PostController extends AbstractController
             ->cacheService
             ->getWithoutSerializer(
                 'last_posts', 
-                10, 
-                'json',
+                10,
                 function () use ($numberOfPosts) {
                     return json_encode($this->postService->getLastPostsAsArrays($numberOfPosts));
                 }
