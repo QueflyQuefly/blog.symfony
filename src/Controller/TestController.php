@@ -93,4 +93,14 @@ class TestController extends AbstractController
 
         return $this->render('blog_base.html.twig');
     }
+
+    #[Route('/js', name: 'js')]
+    public function js(): Response
+    {
+        if ($this->env !== 'dev') {
+            throw $this->createNotFoundException('Something went wrong');
+        }
+
+        return $this->render('test/test.html.twig');
+    }
 }
