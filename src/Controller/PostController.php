@@ -102,7 +102,7 @@ class PostController extends AbstractController
             ->cacheService
             ->get(
                 sprintf('post_%s', $id), 
-                10, 
+                10,
                 Post::class,
                 function () use ($id) {
                     return $this->postService->getPostById($id);

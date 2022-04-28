@@ -23,7 +23,16 @@ class RedisCacheService {
 
     public function get(string $key, int $ttl, string $type, callable $function)
     {
-        $parameters  = $this->getParametersForSerializer();
+        $handler = function ($object) {
+            return $object->getId();
+        };
+
+        $parameters = [
+            AbstractObjectNormalizer::ENABLE_MAX_DEPTH     => true,
+            AbstractObjectNormalizer::MAX_DEPTH_HANDLER    => $handler,
+            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => $handler,
+        ];
+
         $cachedValue = $this
             ->redisRepository
             ->get($key);
@@ -45,38 +54,5 @@ class RedisCacheService {
             ->set($key, $serializableValue, $ttl);
         
         return $uncachedValue;
-    }
-
-    public function getInJson(string $key, int $ttl, callable $function)
-    {
-        $cachedValue = $this
-            ->redisRepository
-            ->get($key);
-
-        if (! empty($cachedValue)) {
-            return json_decode($cachedValue);
-        }
-
-        $uncachedValue = $function();
-        $serializableValue = json_encode($uncachedValue);
-        $this
-            ->redisRepository
-            ->set($key, $serializableValue, $ttl);
-        
-        return $uncachedValue;
-    }
-
-    private function getParametersForSerializer(): array
-    {
-        $handler = function ($object) {
-            return $object->getId();
-        };
-        $parameters = [
-            AbstractObjectNormalizer::ENABLE_MAX_DEPTH     => true,
-            AbstractObjectNormalizer::MAX_DEPTH_HANDLER    => $handler,
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => $handler,
-        ];
-
-        return $parameters;
     }
 }

@@ -42,7 +42,7 @@ class ApiPostController extends AbstractController
         $posts = $this
             ->cacheService
             ->get(
-                'last_posts', 
+                'last_posts_api', 
                 10,
                 sprintf('%s[]', Post::class),
                 function () use ($numberOfPosts) {
@@ -59,7 +59,7 @@ class ApiPostController extends AbstractController
         $posts = $this
             ->cacheService
             ->get(
-                'more_talked_posts', 
+                'more_talked_posts_api', 
                 10,
                 sprintf('%s[]', Post::class),
                 function () use ($numberOfPosts) {

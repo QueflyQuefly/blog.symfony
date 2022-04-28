@@ -98,22 +98,6 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
-    public function getLastPostsAsArrays(int $numberOfResults)
-    {
-        return $this
-            ->createQueryBuilder('p')
-            ->select('p, u')
-            ->join('p.user', 'u')
-            ->where('p.approve = 1')
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfResults)
-            ->getQuery()
-            ->getArrayResult();
-    }
    
     /**
      * @return Post[] Returns an array of Post objects
@@ -132,25 +116,6 @@ class PostRepository extends ServiceEntityRepository
             ->setMaxResults($numberOfResults)
             ->getQuery()
             ->getResult();
-    }
-
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
-    public function getMoreTalkedPostsAsArrays(int $numberOfResults, int $timeWeekAgo)
-    {
-        return $this
-            ->createQueryBuilder('p')
-            ->select('DISTINCT p, u')
-            ->join('p.user', 'u')
-            ->join('p.comments', 'c')
-            ->where('c.dateTime > :time')
-            ->andWhere('p.approve = 1')
-            ->setParameter('time', $timeWeekAgo)
-            ->orderBy('p.id', 'DESC')
-            ->setMaxResults($numberOfResults)
-            ->getQuery()
-            ->getArrayResult();
     }
 
     /**

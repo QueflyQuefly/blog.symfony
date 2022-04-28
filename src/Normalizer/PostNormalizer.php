@@ -3,23 +3,16 @@
 namespace App\Normalizer;
 
 use App\Entity\Post;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Exception;
 
-class PostNormalizer implements ContextAwareNormalizerInterface
+class PostNormalizer
 {
-    private $router;
-    private $normalizer;
-
-    public function __construct(UrlGeneratorInterface $router, ObjectNormalizer $normalizer)
+    public function normalize($post): array
     {
-        $this->router = $router;
-        $this->normalizer = $normalizer;
-    }
+        if (! $this->supportsNormalization($post)) {
+            throw new Exception('It is not a Post object. Normalization is doen\'t supported');
+        }
 
-    public function normalize($post, string $format = null, array $context = []): array
-    {
         $data = [
             'id'             => $post->getId(),
             'user_fio'       => $post->getUser()->getFio(),
@@ -45,7 +38,7 @@ class PostNormalizer implements ContextAwareNormalizerInterface
         return $data;
     }
 
-    public function supportsNormalization($data, string $format = null, array $context = []): bool
+    public function supportsNormalization($data): bool
     {
         return $data instanceof Post;
     }
