@@ -12,6 +12,10 @@ post_shortcut:
         # * for permanent redirects, it uses the 308 status code instead of 301
         keepRequestMethod: true
 
-index:
-   path: /api/post
-   controller: App\API\PostController::main
+api_last_posts:
+   path: /api/post/last/{numberOfPosts}
+   controller: App\API\ApiPostController::lastPosts
+
+api_more_talked_posts:
+   path: /api/post/talked/{numberOfPosts}
+   controller: App\API\ApiPostController::moreTalkedPosts

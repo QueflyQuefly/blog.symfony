@@ -267,13 +267,14 @@ class PostController extends AbstractController
     public function deletePost(Post $post): Response
     {
         $this->denyAccessUnlessGranted('delete', $post);
+        $postId = $post->getId();
 
         $this
             ->postService
             ->delete($post);
         $this->addFlash(
             'success',
-            sprintf('Пост №%s удален', $post->getId())
+            sprintf('Пост №%s удален', $postId)
         );
 
         if (!$post->getApprove()) {

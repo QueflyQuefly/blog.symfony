@@ -78,7 +78,7 @@ class MailerService
             ->addAddress($toAddress, $fio);
         $this
             ->mailer
-            ->Subject = 'Prosto Blog - verify account';
+            ->Subject = 'Prosto Blog';
         $content = $this
             ->twig
             ->render('email/email_confirmation.html.twig', ['url' => $url]);
@@ -103,7 +103,7 @@ class MailerService
             ->addAddress($toAddress, $fio);
         $this
             ->mailer
-            ->Subject = 'Prosto Blog - recovery password';
+            ->Subject = 'Prosto Blog';
         $content = $this
             ->twig
             ->render('email/email_recovery.html.twig', ['url' => $url]);
@@ -129,7 +129,7 @@ class MailerService
             ->isHTML(true);
         $this
             ->mailer
-            ->Subject = 'Новый Пост - Просто Блог';
+            ->Subject = 'Prosto Blog';
         $content = $this
             ->twig
             ->render(

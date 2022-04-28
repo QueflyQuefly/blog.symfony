@@ -28,7 +28,7 @@ class PostService
     }
 
     /**
-     * @return Post Returns an object of Post
+     * Returns an object of Post
      */
     public function create(
         User   $user,
@@ -37,7 +37,7 @@ class PostService
         bool   $approve  = false,
         ?int   $dateTime = null,
         bool   $flush    = true
-    ) {
+    ): Post {
         if (empty($dateTime)) {
             $dateTime = time();
         }
@@ -70,9 +70,9 @@ class PostService
     }
 
     /**
-     * @return float Returns an float number - rating of post
+     * Returns an float number - rating of post
      */
-    private function countRating(Post $post, int $rating = 0)
+    private function countRating(Post $post, float $rating = 0.0): float
     {
         $allRatingsPost = $post->getRatingPosts();
         $count          = $allRatingsPost->count();
@@ -89,11 +89,11 @@ class PostService
     }
 
     /**
-     * @return bool Returns true if rating to post added
+     * Returns true if rating to post added
      */
-    public function changeRating(User $user, Post $post, int $rating = 0, bool $flush = true)
+    public function changeRating(User $user, Post $post, int $rating = 0, bool $flush = true): bool
     {
-        $ratingPost = $this->isUserAddRating($user, $post);
+        $ratingPost = $this->getRatingPost($user, $post);
 
         if (! empty($ratingPost)) {
             $this->removeRating($ratingPost, $post);
@@ -101,15 +101,15 @@ class PostService
             return false;
         }
 
-        $this->addRating($user, $post, $rating, $flush);
+        $this->addRating($user, $post, doubleval($rating), $flush);
 
         return true;
     }
 
     /**
-     * @return RatingPost Returns RatingPost if user added rating to this post
+     * Returns RatingPost if user added rating to this post
      */
-    public function isUserAddRating(User $user, Post $post): RatingPost
+    public function getRatingPost(User $user, Post $post): ?RatingPost
     {
         return $this->ratingPostRepository->findOneBy([
             'user' => $user,
@@ -118,9 +118,9 @@ class PostService
     }
 
     /**
-     * @return bool Returns true if rating to post added
+     * Returns true if rating to post added
      */
-    public function addRating(User $user, Post $post, int $rating = 0, bool $flush = true)
+    public function addRating(User $user, Post $post, int $rating = 0, bool $flush = true): bool
     {
         $ratingPost = (new RatingPost())
             ->setPost($post)
@@ -137,7 +137,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLastPosts(int $amountOfPosts)
+    public function getLastPosts(int $amountOfPosts): ?array
     {
         return $this->postRepository->getLastPosts($amountOfPosts);
     }
@@ -145,7 +145,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLastPostsAsArrays(int $amountOfPosts)
+    public function getLastPostsAsArrays(int $amountOfPosts): ?array
     {
         return $this->postRepository->getLastPostsAsArrays($amountOfPosts);
     }
@@ -153,24 +153,33 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getMoreTalkedPosts(int $amountOfPosts)
+    public function getMoreTalkedPosts(int $amountOfPosts): ?array
     {
         $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;
         return $this->postRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
     }
 
     /**
-     * @return Post Returns a Post object
+     * @return Post[] Returns an array of Post objects
      */
-    public function getPostById(int $postId)
+    public function getMoreTalkedPostsAsArrays(int $amountOfPosts): ?array
+    {
+        $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;
+        return $this->postRepository->getMoreTalkedPostsAsArrays($amountOfPosts, $timeWeekAgo);
+    }
+
+    /**
+     * Returns a Post object
+     */
+    public function getPostById(int $postId): ?Post
     {
         return $this->postRepository->getPostById($postId);
     }
 
     /**
-     * @return Post Returns a Post object
+     * Returns a Post object
      */
-    public function getNotApprovedPostById(int $postId)
+    public function getNotApprovedPostById(int $postId): ?Post
     {
         return $this->postRepository->getNotApprovedPostById($postId);
     }
@@ -178,7 +187,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getPosts(int $numberOfPosts, int $page)
+    public function getPosts(int $numberOfPosts, int $page): ?array
     {
         $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
         return $this->postRepository->getPosts($numberOfPosts, $lessThanMaxId);
@@ -187,7 +196,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getNotApprovedPosts(int $numberOfPosts, int $page)
+    public function getNotApprovedPosts(int $numberOfPosts, int $page): ?array
     {
         $lessThanMaxId = $page * $numberOfPosts - $numberOfPosts;
         return $this->postRepository->getNotApprovedPosts($numberOfPosts, $lessThanMaxId);
@@ -196,7 +205,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getPostsByUserId(int $userId, int $numberOfPosts)
+    public function getPostsByUserId(int $userId, int $numberOfPosts): ?array
     {
         return $this->postRepository->getPostsByUserId($userId, $numberOfPosts);
     }
@@ -204,7 +213,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLikedPostsByUserId(int $userId, int $numberOfPosts)
+    public function getLikedPostsByUserId(int $userId, int $numberOfPosts): ?array
     {
         return $this->postRepository->getLikedPostsByUserId($userId, $numberOfPosts);
     }
@@ -212,7 +221,7 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function searchPosts(string $searchWords, int $numberOfResults)
+    public function searchPosts(string $searchWords, int $numberOfResults): ?array
     {
         $numberOfResults = $numberOfResults / 4;
         $searchWords = '%' . $searchWords . '%';
@@ -225,9 +234,9 @@ class PostService
     }
 
     /**
-     * @return bool Returns true if Post updated
+     * Returns true if Post updated
      */
-    public function update(Post $post, bool $flush = true)
+    public function update(Post $post, bool $flush = true): bool
     {
         if ($post->getId() && $flush) {
             $this->postRepository->update($flush);
@@ -238,19 +247,22 @@ class PostService
         return false;
     }
 
-    public function delete($post, bool $flush = true)
-    {
-        $this->postRepository->remove($post, $flush);
-    }
-
     /**
-     * @return bool Returns true if rating to post deleted
+     * Returns true if rating to post deleted
      */
-    private function removeRating(RatingPost $ratingPost, Post $post)
+    private function removeRating(RatingPost $ratingPost, Post $post): bool
     {
         $this->ratingPostRepository->remove($ratingPost);
         $post->setRating((string) $this->countRating($post));
 
         return true;
+    }
+
+    /**
+     * This function removes the Post
+     */
+    public function delete(Post $post, bool $flush = true)
+    {
+        $this->postRepository->remove($post, $flush);
     }
 }

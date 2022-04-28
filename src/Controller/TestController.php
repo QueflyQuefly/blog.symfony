@@ -52,7 +52,19 @@ class TestController extends AbstractController
         $this->env            = $kernel->getEnvironment();
     }
 
-    #[Route('', name: 'main')]
+    #[Route('', name: 'js')]
+    public function mainOnJS(): Response
+    {
+        if ($this->env !== 'dev') {
+            throw $this->createNotFoundException('Something went wrong');
+        }
+
+        $html = $this->renderView('test/test.html.twig');
+
+        return new Response($html);
+    }
+
+    #[Route('/email/phpmailer', name: 'phpmailer')]
     public function main(): Response
     {
         if ($this->env !== 'dev') {
@@ -73,7 +85,7 @@ class TestController extends AbstractController
         return $this->render('blog_base.html.twig');
     }
 
-    #[Route('/email')]
+    #[Route('/email/googlemailer', name: 'googlemailer')]
     public function sendEmail(MailerInterface $mailer): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
@@ -92,15 +104,5 @@ class TestController extends AbstractController
         }
 
         return $this->render('blog_base.html.twig');
-    }
-
-    #[Route('/js', name: 'js')]
-    public function js(): Response
-    {
-        if ($this->env !== 'dev') {
-            throw $this->createNotFoundException('Something went wrong');
-        }
-
-        return $this->render('test/test.html.twig');
     }
 }

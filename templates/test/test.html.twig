@@ -1,14 +1,17 @@
 {% extends 'blog_base.html.twig' %}
 
-{% block title %} Поиск постов - Просто Блог {% endblock %}
+{% block title %} Главная - Просто Блог {% endblock %}
 
 {% block content %}
     {{ include('_blog_flashes.html.twig') }}
 
-  <p></p>
+    <h1>Наилучший источник информации по теме "Путешествия"</h1>
 
-  <pre></pre>
-  
-  <script src='{{ asset('build/script.js') }}'></script>
+    <div class='lastPosts'></div>
 
+    <p class='center' style='font-size: 16pt; margin-top: 5%;'>Самые обсуждаемые посты за неделю &darr;&darr;&darr;</p>
+
+    <div class='moreTalkedPosts'></div>
+
+    <script src='{{ asset('build/script.js') }}'></script>
 {% endblock %}

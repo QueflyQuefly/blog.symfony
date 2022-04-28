@@ -135,6 +135,25 @@ class PostRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return Post[] Returns an array of Post objects
+     */
+    public function getMoreTalkedPostsAsArrays(int $numberOfResults, int $timeWeekAgo)
+    {
+        return $this
+            ->createQueryBuilder('p')
+            ->select('DISTINCT p, u')
+            ->join('p.user', 'u')
+            ->join('p.comments', 'c')
+            ->where('c.dateTime > :time')
+            ->andWhere('p.approve = 1')
+            ->setParameter('time', $timeWeekAgo)
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults($numberOfResults)
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    /**
      * @return Post Returns a Post object
      */
     public function getPostById(int $postId)
