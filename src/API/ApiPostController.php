@@ -7,6 +7,7 @@ use App\Entity\Comment;
 use App\Service\PostService;
 use App\Service\CommentService;
 use App\Service\RedisCacheService;
+use App\Normalizer\PostNormalizer;
 use App\Form\PostFormType;
 use App\Form\CommentFormType;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,24 +28,28 @@ class ApiPostController extends AbstractController
     public function __construct(
         PostService       $postService,
         CommentService    $commentService,
-        RedisCacheService $cacheService
+        RedisCacheService $cacheService,
+        PostNormalizer    $normalizer
     ) {
         $this->postService    = $postService;
         $this->commentService = $commentService;
         $this->cacheService   = $cacheService;
+        $this->normalizer     = $normalizer;
     }
 
     public function lastPosts(int $numberOfPosts): JsonResponse
     {
         $posts = $this
             ->cacheService
-            ->getInJson(
-                'last_posts_array', 
+            ->get(
+                'last_posts', 
                 10,
+                sprintf('%s[]', Post::class),
                 function () use ($numberOfPosts) {
-                    return $this->postService->getLastPostsAsArrays($numberOfPosts);
+                    return $this->postService->getLastPosts($numberOfPosts);
                 }
             );
+        $posts = $this->normalizer->normalizeArrayOfPosts($posts);
 
         return new JsonResponse($posts);
     }
@@ -53,13 +58,15 @@ class ApiPostController extends AbstractController
     {
         $posts = $this
             ->cacheService
-            ->getInJson(
-                'more_talked_posts_array', 
+            ->get(
+                'more_talked_posts', 
                 10,
+                sprintf('%s[]', Post::class),
                 function () use ($numberOfPosts) {
-                    return $this->postService->getMoreTalkedPostsAsArrays($numberOfPosts);
+                    return $this->postService->getMoreTalkedPosts($numberOfPosts);
                 }
             );
+        $posts = $this->normalizer->normalizeArrayOfPosts($posts);
 
         return new JsonResponse($posts);
     }

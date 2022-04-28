@@ -1,19 +1,12 @@
 'use strict';
 
-let request = new XMLHttpRequest();
-let response;
-let urlForLastPosts = '/api/post/last/';
+let urlForLastPosts       = '/api/post/last/';
 let urlForMoreTalkedPosts = '/api/post/talked/';
-let output = '';
-let outputLastPosts = document.querySelector('.lastPosts');
+let outputLastPosts       = document.querySelector('.lastPosts');
 let outputMoreTalkedPosts = document.querySelector('.moreTalkedPosts');
 
-function formatDate(timestampInSeconds) {
-    let diffInSeconds = (new Date() - timestampInSeconds) / 1000; 
-  
-    if (diffInSeconds < 3) { 
-        return 'Секунду назад';
-    }
+function formatDate(timestamp) {
+    let diffInSeconds = Math.floor((new Date() - timestamp) / 1000); 
 
     if (diffInSeconds < 60) {
         return diffInSeconds + ' сек. назад';
@@ -25,7 +18,7 @@ function formatDate(timestampInSeconds) {
         return min + ' мин. назад';
     }
 
-    let dateOfTimestamp = new Date(timestampInSeconds);
+    let dateOfTimestamp     = new Date(timestamp);
     let intermediateArchive = [
       '0' + dateOfTimestamp.getDate(),
       '0' + (dateOfTimestamp.getMonth() + 1),
@@ -38,15 +31,20 @@ function formatDate(timestampInSeconds) {
 }
 
 function convertPostsToString(posts) {
+    let stringHtmlOfPosts = '';
+    let classOfPost = 'generalpost';
+
     for (let post of posts) {
-        output += `
-            <div class='viewpost'>
+        stringHtmlOfPosts += `
+            <div class='${classOfPost}'>
                 <a class='postLink' href='/post/${post.id}'>
                     <div class='posttext'>
                         <p class='posttitle'>${post.title}</p>
                         <p class='postcontent'>${post.content}</p>
-                        <p class='postdate'>${formatDate(post.dateTime * 1000)} &copy; ${post.user.fio}</p>
-                        <p class='postrating'>Рейтинг: ${post.rating}</p>
+                        <p class='postdate'>${formatDate(post.date_time * 1000)} &copy; ${post.user_fio}</p>
+                        <p class='postrating'>
+                            Рейтинг: ${post.rating}, оценок: ${ post.count_ratings }, комментариев: ${ post.count_comments }
+                        </p>
                         <div class='submitunder'>
                             <a href='/post/delete/${post.id}' class='link'>
                                 Удалить пост №${post.id}
@@ -59,12 +57,17 @@ function convertPostsToString(posts) {
                 </a>
             </div>
         `;
+        classOfPost = 'viewpost';
     }
 
-    return output;
+    return stringHtmlOfPosts;
 }
 
-/* request.open('GET', url);
+/* 
+let request = new XMLHttpRequest();
+let response;
+
+request.open('GET', url);
 request.responseType = 'text';
 
 request.onload = function() {
@@ -74,28 +77,16 @@ request.onload = function() {
     }
 };
 
-request.send(); */
+request.send();
+*/
 
-function getLastPosts(numberOfPosts = 10) {
-    fetch(urlForLastPosts + numberOfPosts).then(
+function getPosts(url, amount, output) {
+    fetch(url + amount).then(
         (response) => {
             response.text().then(
                 (text) => {
                     response = JSON.parse(text);
-                    outputLastPosts.innerHTML = convertPostsToString(response);
-                }
-            );
-        }
-    );
-}
-
-function getMoreTalkedPosts(numberOfPosts = 3) {
-    fetch(urlForMoreTalkedPosts + numberOfPosts).then(
-        (response) => {
-            response.text().then(
-                (text) => {
-                    response = JSON.parse(text);
-                    outputMoreTalkedPosts.innerHTML = convertPostsToString(response);
+                    output.innerHTML = convertPostsToString(response);
                 }
             );
         }
@@ -133,8 +124,9 @@ function updateWithTimeout(someFunction, timeoutInSeconds) {
     };
 }
 
-//getLastPosts = cachingDecorator(getLastPosts);
+// getLastPosts = cachingDecorator(getLastPosts);
 
-//getLastPosts = updateWithTimeout(getLastPosts, 10);
-getLastPosts(10);
-getMoreTalkedPosts(3);
+// getLastPosts = updateWithTimeout(getLastPosts, 10);
+
+getPosts(urlForLastPosts, 10, outputLastPosts);
+getPosts(urlForMoreTalkedPosts, 3, outputMoreTalkedPosts);
