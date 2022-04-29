@@ -56,6 +56,9 @@ class PostService
         return $post;
     }
 
+    /**
+     * This function for moderators, to approve Post
+     */
     public function approve(Post $post, bool $flush = true)
     {
         $this
@@ -67,25 +70,6 @@ class PostService
                 ->userService
                 ->sendMailsToSubscribers($post);
         }
-    }
-
-    /**
-     * Returns an float number - rating of post
-     */
-    private function countRating(Post $post, float $rating = 0.0): float
-    {
-        $allRatingsPost = $post->getRatingPosts();
-        $count          = $allRatingsPost->count();
-
-        if ($count > 0) {
-            foreach ($allRatingsPost as $ratingPost) {
-                $rating += $ratingPost->getRating();
-            }
-
-            $rating = round($rating / ($count + 1), 1);
-        }
-
-        return $rating;
     }
 
     /**
@@ -145,27 +129,10 @@ class PostService
     /**
      * @return Post[] Returns an array of Post objects
      */
-    public function getLastPostsAsArrays(int $amountOfPosts): ?array
-    {
-        return $this->postRepository->getLastPostsAsArrays($amountOfPosts);
-    }
-
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
     public function getMoreTalkedPosts(int $amountOfPosts): ?array
     {
         $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;
         return $this->postRepository->getMoreTalkedPosts($amountOfPosts, $timeWeekAgo);
-    }
-
-    /**
-     * @return Post[] Returns an array of Post objects
-     */
-    public function getMoreTalkedPostsAsArrays(int $amountOfPosts): ?array
-    {
-        $timeWeekAgo = round(time() / 10000, 0) * 10000 - 7*24*60*60;
-        return $this->postRepository->getMoreTalkedPostsAsArrays($amountOfPosts, $timeWeekAgo);
     }
 
     /**
@@ -248,6 +215,33 @@ class PostService
     }
 
     /**
+     * This function removes the Post
+     */
+    public function delete(Post $post, bool $flush = true)
+    {
+        $this->postRepository->remove($post, $flush);
+    }
+
+    /**
+     * Returns an float number - rating of post
+     */
+    private function countRating(Post $post, float $rating = 0.0): float
+    {
+        $allRatingsPost = $post->getRatingPosts();
+        $count          = $allRatingsPost->count();
+
+        if ($count > 0) {
+            foreach ($allRatingsPost as $ratingPost) {
+                $rating += $ratingPost->getRating();
+            }
+
+            $rating = round($rating / ($count + 1), 1);
+        }
+
+        return $rating;
+    }
+
+    /**
      * Returns true if rating to post deleted
      */
     private function removeRating(RatingPost $ratingPost, Post $post): bool
@@ -256,13 +250,5 @@ class PostService
         $post->setRating((string) $this->countRating($post));
 
         return true;
-    }
-
-    /**
-     * This function removes the Post
-     */
-    public function delete(Post $post, bool $flush = true)
-    {
-        $this->postRepository->remove($post, $flush);
     }
 }

@@ -2,11 +2,11 @@
 
 let urlForLastPosts       = '/api/post/last/';
 let urlForMoreTalkedPosts = '/api/post/talked/';
-let outputLastPosts       = document.querySelector('.lastPosts');
-let outputMoreTalkedPosts = document.querySelector('.moreTalkedPosts');
+let outputLastPosts       = document.getElementById('lastPosts');
+let outputMoreTalkedPosts = document.getElementById('moreTalkedPosts');
 
 function formatDate(timestamp) {
-    let diffInSeconds = Math.floor((new Date() - timestamp) / 1000); 
+    let diffInSeconds = Math.floor((new Date() - timestamp) / 1000);
 
     if (diffInSeconds < 60) {
         return diffInSeconds + ' сек. назад';
@@ -30,9 +30,8 @@ function formatDate(timestamp) {
     return intermediateArchive.slice(0, 3).join('.') + ' в ' + intermediateArchive.slice(3).join(':');
 }
 
-function convertPostsToString(posts) {
+function convertPostsToString(posts, classOfPost) {
     let stringHtmlOfPosts = '';
-    let classOfPost = 'generalpost';
 
     for (let post of posts) {
         stringHtmlOfPosts += `
@@ -63,52 +62,62 @@ function convertPostsToString(posts) {
     return stringHtmlOfPosts;
 }
 
-/* 
-let request = new XMLHttpRequest();
-let response;
+/* function getPosts(url, amount) {
+    let request = new XMLHttpRequest();
+    let response;
 
-request.open('GET', url);
-request.responseType = 'text';
+    request.open('GET', url + amount);
+    request.responseType = 'text';
 
-request.onload = function() {
-    response = JSON.parse(request.response);
-    for (let post of response) {
-        output.textContent += post.title + '  \n  ';
+    let key = hash(url, amount);
+    
+    request.onload = function() {
+        let response      = JSON.parse(request.response);
+        let uncachedValue = convertPostsToString(response);
+
+        localStorage.setItem(key, uncachedValue);
+    };
+    
+    request.send();
+} */
+
+function getPosts(url, amount, output, classOfPost) {
+    let key = 'getPosts' + hash(url, amount);
+
+    if (localStorage.getItem(key) != null) {
+        output.innerHtml = localStorage.getItem(key);  // eto ne rabotaet (((((((((((((((((((((((((((:)))))))))))))))))))
+        alert( localStorage.getItem(key));
+    } else {
+        fetch(url + amount).then(
+            (response) => {
+                response.text().then(
+                    (text) => {
+                        response = JSON.parse(text);
+                        output.innerHTML = convertPostsToString(response, classOfPost);
+                        localStorage.setItem(key, convertPostsToString(response, classOfPost));
+                    }
+                );
+            }
+        )
     }
-};
+}
 
-request.send();
-*/
-
-function getPosts(url, amount, output) {
-    fetch(url + amount).then(
-        (response) => {
-            response.text().then(
-                (text) => {
-                    response = JSON.parse(text);
-                    output.innerHTML = convertPostsToString(response);
-                }
-            );
-        }
-    );
+function hash() {
+    return [].join.call(arguments);
 }
 
 function cachingDecorator(someFunction) {
-    let cacheMap = new Map();
-
-    function hash(...args) {
-        return args.toString();
-    }
 
     return function () {
-        let key = hash(arguments);
+        let key = someFunction.name + hash(...arguments);
 
-        if (cacheMap.has(key)) {
-            return cacheMap.get(key);
+        if (localStorage.getItem(key) !== null) {
+            return localStorage.getItem(key);
         }
 
         let uncachedValue = someFunction.apply(this, arguments);
-        cacheMap.set(key, uncachedValue);
+
+        localStorage.setItem(key, uncachedValue);
 
         return uncachedValue;
     };
@@ -116,7 +125,7 @@ function cachingDecorator(someFunction) {
 
 function updateWithTimeout(someFunction, timeoutInSeconds) {
     return function updatedWithInterval() {
-        let someValue = someFunction.apply(arguments);
+        let someValue = someFunction.apply(this, arguments);
 
         setTimeout(updatedWithInterval, timeoutInSeconds * 1000);
 
@@ -124,9 +133,23 @@ function updateWithTimeout(someFunction, timeoutInSeconds) {
     };
 }
 
-// getLastPosts = cachingDecorator(getLastPosts);
+// getPosts = updateWithTimeout(getPosts, 10);
 
-// getLastPosts = updateWithTimeout(getLastPosts, 10);
+getPosts(urlForLastPosts, 10, outputLastPosts, 'generalpost');
 
-getPosts(urlForLastPosts, 10, outputLastPosts);
-getPosts(urlForMoreTalkedPosts, 3, outputMoreTalkedPosts);
+let key = 'getPosts' + hash(urlForLastPosts, 10); // iz-za stroki 88 ((((((((((((((((((((((((((((())))))))))))))))))))
+outputLastPosts.innerHTML = localStorage.getItem(key); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))))))))
+
+getPosts(urlForMoreTalkedPosts, 3, outputMoreTalkedPosts, 'viewpost');
+
+key = 'getPosts' + hash(urlForMoreTalkedPosts, 3); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))))))))))))
+outputMoreTalkedPosts.innerHTML = localStorage.getItem(key); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))
+
+
+/* for (let i = 0; i < localStorage.length; i++) {
+    let key = localStorage.key(i);
+    alert(`${key}: ${localStorage.getItem(key)}`);
+} */
+
+localStorage.clear();
+

@@ -10,7 +10,7 @@ class PostNormalizer
     public function normalize($post): array
     {
         if (! $this->supportsNormalization($post)) {
-            throw new Exception('It is not a Post object. Normalization is doen\'t supported');
+            throw new Exception('It is not a Post object. Normalization is does not supported');
         }
 
         $data = [
