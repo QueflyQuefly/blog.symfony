@@ -86,7 +86,7 @@ function getPosts(url, amount, output, classOfPost) {
 
     if (localStorage.getItem(key) != null) {
         output.innerHTML = localStorage.getItem(key);
-        alert( localStorage.getItem(key));
+        /* alert( localStorage.getItem(key)); */
     } else {
         fetch(url + amount).then(
             (response) => {
@@ -145,5 +145,5 @@ getPosts(urlForMoreTalkedPosts, 3, outputMoreTalkedPosts, 'viewpost');
     alert(`${key}: ${localStorage.getItem(key)}`);
 } */
 
-localStorage.clear();
+/* localStorage.clear(); */
 
