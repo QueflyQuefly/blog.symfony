@@ -85,7 +85,7 @@ function getPosts(url, amount, output, classOfPost) {
     let key = 'getPosts' + hash(url, amount);
 
     if (localStorage.getItem(key) != null) {
-        output.innerHtml = localStorage.getItem(key);  // eto ne rabotaet (((((((((((((((((((((((((((:)))))))))))))))))))
+        output.innerHTML = localStorage.getItem(key);
         alert( localStorage.getItem(key));
     } else {
         fetch(url + amount).then(
@@ -137,13 +137,7 @@ function updateWithTimeout(someFunction, timeoutInSeconds) {
 
 getPosts(urlForLastPosts, 10, outputLastPosts, 'generalpost');
 
-let key = 'getPosts' + hash(urlForLastPosts, 10); // iz-za stroki 88 ((((((((((((((((((((((((((((())))))))))))))))))))
-outputLastPosts.innerHTML = localStorage.getItem(key); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))))))))
-
 getPosts(urlForMoreTalkedPosts, 3, outputMoreTalkedPosts, 'viewpost');
-
-key = 'getPosts' + hash(urlForMoreTalkedPosts, 3); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))))))))))))
-outputMoreTalkedPosts.innerHTML = localStorage.getItem(key); // iz-za stroki 88 ((((((((((((((((((((((((((((()))))))))
 
 
 /* for (let i = 0; i < localStorage.length; i++) {
