@@ -14,7 +14,6 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[UniqueEntity(fields: ["email"], message: "Уже есть аккаунт с таким email. Войдите")]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Cache(usage: "NONSTRICT_READ_WRITE")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -71,11 +70,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->posts = new ArrayCollection();
-        $this->comments = new ArrayCollection();
-        $this->ratingPosts = new ArrayCollection();
-        $this->ratingComments = new ArrayCollection();
-        $this->subscriptions = new ArrayCollection();
+        $this->posts           = new ArrayCollection();
+        $this->comments        = new ArrayCollection();
+        $this->ratingPosts     = new ArrayCollection();
+        $this->ratingComments  = new ArrayCollection();
+        $this->subscriptions   = new ArrayCollection();
         $this->mySubscriptions = new ArrayCollection();
     }
 

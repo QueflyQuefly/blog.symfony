@@ -2,54 +2,70 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ORM\Cache(usage: "READ_WRITE")]
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'post:list']]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => 'post:item']]],
+    //order: ['id' => 'DESC'],
+    paginationEnabled: false,
+)]
+//#[ApiFilter(SearchFilter::class, properties: ['approve' => 1])]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['post:list', 'post:item'])]
     private $id;
 
-    #[MaxDepth(2)]
-    #[ORM\Cache(usage:"READ_ONLY")]
+    //#[MaxDepth(2)]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['post:list', 'post:item'])]
     private $title;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['post:list', 'post:item'])]
     private $content;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['post:list', 'post:item'])]
     private $dateTime;
 
     #[ORM\Column(type: 'decimal', precision: 2, scale: 1)]
+    #[Groups(['post:list', 'post:item'])]
     private $rating;
 
-    #[Ignore]
-    #[ORM\Cache(usage:"READ_ONLY")]
+    //#[Ignore]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $comments;
 
-    #[Ignore]
-    #[ORM\Cache(usage:"READ_ONLY")]
+    //#[Ignore]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: RatingPost::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingPosts;
 
+    #[Groups(['post:list', 'post:item'])]
     private $countRatingPosts;
+
+    #[Groups(['post:list', 'post:item'])]
     private $countComments;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['post:list', 'post:item'])]
     private $approve = false;
 
     public function __construct()

@@ -2,20 +2,28 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\CommentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ORM\Cache(usage:"READ_WRITE")]
+#[ApiResource(
+    collectionOperations: ['get' => ['normalization_context' => ['groups' => 'comment:list']]],
+    itemOperations: ['get' => ['normalization_context' => ['groups' => 'comment:item']]],
+    order: ['id' => 'DESC'],
+    paginationEnabled: false,
+)]
 class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comment:list', 'comment:item'])]
     private $id;
 
     #[MaxDepth(2)]
@@ -24,26 +32,28 @@ class Comment
     private $user;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['comment:list', 'comment:item'])]
     private $content;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comment:list', 'comment:item'])]
     private $dateTime;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comment:list', 'comment:item'])]
     private $rating;
 
     #[MaxDepth(1)]
-    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $post;
 
     #[Ignore]
-    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: RatingComment::class, orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     private $ratingComments;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['comment:list', 'comment:item'])]
     private $approve = false;
 
     public function __construct()

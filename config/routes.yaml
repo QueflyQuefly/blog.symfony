@@ -13,9 +13,9 @@ post_shortcut:
         keepRequestMethod: true
 
 api_last_posts:
-   path: /api/post/last/{numberOfPosts}
+   path: /apipost/last/{numberOfPosts}
    controller: App\API\ApiPostController::lastPosts
 
 api_more_talked_posts:
-   path: /api/post/talked/{numberOfPosts}
+   path: /apipost/talked/{numberOfPosts}
    controller: App\API\ApiPostController::moreTalkedPosts

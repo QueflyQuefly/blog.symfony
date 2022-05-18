@@ -1,7 +1,7 @@
 'use strict';
 
-let urlForLastPosts       = '/api/post/last/';
-let urlForMoreTalkedPosts = '/api/post/talked/';
+let urlForLastPosts       = '/apipost/last/';
+let urlForMoreTalkedPosts = '/apipost/talked/';
 let outputLastPosts       = document.getElementById('lastPosts');
 let outputMoreTalkedPosts = document.getElementById('moreTalkedPosts');
 

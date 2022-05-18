@@ -6,7 +6,6 @@ use App\Repository\SubscriptionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SubscriptionRepository::class)]
-#[ORM\Cache(usage:"READ_ONLY")]
 class Subscription
 {
     #[ORM\Id]
@@ -14,12 +13,10 @@ class Subscription
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'subscriptions', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $userSubscribed;
 
-    #[ORM\Cache(usage:"READ_ONLY")]
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'mySubscriptions', fetch: 'EXTRA_LAZY')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
