@@ -17,10 +17,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     collectionOperations: ['get' => ['normalization_context' => ['groups' => 'post:list']]],
     itemOperations: ['get' => ['normalization_context' => ['groups' => 'post:item']]],
-    //order: ['id' => 'DESC'],
+    order: ['id' => 'DESC'],
     paginationEnabled: false,
 )]
-//#[ApiFilter(SearchFilter::class, properties: ['approve' => 1])]
+#[ApiFilter(SearchFilter::class, properties: ['approve' => 1])]
 class Post
 {
     #[ORM\Id]
